@@ -1,2 +1,5 @@
 # Local setup configuration (contains absolute paths specific to each user)
 .setup-targets
+
+# macOS
+.DS_Store
