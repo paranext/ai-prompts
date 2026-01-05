@@ -1,0 +1,29 @@
+{
+  "scenarioId": "gm-005",
+  "name": "Book Titles Checklist",
+  "scenarioIds": ["TS-044", "TS-045"],
+  "behaviorIds": ["BHV-102"],
+  "invariantIds": ["INV-001"],
+  "domainConstraints": ["DC-004"],
+  "createdDate": "2025-01-04",
+  "priority": "high",
+  "riskLevel": "low",
+  "checklistType": "BookTitles",
+  "testCategory": "type-specific",
+  "comparisonConfig": {
+    "strategy": "structural",
+    "ignoreFields": ["captureDate", "actualTitleContent"],
+    "normalizations": ["strip-timestamps", "normalize-whitespace"],
+    "tolerance": {}
+  },
+  "coverage": {
+    "behaviors": ["BHV-102 Book Titles Data Extraction"],
+    "invariants": ["INV-001: Row cell count equals column count"],
+    "edgeCases": ["EC-004: Missing book title"],
+    "domainConstraints": ["DC-004: Book Titles always start at book beginning"]
+  },
+  "pt10Notes": {
+    "stylesheetUsage": "Use ScrStylesheet to identify scTitle text type markers",
+    "bookStartBehavior": "Always start extraction at book beginning regardless of range"
+  }
+}

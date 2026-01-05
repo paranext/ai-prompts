@@ -1,0 +1,29 @@
+{
+  "scenarioId": "TS-061",
+  "capturedFrom": "PT9 behavior specification",
+  "captureDate": "2025-01-04",
+  "description": "Quotation Marks checklist compares quote counts between projects",
+  "structure": {
+    "columnCount": 3,
+    "columnHeaders": ["Reference", "TargetProject", "SourceText"],
+    "rowCountVariable": "Depends on quote count differences"
+  },
+  "expectedBehavior": {
+    "quoteComparison": "Compares quote counts, not quote text",
+    "quoteSettings": "Uses project's QuotationMarkInfo for quote characters",
+    "filtering": "Verses with no quotes in any project are excluded",
+    "nestedQuotes": "Supports inner and inner-inner quote levels"
+  },
+  "metadata": {
+    "hiddenRows": 0,
+    "maxRowsReached": false,
+    "windowTitle": "Quotation Differences for TargetProject GEN 1:1-50:26"
+  },
+  "verificationNotes": [
+    "Requires quote settings to be complete (VAL-003)",
+    "Comparison is by count, not by matching text",
+    "Verses without any quotes are excluded (EC-006)",
+    "Different quote characters per project handled",
+    "Continuer marks counted separately"
+  ]
+}

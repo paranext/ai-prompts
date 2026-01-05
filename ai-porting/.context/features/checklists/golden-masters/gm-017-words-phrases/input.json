@@ -1,0 +1,24 @@
+{
+  "scenarioId": "TS-066",
+  "checklistType": "WordsPhrases",
+  "description": "Words/Phrases checklist with search strings and highlighting",
+  "projects": [
+    {
+      "id": "TestProject",
+      "role": "primary",
+      "versification": "English"
+    }
+  ],
+  "verseRange": {
+    "first": "GEN 1:1",
+    "last": "GEN 50:26"
+  },
+  "settings": {
+    "searchStrings": "God\nLord",
+    "morphologyMatching": false
+  },
+  "preconditions": [
+    "Project TestProject exists in ScrTextCollection",
+    "Project has content containing 'God' and 'Lord'"
+  ]
+}

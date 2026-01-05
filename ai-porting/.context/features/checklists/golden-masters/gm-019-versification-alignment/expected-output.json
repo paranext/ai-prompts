@@ -1,0 +1,34 @@
+{
+  "scenarioId": "TS-071",
+  "capturedFrom": "PT9 behavior specification",
+  "captureDate": "2025-01-04",
+  "description": "Versification alignment normalizes references to primary project's versification",
+  "structure": {
+    "columnCount": 3,
+    "columnHeaders": ["Reference", "TargetProject", "SourceText"],
+    "rowCountVariable": "Depends on verse mapping"
+  },
+  "expectedBehavior": {
+    "referenceNormalization": "All references shown in primary project's versification",
+    "verseMapping": "Uses VerseRef and ScrVers for mapping",
+    "cellAlignment": "CLRowsBuilder aligns cells across different versifications",
+    "psalmHandling": "Psalm verse numbers may differ between versifications"
+  },
+  "sampleAlignment": {
+    "description": "Psalm 3 has different verse numbering in some versifications",
+    "primaryReference": "PSA 3:1",
+    "comparativeActualVerse": "[May be PSA 3:1 or different verse number in source versification]"
+  },
+  "metadata": {
+    "hiddenRows": 0,
+    "maxRowsReached": false,
+    "windowTitle": "Verses for TargetProject PSA 1:1-10:18"
+  },
+  "verificationNotes": [
+    "Critical invariant INV-004: Versification consistency",
+    "Reference column uses primary project versification",
+    "Verse content from comparative mapped to primary references",
+    "Empty cells for verses that don't map",
+    "Psalms are good test case due to superscription differences"
+  ]
+}

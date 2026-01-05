@@ -1,0 +1,32 @@
+{
+  "scenarioId": "gm-002",
+  "name": "Verses Checklist - With Section Headings",
+  "scenarioIds": ["TS-039"],
+  "behaviorIds": ["BHV-100", "BHV-013"],
+  "invariantIds": ["INV-001"],
+  "createdDate": "2025-01-04",
+  "priority": "high",
+  "riskLevel": "medium",
+  "checklistType": "Verses",
+  "testCategory": "settings-variation",
+  "comparisonConfig": {
+    "strategy": "structural",
+    "ignoreFields": ["captureDate", "actualVerseContent"],
+    "normalizations": ["strip-timestamps", "normalize-whitespace"],
+    "tolerance": {
+      "rowCountVariance": 3
+    }
+  },
+  "coverage": {
+    "behaviors": [
+      "BHV-100 Verses Data Extraction with settings",
+      "BHV-013 Configure Settings (Verses type)"
+    ],
+    "settings": ["showSectionHeadings=true"],
+    "edgeCases": []
+  },
+  "pt10Notes": {
+    "settingsStorage": "Settings should be persisted per-project via memento system",
+    "contentMerging": "Section heading text is merged into verse cell content"
+  }
+}

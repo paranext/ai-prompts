@@ -1,0 +1,54 @@
+{
+  "scenarioId": "TS-044",
+  "capturedFrom": "PT9 behavior specification",
+  "captureDate": "2025-01-04",
+  "description": "Book titles checklist shows title content for each book in the range",
+  "structure": {
+    "columnCount": 2,
+    "columnHeaders": ["Reference", "TestProject"],
+    "rowCount": 2
+  },
+  "expectedBehavior": {
+    "markerDetection": "Only paragraph markers with scTitle text type are extracted",
+    "referenceAssignment": "Reference is always start of book (e.g., GEN 1:1, EXO 1:1)",
+    "titleContent": "Full text content of all title paragraphs for the book",
+    "missingTitle": "If no title markers present, shows 'No Book Title Present'"
+  },
+  "sampleRows": [
+    {
+      "reference": "GEN 1:1",
+      "cells": [
+        {
+          "projectId": "TestProject",
+          "contentType": "bookTitle",
+          "hasContent": true,
+          "description": "Genesis book title (e.g., 'Genesis')"
+        }
+      ]
+    },
+    {
+      "reference": "EXO 1:1",
+      "cells": [
+        {
+          "projectId": "TestProject",
+          "contentType": "bookTitle",
+          "hasContent": true,
+          "description": "Exodus book title (e.g., 'Exodus')"
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "totalRows": 2,
+    "hiddenRows": 0,
+    "maxRowsReached": false,
+    "windowTitle": "Book Titles for TestProject GEN 1:1-EXO 40:38"
+  },
+  "verificationNotes": [
+    "One row per book in the selected range",
+    "Reference always starts at beginning of book (not start of range)",
+    "All title markers (\\mt, \\mt1, \\mt2, etc.) combined into single cell",
+    "Missing titles show explicit 'No Book Title Present' message",
+    "Range starting mid-book still shows title for that book"
+  ]
+}

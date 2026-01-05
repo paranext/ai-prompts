@@ -1,0 +1,22 @@
+{
+  "scenarioId": "TS-044",
+  "checklistType": "BookTitles",
+  "description": "Book titles checklist extracting title paragraphs for Genesis and Exodus",
+  "projects": [
+    {
+      "id": "TestProject",
+      "role": "primary",
+      "versification": "English"
+    }
+  ],
+  "verseRange": {
+    "first": "GEN 1:1",
+    "last": "EXO 40:38"
+  },
+  "settings": {},
+  "preconditions": [
+    "Project TestProject exists in ScrTextCollection",
+    "Project has book title markers (\\mt, \\mt1, \\mt2) for both books",
+    "Project has content for Genesis and Exodus"
+  ]
+}

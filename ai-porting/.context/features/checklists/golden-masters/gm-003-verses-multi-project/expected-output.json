@@ -1,0 +1,49 @@
+{
+  "scenarioId": "TS-008",
+  "capturedFrom": "PT9 behavior specification",
+  "captureDate": "2025-01-04",
+  "description": "Multi-project comparison shows aligned columns for each project",
+  "structure": {
+    "columnCount": 4,
+    "columnHeaders": ["Reference", "TargetProject", "SourceText1", "SourceText2"],
+    "rowCount": 10
+  },
+  "rowStructure": {
+    "description": "Each row has exactly N cells where N = number of projects",
+    "cellCount": 3,
+    "alignment": "Cells are aligned by verse reference across columns"
+  },
+  "sampleRows": [
+    {
+      "reference": "GEN 1:1",
+      "referenceLink": "goto:GEN 1:1",
+      "cells": [
+        {"projectId": "TargetProject", "hasContent": true},
+        {"projectId": "SourceText1", "hasContent": true},
+        {"projectId": "SourceText2", "hasContent": true}
+      ]
+    },
+    {
+      "reference": "GEN 1:5",
+      "referenceLink": "goto:GEN 1:5",
+      "cells": [
+        {"projectId": "TargetProject", "hasContent": true},
+        {"projectId": "SourceText1", "hasContent": true},
+        {"projectId": "SourceText2", "hasContent": true}
+      ]
+    }
+  ],
+  "metadata": {
+    "totalRows": 10,
+    "hiddenRows": 0,
+    "maxRowsReached": false,
+    "windowTitle": "Verses for TargetProject GEN 1:1-10"
+  },
+  "verificationNotes": [
+    "All 10 verses should appear (GEN 1:1 through GEN 1:10)",
+    "Each row has exactly 3 cells (one per project)",
+    "Columns appear in order: primary project, then comparative texts in selection order",
+    "Reference column shows reference for primary project versification",
+    "All cells should align by verse reference"
+  ]
+}

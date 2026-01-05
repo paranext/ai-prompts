@@ -1,0 +1,22 @@
+{
+  "scenarioId": "TS-046",
+  "checklistType": "Footnotes",
+  "description": "Footnotes checklist extracting footnote content by verse",
+  "projects": [
+    {
+      "id": "TestProject",
+      "role": "primary",
+      "versification": "English"
+    }
+  ],
+  "verseRange": {
+    "first": "MAT 1:1",
+    "last": "MAT 5:48"
+  },
+  "settings": {},
+  "preconditions": [
+    "Project TestProject exists in ScrTextCollection",
+    "Project has footnotes (\\f markers) in Matthew 1-5",
+    "Project may have cross-references (\\x markers) which should NOT appear"
+  ]
+}

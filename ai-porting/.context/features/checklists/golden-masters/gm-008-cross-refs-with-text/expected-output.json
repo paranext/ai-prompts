@@ -1,0 +1,40 @@
+{
+  "scenarioId": "TS-027",
+  "capturedFrom": "PT9 behavior specification",
+  "captureDate": "2025-01-04",
+  "description": "Cross references with showReferencedVerseText includes verse content",
+  "structure": {
+    "columnCount": 2,
+    "columnHeaders": ["Reference", "TestProject"],
+    "rowCountVariable": "Depends on number of cross-references"
+  },
+  "expectedBehavior": {
+    "verseTextInclusion": "Referenced verse text is included in cell content",
+    "formatting": "Reference followed by verse text content",
+    "multipleReferences": "Each reference shows its corresponding verse text"
+  },
+  "sampleRow": {
+    "reference": "MAT 1:1",
+    "cells": [
+      {
+        "projectId": "TestProject",
+        "contentStructure": {
+          "referenceText": "GEN 22:18",
+          "referencedVerseContent": "[Content of GEN 22:18]"
+        },
+        "description": "Cross-reference with the actual verse text displayed"
+      }
+    ]
+  },
+  "metadata": {
+    "hiddenRows": 0,
+    "maxRowsReached": false,
+    "windowTitle": "References for TestProject MAT 1:1-2:23"
+  },
+  "verificationNotes": [
+    "Toggle showReferencedVerseText via Show Verse Text toolbar button",
+    "Each reference displays with its verse content",
+    "Verse text is fetched from the same project",
+    "Invalid references still show error but no verse text"
+  ]
+}

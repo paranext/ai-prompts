@@ -1,0 +1,29 @@
+{
+  "scenarioId": "TS-073",
+  "checklistType": "Verses",
+  "description": "Verse bridge alignment when one project has bridged verses and another has separate verses",
+  "projects": [
+    {
+      "id": "BridgedProject",
+      "role": "primary",
+      "versification": "English",
+      "hasVerseBridges": true
+    },
+    {
+      "id": "NonBridgedProject",
+      "role": "comparative",
+      "versification": "English",
+      "hasVerseBridges": false
+    }
+  ],
+  "verseRange": {
+    "first": "GEN 1:1",
+    "last": "GEN 5:32"
+  },
+  "settings": {},
+  "preconditions": [
+    "Primary project has verse bridges (e.g., v.1-2 combined)",
+    "Comparative project has those verses separately",
+    "Both projects have content in Genesis 1-5"
+  ]
+}

@@ -1,0 +1,382 @@
+{
+  "id": "spec-005",
+  "name": "Versioning and GUID Assignment",
+  "description": "Specifications for Mercurial repository initialization and GUID calculation. Tests repository creation, GUID derivation from commit hash, and resource project restrictions.",
+  "targetApis": ["VersioningManager", "VersionedText", "Hg"],
+  "relatedBehaviors": ["BHV-008", "BHV-009"],
+  "relatedInvariants": ["INV-002", "INV-005"],
+  "specifications": [
+    {
+      "id": "spec-005-01",
+      "name": "Initialize Mercurial repository",
+      "scenarioRefs": ["TS-018"],
+      "paratextDataApi": {
+        "class": "VersionedText",
+        "method": "constructor",
+        "signature": "VersionedText(ScrText scrText)",
+        "namespace": "Paratext.Data.Repository"
+      },
+      "preconditions": [
+        "Project directory exists",
+        "Project is not a resource project",
+        "Mercurial is available on system"
+      ],
+      "inputs": {
+        "scrText": "ScrText with directory set, not a resource"
+      },
+      "expectedBehavior": [
+        ".hg directory created in project folder",
+        "Hg.Default.Init called",
+        "Initial settings saved"
+      ],
+      "assertions": [
+        {
+          "type": "directory-exists",
+          "target": "{projectDir}/.hg",
+          "description": ".hg directory exists"
+        },
+        {
+          "type": "isTrue",
+          "target": "Hg.Default.IsValidRepository(projectDir)",
+          "description": "Valid Mercurial repository"
+        }
+      ],
+      "invariants": [],
+      "priority": "critical"
+    },
+    {
+      "id": "spec-005-02",
+      "name": "Resource project cannot have versioning",
+      "scenarioRefs": ["TS-019"],
+      "paratextDataApi": {
+        "class": "VersionedText",
+        "method": "constructor",
+        "namespace": "Paratext.Data.Repository"
+      },
+      "preconditions": [
+        "ScrText is a resource project"
+      ],
+      "inputs": {
+        "scrText": "Resource project ScrText"
+      },
+      "expectedBehavior": [
+        "ArgumentException thrown",
+        "Message is 'Versioning a Resource is forbidden.'"
+      ],
+      "assertions": [
+        {
+          "type": "throws",
+          "target": "new VersionedText(resourceScrText)",
+          "expected": "ArgumentException",
+          "description": "Exception thrown for resource"
+        },
+        {
+          "type": "equals",
+          "target": "exception.Message",
+          "expected": "Versioning a Resource is forbidden.",
+          "description": "Correct error message"
+        }
+      ],
+      "invariants": ["INV-005"],
+      "priority": "medium"
+    },
+    {
+      "id": "spec-005-03",
+      "name": "Calculate GUID from first commit",
+      "scenarioRefs": ["TS-020"],
+      "paratextDataApi": {
+        "class": "VersionedText",
+        "method": "CalculateGuid",
+        "signature": "HexId CalculateGuid()",
+        "namespace": "Paratext.Data.Repository"
+      },
+      "preconditions": [
+        "Mercurial repository initialized",
+        "At least one commit exists"
+      ],
+      "inputs": {
+        "scrText": "ScrText with repository"
+      },
+      "expectedBehavior": [
+        "GUID derived from first (root) commit hash",
+        "Returns valid HexId"
+      ],
+      "assertions": [
+        {
+          "type": "not-null",
+          "target": "versionedText.CalculateGuid()",
+          "description": "GUID calculated"
+        },
+        {
+          "type": "matches",
+          "target": "guid.ToString()",
+          "expected": "^[a-f0-9]{40}$",
+          "description": "Valid 40-char hex format"
+        }
+      ],
+      "invariants": ["INV-002"],
+      "priority": "critical"
+    },
+    {
+      "id": "spec-005-04",
+      "name": "EnsureHasGuid creates commit if needed",
+      "scenarioRefs": ["TS-020"],
+      "paratextDataApi": {
+        "class": "VersioningManager",
+        "method": "EnsureHasGuid",
+        "signature": "void EnsureHasGuid(ScrText scrText)",
+        "namespace": "Paratext.Data.Repository"
+      },
+      "preconditions": [
+        "Mercurial repository initialized",
+        "No commits exist yet"
+      ],
+      "inputs": {
+        "scrText": "ScrText with empty repository"
+      },
+      "expectedBehavior": [
+        "Initial commit created if no revisions exist",
+        "GUID calculated from new commit",
+        "GUID stored in scrText.Settings.Guid",
+        "Settings saved to disk"
+      ],
+      "assertions": [
+        {
+          "type": "not-null",
+          "target": "scrText.Settings.Guid",
+          "description": "GUID assigned"
+        },
+        {
+          "type": "greaterThan",
+          "target": "versionedText.RevisionCount",
+          "expected": 0,
+          "description": "At least one commit exists"
+        }
+      ],
+      "invariants": ["INV-002"],
+      "priority": "critical"
+    },
+    {
+      "id": "spec-005-05",
+      "name": "GUID is unique across projects",
+      "scenarioRefs": ["TS-020"],
+      "paratextDataApi": {
+        "class": "VersioningManager",
+        "method": "EnsureHasGuid",
+        "namespace": "Paratext.Data.Repository"
+      },
+      "preconditions": [
+        "Multiple projects created"
+      ],
+      "inputs": {
+        "projectCount": 100
+      },
+      "expectedBehavior": [
+        "Each project has unique GUID",
+        "No GUID collisions"
+      ],
+      "assertions": [
+        {
+          "type": "property",
+          "target": "allGuids.Distinct().Count()",
+          "operator": "equals",
+          "expected": "allGuids.Count()",
+          "description": "All GUIDs unique"
+        }
+      ],
+      "invariants": ["INV-002"],
+      "priority": "critical"
+    },
+    {
+      "id": "spec-005-06",
+      "name": "VersioningManager.Get returns VersionedText",
+      "scenarioRefs": ["TS-018"],
+      "paratextDataApi": {
+        "class": "VersioningManager",
+        "method": "Get",
+        "signature": "VersionedText Get(ScrText scrText)",
+        "namespace": "Paratext.Data.Repository"
+      },
+      "preconditions": [
+        "Project directory exists"
+      ],
+      "inputs": {
+        "scrText": "ScrText with valid directory"
+      },
+      "expectedBehavior": [
+        "Returns VersionedText instance",
+        "Creates repository if not exists"
+      ],
+      "assertions": [
+        {
+          "type": "not-null",
+          "target": "VersioningManager.Get(scrText)",
+          "description": "VersionedText returned"
+        }
+      ],
+      "invariants": [],
+      "priority": "high"
+    },
+    {
+      "id": "spec-005-07",
+      "name": "GUID format is HexId (40-char hex)",
+      "scenarioRefs": ["TS-020"],
+      "paratextDataApi": {
+        "class": "HexId",
+        "method": "constructor and ToString",
+        "namespace": "Paratext.Data"
+      },
+      "preconditions": [
+        "GUID assigned"
+      ],
+      "inputs": {},
+      "expectedBehavior": [
+        "GUID is 40-character hexadecimal string",
+        "Lowercase a-f, digits 0-9"
+      ],
+      "assertions": [
+        {
+          "type": "property",
+          "target": "guid.ToString().Length",
+          "operator": "equals",
+          "expected": 40,
+          "description": "GUID is 40 characters"
+        },
+        {
+          "type": "matches",
+          "target": "guid.ToString()",
+          "expected": "^[a-f0-9]+$",
+          "description": "Only lowercase hex characters"
+        }
+      ],
+      "invariants": ["INV-002"],
+      "priority": "high"
+    },
+    {
+      "id": "spec-005-08",
+      "name": "Cancel removes VersionedText",
+      "scenarioRefs": ["TS-031"],
+      "paratextDataApi": {
+        "class": "VersioningManager",
+        "method": "RemoveVersionedText",
+        "signature": "void RemoveVersionedText(ScrText scrText)",
+        "namespace": "Paratext.Data.Repository"
+      },
+      "preconditions": [
+        "Project creation started",
+        "VersionedText created"
+      ],
+      "inputs": {
+        "scrText": "ScrText being cancelled"
+      },
+      "expectedBehavior": [
+        "VersionedText removed from manager",
+        "Repository can be deleted"
+      ],
+      "assertions": [
+        {
+          "type": "not-throws",
+          "target": "VersioningManager.RemoveVersionedText(scrText)",
+          "description": "Removal succeeds"
+        }
+      ],
+      "invariants": [],
+      "priority": "high"
+    },
+    {
+      "id": "spec-005-09",
+      "name": "GUID not changed on re-save",
+      "scenarioRefs": ["TS-020"],
+      "paratextDataApi": {
+        "class": "VersioningManager",
+        "method": "EnsureHasGuid",
+        "namespace": "Paratext.Data.Repository"
+      },
+      "preconditions": [
+        "Project already has GUID"
+      ],
+      "inputs": {
+        "scrText": "ScrText with existing GUID"
+      },
+      "expectedBehavior": [
+        "GUID remains unchanged",
+        "No new commit created"
+      ],
+      "assertions": [
+        {
+          "type": "equals",
+          "target": "scrText.Settings.Guid",
+          "expected": "{originalGuid}",
+          "description": "GUID unchanged"
+        }
+      ],
+      "invariants": ["INV-002"],
+      "priority": "high"
+    }
+  ],
+  "propertyTests": [
+    {
+      "id": "prop-005-01",
+      "name": "GUIDs are globally unique",
+      "invariantRef": "INV-002",
+      "property": "Every project GUID is unique across all projects",
+      "generator": {
+        "type": "random-project-creation",
+        "constraints": {
+          "uniqueNames": true
+        }
+      },
+      "iterations": 1000,
+      "assertions": [
+        "No two projects have identical GUIDs",
+        "GUID format is valid HexId"
+      ],
+      "priority": "critical"
+    },
+    {
+      "id": "prop-005-02",
+      "name": "Resource projects cannot have versioning",
+      "invariantRef": "INV-005",
+      "property": "VersionedText constructor throws for resource projects",
+      "generator": {
+        "type": "resource-project",
+        "constraints": {}
+      },
+      "iterations": 100,
+      "assertions": [
+        "ArgumentException thrown with message 'Versioning a Resource is forbidden.'"
+      ],
+      "priority": "medium"
+    },
+    {
+      "id": "prop-005-03",
+      "name": "GUID is deterministic from commit hash",
+      "property": "Same first commit always produces same GUID",
+      "generator": {
+        "type": "repository-with-commits",
+        "constraints": {
+          "sameContent": true
+        }
+      },
+      "iterations": 50,
+      "assertions": [
+        "CalculateGuid returns same value for same repository state"
+      ],
+      "priority": "medium"
+    },
+    {
+      "id": "prop-005-04",
+      "name": "EnsureHasGuid is idempotent",
+      "property": "Calling EnsureHasGuid multiple times has same result as calling once",
+      "generator": {
+        "type": "project-creation-sequence",
+        "constraints": {}
+      },
+      "iterations": 100,
+      "assertions": [
+        "GUID is same after multiple EnsureHasGuid calls"
+      ],
+      "priority": "high"
+    }
+  ]
+}

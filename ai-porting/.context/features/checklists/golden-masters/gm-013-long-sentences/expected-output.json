@@ -1,0 +1,32 @@
+{
+  "scenarioId": "TS-058",
+  "capturedFrom": "PT9 behavior specification",
+  "captureDate": "2025-01-04",
+  "description": "Long Sentences shows top 100 longest sentences sorted by length",
+  "structure": {
+    "columnCount": 2,
+    "columnHeaders": ["Reference", "TestProject"],
+    "maxRows": 100
+  },
+  "expectedBehavior": {
+    "sentenceBoundary": "Uses CharacterCategorizer.IsSentenceFinalPunctuation",
+    "scoreCalculation": "Score = sentence length in characters",
+    "sorting": "Sorted by length descending (longest first)",
+    "maxResults": "HighScoresOnly = true limits to 100",
+    "cellContent": "Each sentence gets its own cell (no verse merging)"
+  },
+  "metadata": {
+    "totalRows": 100,
+    "hiddenRows": 0,
+    "maxRowsReached": false,
+    "windowTitle": "Long Sentences for TestProject GEN 1:1-50:26",
+    "sortOrder": "length descending"
+  },
+  "verificationNotes": [
+    "Sentence boundaries determined by CharacterCategorizer",
+    "Language-specific punctuation handling (. ! ? etc.)",
+    "Each sentence is a separate row (not grouped by verse)",
+    "Non-letter, non-whitespace chars after punctuation stay with sentence",
+    "Results limited to 100"
+  ]
+}

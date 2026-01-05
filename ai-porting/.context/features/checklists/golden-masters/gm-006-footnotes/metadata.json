@@ -1,0 +1,26 @@
+{
+  "scenarioId": "gm-006",
+  "name": "Footnotes Checklist",
+  "scenarioIds": ["TS-046"],
+  "behaviorIds": ["BHV-103"],
+  "invariantIds": ["INV-001"],
+  "createdDate": "2025-01-04",
+  "priority": "high",
+  "riskLevel": "low",
+  "checklistType": "Footnotes",
+  "testCategory": "type-specific",
+  "comparisonConfig": {
+    "strategy": "structural",
+    "ignoreFields": ["captureDate", "actualFootnoteContent"],
+    "normalizations": ["strip-timestamps", "normalize-whitespace"],
+    "tolerance": {}
+  },
+  "coverage": {
+    "behaviors": ["BHV-103 Footnotes Data Extraction"],
+    "invariants": ["INV-001: Row cell count equals column count"]
+  },
+  "pt10Notes": {
+    "markerFilter": "Filter for \\f markers only, exclude \\x",
+    "nestedContent": "Preserve nested markers (\\ft, \\fk, \\fq, etc.)"
+  }
+}

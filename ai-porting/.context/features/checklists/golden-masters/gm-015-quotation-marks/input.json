@@ -1,0 +1,27 @@
+{
+  "scenarioId": "TS-061",
+  "checklistType": "QuotationDifferences",
+  "description": "Verses with different quotation mark counts between projects",
+  "projects": [
+    {
+      "id": "TargetProject",
+      "role": "primary",
+      "versification": "English"
+    },
+    {
+      "id": "SourceText",
+      "role": "comparative",
+      "versification": "English"
+    }
+  ],
+  "verseRange": {
+    "first": "GEN 1:1",
+    "last": "GEN 50:26"
+  },
+  "settings": {},
+  "preconditions": [
+    "Both projects exist in ScrTextCollection",
+    "Quote settings have been completed for both projects (VAL-003)",
+    "Projects have different quote mark usage"
+  ]
+}

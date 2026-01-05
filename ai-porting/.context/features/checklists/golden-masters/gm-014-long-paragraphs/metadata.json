@@ -1,0 +1,26 @@
+{
+  "scenarioId": "gm-014",
+  "name": "Long Paragraphs Checklist",
+  "scenarioIds": ["TS-060"],
+  "behaviorIds": ["BHV-108"],
+  "invariantIds": ["INV-001", "POST-002"],
+  "createdDate": "2025-01-04",
+  "priority": "high",
+  "riskLevel": "low",
+  "checklistType": "LongParagraphs",
+  "testCategory": "type-specific",
+  "comparisonConfig": {
+    "strategy": "structural",
+    "ignoreFields": ["captureDate", "actualParagraphContent"],
+    "normalizations": ["strip-timestamps"],
+    "tolerance": {}
+  },
+  "coverage": {
+    "behaviors": ["BHV-108 Long Paragraphs Data Extraction"],
+    "invariants": ["INV-001", "POST-002"]
+  },
+  "pt10Notes": {
+    "paragraphMarkers": "Non-heading paragraph markers from stylesheet",
+    "excludeHeadings": "Section headings (scSection) not included"
+  }
+}

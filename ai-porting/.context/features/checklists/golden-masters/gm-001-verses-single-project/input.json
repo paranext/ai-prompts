@@ -1,0 +1,25 @@
+{
+  "scenarioId": "TS-038",
+  "checklistType": "Verses",
+  "description": "Standard verses checklist output for a single project, Genesis chapter 1",
+  "projects": [
+    {
+      "id": "TestProject",
+      "role": "primary",
+      "versification": "English"
+    }
+  ],
+  "verseRange": {
+    "first": "GEN 1:1",
+    "last": "GEN 1:31"
+  },
+  "settings": {
+    "showSectionHeadings": false,
+    "showFootnotes": false
+  },
+  "preconditions": [
+    "Project TestProject exists in ScrTextCollection",
+    "Project has complete content for Genesis 1",
+    "Project uses English versification"
+  ]
+}

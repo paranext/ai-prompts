@@ -1,0 +1,30 @@
+{
+  "scenarioId": "TS-057",
+  "capturedFrom": "PT9 behavior specification",
+  "captureDate": "2025-01-04",
+  "description": "Relatively Short Verses shows top 100 verses sorted by inverse length ratio",
+  "structure": {
+    "columnCount": 3,
+    "columnHeaders": ["Reference", "TargetProject", "SourceText"],
+    "maxRows": 100
+  },
+  "expectedBehavior": {
+    "scoreCalculation": "Score = source.length / target.length (inverse ratio)",
+    "sorting": "Sorted by score descending (relatively shortest first)",
+    "maxResults": "HighScoresOnly = true limits to 100 results",
+    "missingVerse": "Missing verse in target = infinity score"
+  },
+  "metadata": {
+    "totalRows": 100,
+    "hiddenRows": 0,
+    "maxRowsReached": false,
+    "windowTitle": "Relatively Short Verses for TargetProject GEN 1:1-DEU 34:12",
+    "sortOrder": "score descending"
+  },
+  "verificationNotes": [
+    "Inverse of Relatively Long Verses",
+    "Score = source / target (target is short relative to source)",
+    "Missing verses in target appear first",
+    "Results limited to 100"
+  ]
+}

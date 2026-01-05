@@ -1,0 +1,33 @@
+{
+  "scenarioId": "TS-053",
+  "capturedFrom": "PT9 behavior specification",
+  "captureDate": "2025-01-04",
+  "description": "Equivalent markers are treated as matching for comparison",
+  "structure": {
+    "columnCount": 3,
+    "columnHeaders": ["Reference", "TargetProject", "SourceText"],
+    "rowCountVariable": "One row per paragraph"
+  },
+  "expectedBehavior": {
+    "equivalentMarkers": "p/m means \\p and \\m are considered matching",
+    "matchingLogic": "When comparing, p=m and s=s1",
+    "hideMatchesEffect": "Equivalent markers match when Hide Matches is enabled"
+  },
+  "sampleComparison": {
+    "targetMarker": "\\p",
+    "sourceMarker": "\\m",
+    "areEquivalent": true,
+    "description": "With p/m equivalence, these are considered matching"
+  },
+  "metadata": {
+    "hiddenRows": 0,
+    "maxRowsReached": false,
+    "windowTitle": "Markers for TargetProject GEN 1:1-3:24"
+  },
+  "verificationNotes": [
+    "Equivalent markers setting is comma-separated list of pairs",
+    "Each pair is slash-separated (p/m means p and m are equivalent)",
+    "When Hide Matches is enabled, equivalent markers are treated as matching",
+    "Marker display still shows actual marker, not equivalence group"
+  ]
+}

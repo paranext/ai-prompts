@@ -1,0 +1,780 @@
+{
+  "id": "spec-002",
+  "name": "Name Validation",
+  "description": "Specifications for project name validation rules. Tests short name constraints (length, characters, uniqueness) and full name requirements.",
+  "targetApis": ["ParatextUtils.ValidateShortName", "ProjectNameForm.FormTextNameAbbrev", "ProjectPropertiesUtils.NextUnusedProjectName"],
+  "relatedBehaviors": ["BHV-004", "BHV-005", "BHV-006", "BHV-020"],
+  "relatedInvariants": ["INV-001"],
+  "specifications": [
+    {
+      "id": "spec-002-01",
+      "name": "Validate short name - minimum length (3 chars)",
+      "scenarioRefs": ["TS-005", "TS-061"],
+      "paratextDataApi": {
+        "class": "ParatextUtils",
+        "method": "ValidateShortName",
+        "signature": "string ValidateShortName(string shortName, bool newProject, string originalName)",
+        "namespace": "Paratext.Base"
+      },
+      "preconditions": [],
+      "inputs": {
+        "shortName": "AB",
+        "newProject": true,
+        "originalName": null
+      },
+      "expectedBehavior": [
+        "Validation fails with length error"
+      ],
+      "assertions": [
+        {
+          "type": "not-null",
+          "target": "ValidateShortName('AB', true, null)",
+          "description": "Error message returned for 2-char name"
+        },
+        {
+          "type": "contains",
+          "target": "errorMessage",
+          "expected": "less than 3",
+          "description": "Error mentions minimum length"
+        }
+      ],
+      "invariants": [],
+      "priority": "high"
+    },
+    {
+      "id": "spec-002-02",
+      "name": "Validate short name - exactly 3 characters valid",
+      "scenarioRefs": ["TS-061"],
+      "paratextDataApi": {
+        "class": "ParatextUtils",
+        "method": "ValidateShortName",
+        "namespace": "Paratext.Base"
+      },
+      "preconditions": [
+        "No project named 'ABC' exists"
+      ],
+      "inputs": {
+        "shortName": "ABC",
+        "newProject": true,
+        "originalName": null
+      },
+      "expectedBehavior": [
+        "Validation passes (null returned)"
+      ],
+      "assertions": [
+        {
+          "type": "isNull",
+          "target": "ValidateShortName('ABC', true, null)",
+          "description": "No error for valid 3-char name"
+        }
+      ],
+      "invariants": [],
+      "priority": "medium"
+    },
+    {
+      "id": "spec-002-03",
+      "name": "Validate short name - maximum length (8 chars)",
+      "scenarioRefs": ["TS-006", "TS-062"],
+      "paratextDataApi": {
+        "class": "ParatextUtils",
+        "method": "ValidateShortName",
+        "namespace": "Paratext.Base"
+      },
+      "preconditions": [],
+      "inputs": {
+        "shortName": "ABCDEFGHI",
+        "newProject": true,
+        "originalName": null
+      },
+      "expectedBehavior": [
+        "Validation fails with length error"
+      ],
+      "assertions": [
+        {
+          "type": "not-null",
+          "target": "ValidateShortName('ABCDEFGHI', true, null)",
+          "description": "Error message returned for 9-char name"
+        },
+        {
+          "type": "contains",
+          "target": "errorMessage",
+          "expected": "more than 8",
+          "description": "Error mentions maximum length"
+        }
+      ],
+      "invariants": [],
+      "priority": "high"
+    },
+    {
+      "id": "spec-002-04",
+      "name": "Validate short name - exactly 8 characters valid",
+      "scenarioRefs": ["TS-062"],
+      "paratextDataApi": {
+        "class": "ParatextUtils",
+        "method": "ValidateShortName",
+        "namespace": "Paratext.Base"
+      },
+      "preconditions": [
+        "No project named 'ABCDEFGH' exists"
+      ],
+      "inputs": {
+        "shortName": "ABCDEFGH",
+        "newProject": true,
+        "originalName": null
+      },
+      "expectedBehavior": [
+        "Validation passes (null returned)"
+      ],
+      "assertions": [
+        {
+          "type": "isNull",
+          "target": "ValidateShortName('ABCDEFGH', true, null)",
+          "description": "No error for valid 8-char name"
+        }
+      ],
+      "invariants": [],
+      "priority": "medium"
+    },
+    {
+      "id": "spec-002-05",
+      "name": "Validate short name - valid characters accepted",
+      "scenarioRefs": ["TS-007"],
+      "paratextDataApi": {
+        "class": "ParatextUtils",
+        "method": "ValidateShortName",
+        "namespace": "Paratext.Base"
+      },
+      "preconditions": [
+        "No project named 'Test_1' exists"
+      ],
+      "inputs": {
+        "shortName": "Test_1",
+        "newProject": true,
+        "originalName": null
+      },
+      "expectedBehavior": [
+        "Validation passes for A-Z, a-z, 0-9, _"
+      ],
+      "assertions": [
+        {
+          "type": "isNull",
+          "target": "ValidateShortName('Test_1', true, null)",
+          "description": "Alphanumeric + underscore is valid"
+        }
+      ],
+      "invariants": [],
+      "priority": "high"
+    },
+    {
+      "id": "spec-002-06",
+      "name": "Validate short name - invalid characters rejected",
+      "scenarioRefs": ["TS-008", "TS-063"],
+      "paratextDataApi": {
+        "class": "ParatextUtils",
+        "method": "ValidateShortName",
+        "namespace": "Paratext.Base"
+      },
+      "preconditions": [],
+      "inputs": {
+        "shortName": "Test-1",
+        "newProject": true,
+        "originalName": null
+      },
+      "expectedBehavior": [
+        "Validation fails for hyphen character"
+      ],
+      "assertions": [
+        {
+          "type": "not-null",
+          "target": "ValidateShortName('Test-1', true, null)",
+          "description": "Error for invalid character"
+        },
+        {
+          "type": "contains",
+          "target": "errorMessage",
+          "expected": "only contain letters A-Z",
+          "description": "Error describes valid characters"
+        }
+      ],
+      "invariants": [],
+      "priority": "high"
+    },
+    {
+      "id": "spec-002-07",
+      "name": "Validate short name - spaces rejected",
+      "scenarioRefs": ["TS-009"],
+      "paratextDataApi": {
+        "class": "ParatextUtils",
+        "method": "ValidateShortName",
+        "namespace": "Paratext.Base"
+      },
+      "preconditions": [],
+      "inputs": {
+        "shortName": "AB CD",
+        "newProject": true,
+        "originalName": null
+      },
+      "expectedBehavior": [
+        "Validation fails for space character"
+      ],
+      "assertions": [
+        {
+          "type": "not-null",
+          "target": "ValidateShortName('AB CD', true, null)",
+          "description": "Error for space in name"
+        },
+        {
+          "type": "contains",
+          "target": "errorMessage",
+          "expected": "contain spaces",
+          "description": "Error mentions spaces"
+        }
+      ],
+      "invariants": [],
+      "priority": "high"
+    },
+    {
+      "id": "spec-002-08",
+      "name": "Validate short name - reserved Windows filenames",
+      "scenarioRefs": ["TS-010", "TS-054", "TS-055", "TS-056"],
+      "paratextDataApi": {
+        "class": "ParatextUtils",
+        "method": "ValidateShortName",
+        "namespace": "Paratext.Base"
+      },
+      "preconditions": [],
+      "inputs": {
+        "reservedNames": ["CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"]
+      },
+      "expectedBehavior": [
+        "All reserved Windows filenames rejected"
+      ],
+      "assertions": [
+        {
+          "type": "not-null",
+          "target": "ValidateShortName('CON', true, null)",
+          "description": "CON rejected"
+        },
+        {
+          "type": "not-null",
+          "target": "ValidateShortName('PRN', true, null)",
+          "description": "PRN rejected"
+        },
+        {
+          "type": "not-null",
+          "target": "ValidateShortName('COM1', true, null)",
+          "description": "COM1 rejected"
+        },
+        {
+          "type": "not-null",
+          "target": "ValidateShortName('LPT1', true, null)",
+          "description": "LPT1 rejected"
+        },
+        {
+          "type": "contains",
+          "target": "errorMessage",
+          "expected": "reserved file name",
+          "description": "Error mentions reserved name"
+        }
+      ],
+      "invariants": [],
+      "priority": "medium"
+    },
+    {
+      "id": "spec-002-09",
+      "name": "Validate short name - case-insensitive duplicate detection",
+      "scenarioRefs": ["TS-011"],
+      "paratextDataApi": {
+        "class": "ParatextUtils",
+        "method": "ValidateShortName",
+        "namespace": "Paratext.Base"
+      },
+      "preconditions": [
+        "Project 'TestPrj' exists"
+      ],
+      "inputs": {
+        "shortName": "TESTPRJ",
+        "newProject": true,
+        "originalName": null
+      },
+      "expectedBehavior": [
+        "Validation fails due to case-insensitive duplicate"
+      ],
+      "assertions": [
+        {
+          "type": "not-null",
+          "target": "ValidateShortName('TESTPRJ', true, null)",
+          "description": "Error for case-insensitive duplicate"
+        },
+        {
+          "type": "contains",
+          "target": "errorMessage",
+          "expected": "same name, but a different case",
+          "description": "Error explains case collision"
+        }
+      ],
+      "invariants": ["INV-001"],
+      "priority": "high"
+    },
+    {
+      "id": "spec-002-10",
+      "name": "Validate short name - folder already exists",
+      "scenarioRefs": ["TS-012"],
+      "paratextDataApi": {
+        "class": "ParatextUtils",
+        "method": "ValidateShortName",
+        "namespace": "Paratext.Base"
+      },
+      "preconditions": [
+        "Folder 'OrphanDir' exists in projects directory",
+        "No project 'OrphanDir' in ScrTextCollection"
+      ],
+      "inputs": {
+        "shortName": "OrphanDir",
+        "newProject": true,
+        "originalName": null
+      },
+      "expectedBehavior": [
+        "Validation fails due to existing folder"
+      ],
+      "assertions": [
+        {
+          "type": "not-null",
+          "target": "ValidateShortName('OrphanDir', true, null)",
+          "description": "Error for existing folder"
+        },
+        {
+          "type": "contains",
+          "target": "errorMessage",
+          "expected": "folder exists",
+          "description": "Error mentions existing folder"
+        }
+      ],
+      "invariants": [],
+      "priority": "medium"
+    },
+    {
+      "id": "spec-002-11",
+      "name": "Validate short name - unicode characters rejected",
+      "scenarioRefs": ["TS-063"],
+      "paratextDataApi": {
+        "class": "ParatextUtils",
+        "method": "ValidateShortName",
+        "namespace": "Paratext.Base"
+      },
+      "preconditions": [],
+      "inputs": {
+        "shortName": "Project",
+        "newProject": true,
+        "originalName": null
+      },
+      "expectedBehavior": [
+        "Non-ASCII characters rejected"
+      ],
+      "assertions": [
+        {
+          "type": "not-null",
+          "target": "ValidateShortName('Project', true, null)",
+          "description": "Error for unicode character"
+        }
+      ],
+      "invariants": [],
+      "priority": "medium"
+    },
+    {
+      "id": "spec-002-12",
+      "name": "Generate short name from full name - basic abbreviation",
+      "scenarioRefs": ["TS-013"],
+      "paratextDataApi": {
+        "class": "ProjectNameForm",
+        "method": "FormTextNameAbbrev",
+        "signature": "string FormTextNameAbbrev(string fullName)",
+        "namespace": "Paratext.ToolsMenu"
+      },
+      "preconditions": [],
+      "inputs": {
+        "fullName": "New English Translation"
+      },
+      "expectedBehavior": [
+        "First letter of each word extracted",
+        "Result is 'NET'"
+      ],
+      "assertions": [
+        {
+          "type": "equals",
+          "target": "FormTextNameAbbrev('New English Translation')",
+          "expected": "NET",
+          "description": "Abbreviation from first letters"
+        }
+      ],
+      "invariants": [],
+      "priority": "medium"
+    },
+    {
+      "id": "spec-002-13",
+      "name": "Generate short name from full name - with digits",
+      "scenarioRefs": ["TS-014"],
+      "paratextDataApi": {
+        "class": "ProjectNameForm",
+        "method": "FormTextNameAbbrev",
+        "namespace": "Paratext.ToolsMenu"
+      },
+      "preconditions": [],
+      "inputs": {
+        "fullName": "Revised Standard Version 2020"
+      },
+      "expectedBehavior": [
+        "Letters extracted from words",
+        "Last 2 digits appended at end"
+      ],
+      "assertions": [
+        {
+          "type": "equals",
+          "target": "FormTextNameAbbrev('Revised Standard Version 2020')",
+          "expected": "RSV20",
+          "description": "Abbreviation with digits appended"
+        }
+      ],
+      "invariants": [],
+      "priority": "medium"
+    },
+    {
+      "id": "spec-002-14",
+      "name": "Generate short name - pad to minimum length",
+      "scenarioRefs": ["TS-015"],
+      "paratextDataApi": {
+        "class": "ProjectNameForm",
+        "method": "FormTextNameAbbrev",
+        "namespace": "Paratext.ToolsMenu"
+      },
+      "preconditions": [],
+      "inputs": {
+        "fullName": "A B"
+      },
+      "expectedBehavior": [
+        "Result padded to at least 3 characters",
+        "Uses last valid character for padding"
+      ],
+      "assertions": [
+        {
+          "type": "property",
+          "target": "FormTextNameAbbrev('A B').Length",
+          "operator": "greaterThanOrEqual",
+          "expected": 3,
+          "description": "Result is at least 3 characters"
+        }
+      ],
+      "invariants": [],
+      "priority": "medium"
+    },
+    {
+      "id": "spec-002-15",
+      "name": "Generate short name - truncate to maximum length",
+      "scenarioRefs": ["TS-016"],
+      "paratextDataApi": {
+        "class": "ProjectNameForm",
+        "method": "FormTextNameAbbrev",
+        "namespace": "Paratext.ToolsMenu"
+      },
+      "preconditions": [],
+      "inputs": {
+        "fullName": "Very Long Translation Name For Testing"
+      },
+      "expectedBehavior": [
+        "Result truncated to maximum 8 characters"
+      ],
+      "assertions": [
+        {
+          "type": "property",
+          "target": "FormTextNameAbbrev('Very Long Translation Name For Testing').Length",
+          "operator": "lessThanOrEqual",
+          "expected": 8,
+          "description": "Result is at most 8 characters"
+        }
+      ],
+      "invariants": [],
+      "priority": "medium"
+    },
+    {
+      "id": "spec-002-16",
+      "name": "Generate unique project name",
+      "scenarioRefs": ["TS-004"],
+      "paratextDataApi": {
+        "class": "ProjectPropertiesUtils",
+        "method": "NextUnusedProjectName",
+        "signature": "void NextUnusedProjectName(ref string shortName, ref string longName, bool forceNumbered)",
+        "namespace": "Paratext.ToolsMenu"
+      },
+      "preconditions": [
+        "Project 'ABC' exists",
+        "Project 'ABC1' does not exist"
+      ],
+      "inputs": {
+        "shortName": "ABC",
+        "longName": "ABC Translation",
+        "forceNumbered": false
+      },
+      "expectedBehavior": [
+        "Names modified to be unique",
+        "Numeric suffix appended"
+      ],
+      "assertions": [
+        {
+          "type": "equals",
+          "target": "shortName",
+          "expected": "ABC1",
+          "description": "Short name gets numeric suffix"
+        },
+        {
+          "type": "equals",
+          "target": "longName",
+          "expected": "ABC Translation 1",
+          "description": "Long name gets numeric suffix"
+        }
+      ],
+      "invariants": ["INV-001"],
+      "priority": "high"
+    },
+    {
+      "id": "spec-002-17",
+      "name": "Generate unique name - trailing digits trimmed",
+      "scenarioRefs": ["TS-041"],
+      "paratextDataApi": {
+        "class": "ProjectPropertiesUtils",
+        "method": "NextUnusedProjectName",
+        "namespace": "Paratext.ToolsMenu"
+      },
+      "preconditions": [
+        "Project 'Proj99' exists"
+      ],
+      "inputs": {
+        "shortName": "Proj99",
+        "longName": "Project 99"
+      },
+      "expectedBehavior": [
+        "Trailing digits trimmed before numbering",
+        "Sequence starts from base name"
+      ],
+      "assertions": [
+        {
+          "type": "equals",
+          "target": "shortName",
+          "expected": "Proj1",
+          "description": "Digits trimmed, starts at 1"
+        }
+      ],
+      "invariants": [],
+      "priority": "medium"
+    },
+    {
+      "id": "spec-002-18",
+      "name": "Generate unique name - iterate to find unused",
+      "scenarioRefs": ["TS-042"],
+      "paratextDataApi": {
+        "class": "ProjectPropertiesUtils",
+        "method": "NextUnusedProjectName",
+        "namespace": "Paratext.ToolsMenu"
+      },
+      "preconditions": [
+        "Projects 'TST', 'TST1', 'TST2', 'TST3' all exist"
+      ],
+      "inputs": {
+        "shortName": "TST",
+        "longName": "Test"
+      },
+      "expectedBehavior": [
+        "Algorithm finds first available number"
+      ],
+      "assertions": [
+        {
+          "type": "equals",
+          "target": "shortName",
+          "expected": "TST4",
+          "description": "First available number used"
+        }
+      ],
+      "invariants": [],
+      "priority": "medium"
+    },
+    {
+      "id": "spec-002-19",
+      "name": "Validate full name - required",
+      "scenarioRefs": ["TS-039", "TS-064"],
+      "paratextDataApi": {
+        "class": "ProjectNameForm",
+        "method": "ValidateForm",
+        "namespace": "Paratext.ToolsMenu"
+      },
+      "preconditions": [],
+      "inputs": {
+        "fullName": ""
+      },
+      "expectedBehavior": [
+        "Validation fails for empty full name"
+      ],
+      "assertions": [
+        {
+          "type": "not-null",
+          "target": "validationError",
+          "description": "Error returned for empty name"
+        },
+        {
+          "type": "contains",
+          "target": "errorMessage",
+          "expected": "must enter a full name",
+          "description": "Error requests full name"
+        }
+      ],
+      "invariants": [],
+      "priority": "medium"
+    },
+    {
+      "id": "spec-002-20",
+      "name": "Validate full name - whitespace only rejected",
+      "scenarioRefs": ["TS-064"],
+      "paratextDataApi": {
+        "class": "ProjectNameForm",
+        "method": "ValidateForm",
+        "namespace": "Paratext.ToolsMenu"
+      },
+      "preconditions": [],
+      "inputs": {
+        "fullName": "   "
+      },
+      "expectedBehavior": [
+        "Whitespace-only full name fails after trim"
+      ],
+      "assertions": [
+        {
+          "type": "not-null",
+          "target": "validationError",
+          "description": "Error returned for whitespace-only name"
+        }
+      ],
+      "invariants": [],
+      "priority": "low"
+    },
+    {
+      "id": "spec-002-21",
+      "name": "Validate full name - backslash conversion",
+      "scenarioRefs": ["TS-040"],
+      "paratextDataApi": {
+        "class": "ProjectNameForm",
+        "method": "txtFullName_TextChanged",
+        "namespace": "Paratext.ToolsMenu"
+      },
+      "preconditions": [],
+      "inputs": {
+        "fullName": "Test\\Project"
+      },
+      "expectedBehavior": [
+        "Backslash converted to forward slash"
+      ],
+      "assertions": [
+        {
+          "type": "equals",
+          "target": "convertedFullName",
+          "expected": "Test/Project",
+          "description": "Backslash becomes forward slash"
+        }
+      ],
+      "invariants": [],
+      "priority": "low"
+    }
+  ],
+  "propertyTests": [
+    {
+      "id": "prop-002-01",
+      "name": "Project names are unique (case-insensitive)",
+      "invariantRef": "INV-001",
+      "property": "No two projects can have names that match case-insensitively",
+      "generator": {
+        "type": "random-valid-short-names",
+        "constraints": {
+          "length": { "min": 3, "max": 8 },
+          "characters": "A-Za-z0-9_"
+        }
+      },
+      "iterations": 1000,
+      "assertions": [
+        "After creating N projects with unique names, all are discoverable",
+        "Attempt to create case-insensitive duplicate fails validation"
+      ],
+      "priority": "critical"
+    },
+    {
+      "id": "prop-002-02",
+      "name": "Validation accepts all valid inputs",
+      "property": "Any string of 3-8 characters using only A-Za-z0-9_ passes validation if name is unique",
+      "generator": {
+        "type": "random-strings",
+        "constraints": {
+          "length": { "min": 3, "max": 8 },
+          "characters": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_",
+          "exclude": ["CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"]
+        }
+      },
+      "iterations": 1000,
+      "assertions": [
+        "ValidateShortName returns null for all generated valid names"
+      ],
+      "priority": "high"
+    },
+    {
+      "id": "prop-002-03",
+      "name": "Validation rejects all invalid inputs",
+      "property": "Any string violating length, character, or uniqueness rules fails validation",
+      "generator": {
+        "type": "invalid-short-names",
+        "variants": [
+          { "type": "too-short", "length": { "min": 0, "max": 2 } },
+          { "type": "too-long", "length": { "min": 9, "max": 50 } },
+          { "type": "invalid-chars", "includeChars": "-!@#$%^&*()+=[]{}|;:',.<>?/\\\"" },
+          { "type": "contains-space", "pattern": ".*\\s.*" }
+        ]
+      },
+      "iterations": 500,
+      "assertions": [
+        "ValidateShortName returns non-null error for all invalid names"
+      ],
+      "priority": "high"
+    },
+    {
+      "id": "prop-002-04",
+      "name": "Abbreviation always produces valid short name",
+      "property": "FormTextNameAbbrev output always passes short name validation",
+      "generator": {
+        "type": "random-full-names",
+        "constraints": {
+          "wordCount": { "min": 1, "max": 10 },
+          "wordLength": { "min": 1, "max": 20 }
+        }
+      },
+      "iterations": 500,
+      "assertions": [
+        "Result length is between 3 and 8",
+        "Result contains only valid characters",
+        "ValidateShortName returns null for result (if unique)"
+      ],
+      "priority": "medium"
+    },
+    {
+      "id": "prop-002-05",
+      "name": "NextUnusedProjectName always returns unique name",
+      "property": "NextUnusedProjectName output is never in ScrTextCollection",
+      "generator": {
+        "type": "existing-project-sets",
+        "constraints": {
+          "projectCount": { "min": 0, "max": 100 },
+          "namePattern": "sequential"
+        }
+      },
+      "iterations": 500,
+      "assertions": [
+        "Returned name is not in existing collection",
+        "Returned name passes validation"
+      ],
+      "priority": "high"
+    }
+  ]
+}

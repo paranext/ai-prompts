@@ -1,0 +1,31 @@
+{
+  "scenarioId": "gm-015",
+  "name": "Quotation Marks Checklist",
+  "scenarioIds": ["TS-061", "TS-062", "TS-063"],
+  "behaviorIds": ["BHV-109"],
+  "invariantIds": ["INV-001"],
+  "validations": ["VAL-003"],
+  "domainConstraints": ["DC-006"],
+  "createdDate": "2025-01-04",
+  "priority": "high",
+  "riskLevel": "medium",
+  "checklistType": "QuotationDifferences",
+  "testCategory": "type-specific",
+  "comparisonConfig": {
+    "strategy": "structural",
+    "ignoreFields": ["captureDate", "actualVerseContent"],
+    "normalizations": ["strip-timestamps"],
+    "tolerance": {}
+  },
+  "coverage": {
+    "behaviors": ["BHV-109 Quotation Marks Data Extraction"],
+    "invariants": ["INV-001"],
+    "validations": ["VAL-003: Quote settings must be complete"],
+    "edgeCases": ["EC-006: No quotes in verse excluded"],
+    "domainConstraints": ["DC-006: Comparison by quote count"]
+  },
+  "pt10Notes": {
+    "quoteSettings": "Use QuotationMarkInfo from project settings",
+    "quotationCheck": "May use QuotationCheck for counting"
+  }
+}

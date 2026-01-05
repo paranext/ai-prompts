@@ -1,0 +1,56 @@
+{
+  "scenarioId": "TS-038",
+  "capturedFrom": "PT9 behavior specification",
+  "captureDate": "2025-01-04",
+  "description": "Single-project verses checklist shows one column of verse content with reference links",
+  "structure": {
+    "columnCount": 2,
+    "columnHeaders": ["Reference", "TestProject"],
+    "rowCount": 31
+  },
+  "rows": [
+    {
+      "reference": "GEN 1:1",
+      "referenceLink": "goto:GEN 1:1",
+      "cells": [
+        {
+          "projectId": "TestProject",
+          "contentType": "verseText",
+          "hasContent": true,
+          "hasEditLink": "[depends on user permissions]"
+        }
+      ]
+    },
+    {
+      "reference": "GEN 1:2",
+      "referenceLink": "goto:GEN 1:2",
+      "cells": [
+        {
+          "projectId": "TestProject",
+          "contentType": "verseText",
+          "hasContent": true
+        }
+      ]
+    }
+  ],
+  "outputFormat": {
+    "type": "HTML_TABLE",
+    "rendering": "XSLT transformation via ChecklistsView.xslt",
+    "encoding": "UTF-8",
+    "cssApplied": true
+  },
+  "metadata": {
+    "totalRows": 31,
+    "hiddenRows": 0,
+    "maxRowsReached": false,
+    "windowTitle": "Verses for TestProject GEN 1:1-31"
+  },
+  "verificationNotes": [
+    "All 31 verses of Genesis 1 should appear",
+    "Each row has exactly 1 cell (single project)",
+    "Verse 0 (introduction) should NOT appear even if present in source",
+    "Section headings should NOT appear (showSectionHeadings=false)",
+    "Footnotes should NOT appear (showFootnotes=false)",
+    "References should be clickable navigation links"
+  ]
+}

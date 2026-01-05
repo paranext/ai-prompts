@@ -1,0 +1,29 @@
+{
+  "scenarioId": "TS-064",
+  "capturedFrom": "PT9 behavior specification",
+  "captureDate": "2025-01-04",
+  "description": "Punctuation checklist compares punctuation patterns between projects",
+  "structure": {
+    "columnCount": 3,
+    "columnHeaders": ["Reference", "TargetProject", "SourceText"],
+    "rowCountVariable": "Depends on punctuation differences"
+  },
+  "expectedBehavior": {
+    "punctuationDetection": "Uses CharacterCategorizer.IsPunctuation",
+    "emptyFilter": "Empty filter includes all punctuation",
+    "filterBehavior": "Non-empty filter restricts to specific characters",
+    "comparison": "Compares punctuation sequences between projects"
+  },
+  "metadata": {
+    "hiddenRows": 0,
+    "maxRowsReached": false,
+    "windowTitle": "Punctuation for TargetProject GEN 1:1-5:32"
+  },
+  "verificationNotes": [
+    "Uses CharacterCategorizer.IsPunctuation for detection",
+    "Empty filter shows all punctuation",
+    "Filter can restrict to specific chars (e.g., '.?!')",
+    "Spaces in filter are removed",
+    "Compares punctuation sequences, not full verse text"
+  ]
+}

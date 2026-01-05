@@ -1,0 +1,32 @@
+{
+  "scenarioId": "gm-018",
+  "name": "Hide Matches Filtering",
+  "scenarioIds": ["TS-025", "TS-026", "TS-022"],
+  "behaviorIds": ["BHV-008"],
+  "invariantIds": ["INV-001"],
+  "createdDate": "2025-01-04",
+  "priority": "high",
+  "riskLevel": "medium",
+  "checklistType": "Verses",
+  "testCategory": "cross-cutting-feature",
+  "comparisonConfig": {
+    "strategy": "structural",
+    "ignoreFields": ["captureDate", "actualVerseContent", "hiddenRowCount"],
+    "normalizations": ["strip-timestamps"],
+    "tolerance": {}
+  },
+  "coverage": {
+    "behaviors": ["BHV-008 Toggle Hide Matches"],
+    "invariants": ["INV-001: Row cell count equals column count"],
+    "crossCuttingConcerns": [
+      "Applies to all checklist types",
+      "Requires comparative texts",
+      "Resets on comparative text change"
+    ]
+  },
+  "pt10Notes": {
+    "buttonCondition": "Only show when comparativeTexts.length > 0",
+    "resetBehavior": "Reset to false when comparative texts change",
+    "matchingLogic": "Compare cell content strings (or use equivalent markers for Markers)"
+  }
+}

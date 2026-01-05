@@ -1,0 +1,29 @@
+{
+  "scenarioId": "TS-025",
+  "capturedFrom": "PT9 behavior specification",
+  "captureDate": "2025-01-04",
+  "description": "Hide Matches removes rows where all cells have identical content",
+  "structure": {
+    "columnCount": 3,
+    "columnHeaders": ["Reference", "TargetProject", "SourceText"],
+    "rowCountReduced": true
+  },
+  "expectedBehavior": {
+    "filtering": "Rows where all cells match are removed from display",
+    "matching": "Exact string comparison (or equivalent markers for Markers type)",
+    "excludedCount": "Count of hidden rows shown to user",
+    "buttonVisibility": "Hide Matches button only visible with comparative texts"
+  },
+  "metadata": {
+    "hiddenRows": "[count of matching rows]",
+    "maxRowsReached": false,
+    "windowTitle": "Verses for TargetProject GEN 1:1-31"
+  },
+  "verificationNotes": [
+    "Only rows with DIFFERENCES are shown",
+    "Matching rows are counted and displayed in UI",
+    "Button only visible when comparative texts selected (TS-026)",
+    "Changing comparative texts resets hideMatches to false (TS-022)",
+    "For Markers type, equivalent markers are considered matching"
+  ]
+}

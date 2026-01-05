@@ -1,0 +1,28 @@
+{
+  "scenarioId": "TS-064",
+  "checklistType": "Punctuation",
+  "description": "Punctuation checklist comparing punctuation sequences across projects",
+  "projects": [
+    {
+      "id": "TargetProject",
+      "role": "primary",
+      "versification": "English"
+    },
+    {
+      "id": "SourceText",
+      "role": "comparative",
+      "versification": "English"
+    }
+  ],
+  "verseRange": {
+    "first": "GEN 1:1",
+    "last": "GEN 5:32"
+  },
+  "settings": {
+    "punctuationFilter": ""
+  },
+  "preconditions": [
+    "Both projects exist in ScrTextCollection",
+    "Both projects have content in Genesis 1-5"
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "scenarioId": "TS-073",
+  "capturedFrom": "PT9 behavior specification",
+  "captureDate": "2025-01-04",
+  "description": "Verse bridge handling merges cells to align bridged and non-bridged content",
+  "structure": {
+    "columnCount": 3,
+    "columnHeaders": ["Reference", "BridgedProject", "NonBridgedProject"],
+    "rowCountVariable": "Depends on bridge locations"
+  },
+  "expectedBehavior": {
+    "cellMerging": "ExpandGrabCountToAlignCells merges up to MAX_CELLS_TO_GRAB (3) cells",
+    "bridgeDisplay": "Bridged content in one cell, separate verses merged in other column",
+    "maxMerge": "Maximum 3 cells can be merged together (DC-005)",
+    "alignment": "Cells aligned so bridged content matches merged separate verses"
+  },
+  "sampleScenario": {
+    "primaryHas": "Verse 1-2 bridge (single cell)",
+    "comparativeHas": "Verse 1 and Verse 2 separately",
+    "result": "Comparative cells for v.1 and v.2 merged to align with bridge"
+  },
+  "metadata": {
+    "hiddenRows": 0,
+    "maxRowsReached": false,
+    "windowTitle": "Verses for BridgedProject GEN 1:1-5:32"
+  },
+  "verificationNotes": [
+    "Critical edge case EC-002 with severity Critical",
+    "Domain constraint DC-005: MAX_CELLS_TO_GRAB = 3",
+    "Cells are merged in the column that needs alignment",
+    "Merging prevents row alignment from breaking entirely",
+    "If more than 3 cells would need merging, partial merge occurs"
+  ]
+}

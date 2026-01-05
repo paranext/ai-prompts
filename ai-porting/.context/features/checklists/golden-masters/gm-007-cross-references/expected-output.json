@@ -1,0 +1,42 @@
+{
+  "scenarioId": "TS-047",
+  "capturedFrom": "PT9 behavior specification",
+  "captureDate": "2025-01-04",
+  "description": "Cross references checklist extracts all reference types from USFM",
+  "structure": {
+    "columnCount": 2,
+    "columnHeaders": ["Reference", "TestProject"],
+    "rowCountVariable": "Depends on number of cross-references in Matthew 1-5"
+  },
+  "expectedBehavior": {
+    "markerExtraction": "Extracts \\x, \\xt, \\r, \\mr, \\sr, \\ior, \\rq, \\fig references",
+    "parsing": "Uses CrossReferenceScanner and ParallelPassageReferenceScanner",
+    "referenceDisplay": "Shows parsed scripture references",
+    "verseTextOption": "With showReferencedVerseText=false, only shows reference text"
+  },
+  "sampleRows": [
+    {
+      "reference": "MAT 1:1",
+      "cells": [
+        {
+          "projectId": "TestProject",
+          "contentType": "crossReferenceList",
+          "hasContent": true,
+          "description": "Parsed cross-references from Matthew 1:1"
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "hiddenRows": 0,
+    "maxRowsReached": false,
+    "windowTitle": "References for TestProject MAT 1:1-5:48"
+  },
+  "verificationNotes": [
+    "Requires scripture reference settings to be reviewed (VAL-002)",
+    "Invalid references show error message in cell (EC-008)",
+    "Figure references from \\fig markers are included",
+    "Footnote origin references (\\fr) are included",
+    "Only reference text shown (no verse content with this setting)"
+  ]
+}

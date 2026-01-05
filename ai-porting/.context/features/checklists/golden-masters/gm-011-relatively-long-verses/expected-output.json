@@ -1,0 +1,41 @@
+{
+  "scenarioId": "TS-054",
+  "capturedFrom": "PT9 behavior specification",
+  "captureDate": "2025-01-04",
+  "description": "Relatively Long Verses shows top 100 verses sorted by length ratio",
+  "structure": {
+    "columnCount": 3,
+    "columnHeaders": ["Reference", "TargetProject", "SourceText"],
+    "maxRows": 100
+  },
+  "expectedBehavior": {
+    "scoreCalculation": "Score = ratio of target length to source length",
+    "sorting": "Sorted by score descending (longest relative first)",
+    "maxResults": "HighScoresOnly = true limits to 100 results",
+    "missingVerse": "Missing verse in either project = infinity score (1000000)"
+  },
+  "sampleRows": [
+    {
+      "reference": "[Verse with highest ratio]",
+      "score": "[Highest score]",
+      "cells": [
+        {"projectId": "TargetProject", "hasContent": true},
+        {"projectId": "SourceText", "hasContent": true}
+      ]
+    }
+  ],
+  "metadata": {
+    "totalRows": 100,
+    "hiddenRows": 0,
+    "maxRowsReached": false,
+    "windowTitle": "Relatively Long Verses for TargetProject GEN 1:1-DEU 34:12",
+    "sortOrder": "score descending"
+  },
+  "verificationNotes": [
+    "Requires at least two ScrTexts (PRE-005)",
+    "Missing verses appear at top with infinity score (EC-005)",
+    "Section headings and footnotes excluded from length calculation",
+    "Results limited to 100 (HighScoresOnly)",
+    "Sorted by ratio, not absolute length"
+  ]
+}

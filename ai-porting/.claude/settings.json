@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": ["Bash", "Read", "Write", "Edit", "Glob", "Grep", "Task", "TodoWrite", "WebFetch", "WebSearch", "NotebookEdit"],
+    "deny": ["Bash(rm -rf /)", "Bash(rm -rf /*)", "Bash(mkfs:*)", "Bash(chmod -R 777 /)"],
+    "ask": [
+      "Bash(rm -rf:*)",
+      "Bash(rm -r:*)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git clean -f:*)",
+      "Bash(chmod -R:*)",
+      "Bash(chown -R:*)",
+      "Bash(sudo:*)",
+      "Bash(eval:*)",
+      "Bash(npm publish:*)",
+      "Bash(git push origin main:*)",
+      "Bash(git push origin master:*)"
+    ]
+  }
+}

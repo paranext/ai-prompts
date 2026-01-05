@@ -1,0 +1,745 @@
+# AI-Assisted Porting Workflow
+
+## Overview
+
+This document defines the workflow for porting features from Paratext 9 (PT9) to Platform.Bible (PT10) using AI-assisted development.
+
+### Key Principles
+
+- **Task descriptions** define human-provided scope, goals, and constraints before AI agents begin work
+- **Feature classification** drives the testing and implementation strategy (Level A/B/C based on ParatextData reuse)
+- **ParatextData.dll is shared** between PT9 and PT10, providing a stable business logic layer
+- **Specifications vary by level**: Level A uses structured test specifications; Level B/C uses golden masters
+- **Implementation strategy** varies by level (TDD for logic, Component-First for UI)
+- **Phase 1-2 run in PT9 codebase**, Phase 3+ run in PT10 (paranext-core) codebase
+- **4-phase process** with specialized AI agents and human review gates
+- **Proof over testing** - Every agent delivers verifiable evidence that their work is correct. Testing is the mechanism; proof is the outcome.
+
+### Workflow Summary
+
+```
+Phase 0: Task Description → Human defines scope, goals, non-goals (task-description.md)
+Phase 1: Analysis         → Understand PT9 behavior, classify feature [PT9 CODEBASE]
+Phase 2: Specification    → Generate test specs/golden masters, define contracts [PT9 CODEBASE]
+Phase 3: Implementation   → Align to PT10, TDD or Component-First (based on level) [PT10 CODEBASE]
+Phase 4: Verification     → Equivalence tests, property tests, human review [PT10 CODEBASE]
+```
+
+---
+
+## 1. Phase Commands + Specialized Agents
+
+### Architecture
+
+We use **4 phase commands** that orchestrate **specialized subagents**:
+
+- **Phase commands** (in `.claude/commands/porting/`) - User invokes these
+- **Specialized agents** (in `.claude/agents/`) - Phase commands delegate to these
+- **Human review** after each agent before proceeding
+
+### Command Structure
+
+```
+.claude/
+├── commands/porting/
+│   ├── README.md                    # Documentation
+│   ├── phase-1-analysis.md          # Agents: archaeologist → classifier → characterizer
+│   ├── phase-2-specification.md     # Agents: logic-extractor → spec-generator → contract-writer
+│   │                                # + Spec summary + GitHub issue creation
+│   ├── phase-3-implementation.md    # Agents: alignment → TDD path OR component-builder (based on level)
+│   └── phase-4-verification.md      # Agents: equivalence-checker → invariant-checker → validator
+│
+└── agents/
+    ├── archaeologist.md             # Discover behaviors, entry points, invariants
+    ├── classifier.md                # Determine Level A/B/C
+    ├── characterizer.md             # Generate test scenarios
+    ├── ui-logic-extractor.md        # Document UI logic (Level B)
+    ├── spec-generator.md            # Create test specs (Level A) or golden masters (Level B/C)
+    ├── contract-writer.md           # Define API types (with {TBD:*} placeholders for PT10)
+    ├── alignment-agent.md           # Map Phase 2 contracts to PT10 patterns (Phase 3 Step 0)
+    ├── tdd-test-writer.md           # Write failing tests (RED)
+    ├── traceability-validator.md    # Validate test→spec coverage (Level A/B)
+    ├── tdd-implementer.md           # Minimal code (GREEN)
+    ├── tdd-refactorer.md            # Clean up (REFACTOR)
+    ├── component-builder.md         # Build UI components (Level B/C)
+    ├── equivalence-checker.md       # Compare PT9 vs PT10 outputs
+    ├── invariant-checker.md         # Property tests
+    └── validator.md                 # Quality gate check
+```
+
+### Workflow
+
+```
+Phase 1 → Phase 2 → [Stakeholder Review] → Phase 3 → Phase 4 → Human Review
+                          │
+                          ├── spec-summary.md generated
+                          └── GitHub issue created
+```
+
+### Phase Commands
+
+| Command                                  | Purpose                           | Outputs                                                                                                         |
+| ---------------------------------------- | --------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `/porting/phase-1-analysis {name}`       | Understand PT9                    | behavior-catalog.md, boundary-map.md, business-rules.md, requirements.md                                        |
+| `/porting/phase-2-specification {name}`  | Define specs + stakeholder review | data-contracts.md, test-specifications/ (Level A) or golden-masters/ (Level B/C), spec-summary.md, GitHub issue |
+| `/porting/phase-3-implementation {name}` | Build feature                     | Test files, implementation (strategy varies by level)                                                           |
+| `/porting/phase-4-verification {name}`   | Verify correctness                | equivalence-report.md, invariant-report.md, validation-report.md                                                |
+
+### Agent Summary
+
+| Phase | Agent                  | Responsibility                                | Output                                                     |
+| ----- | ---------------------- | --------------------------------------------- | ---------------------------------------------------------- |
+| 1     | Archaeologist          | Discover behaviors, entry points, invariants  | behavior-catalog.md, boundary-map.md, business-rules.md    |
+| 1     | Classifier             | Determine Level A/B/C                         | README.md classification (with TBD PT10 integration notes) |
+| 1     | Characterizer          | Generate test scenarios, capture requirements | test-scenarios.json, edge-cases.md, requirements.md        |
+| 2     | UI Logic Extractor     | Document UI logic (Level B only)              | ui-logic-extraction.md                                     |
+| 2     | Spec Generator         | Create test specs (A) or golden masters (B/C) | test-specifications/ or golden-masters/                    |
+| 2     | Contract Writer        | Define API types with `{TBD:*}` placeholders  | data-contracts.md                                          |
+| 3     | Alignment Agent        | Map Phase 2 contracts to PT10 patterns        | pt10-alignment.md, fills TBD sections                      |
+| 3     | TDD Test Writer        | Write failing tests (RED) - Level A/B logic   | Test files in PT10                                         |
+| 3     | Traceability Validator | Validate test→spec coverage - Level A/B       | traceability-report.md                                     |
+| 3     | TDD Implementer        | Minimal code (GREEN) - Level A/B logic        | Implementation code                                        |
+| 3     | TDD Refactorer         | Clean up (REFACTOR) - Level A/B logic         | Refactored code                                            |
+| 3     | Component Builder      | Build UI iteratively - Level B UI/C           | React components, snapshot tests                           |
+| 4     | Equivalence Checker    | Compare PT9 vs PT10 outputs                   | equivalence-report.md                                      |
+| 4     | Invariant Checker      | Property tests                                | invariant-report.md                                        |
+| 4     | Validator              | Quality gate check                            | validation-report.md                                       |
+
+### Agent Handoff
+
+Agents communicate via **artifacts in `.context/features/{feature}/`**:
+
+- Each agent reads artifacts from previous agents
+- Each agent writes its own artifacts
+- Human reviews artifacts between agents
+- Progress tracked in `phase-status.md`
+
+---
+
+## 2. Feature Classification System
+
+### Classification Levels
+
+| Level                     | Description                            | Testing Focus                      | Examples                                   |
+| ------------------------- | -------------------------------------- | ---------------------------------- | ------------------------------------------ |
+| **A: ParatextData-Heavy** | 80%+ logic in shared DLL               | API contract tests, golden masters | Creating Projects, USB Syncing             |
+| **B: Mixed Logic**        | Significant UI-embedded business logic | Extract logic, characterize, TDD   | S/R Conflict Resolution, Parallel Passages |
+| **C: Pure UI**            | 90%+ UI, data from existing APIs       | Component-First, snapshot tests    | Checklists, Translation Resources          |
+
+### Implementation Strategy by Level
+
+| Level | Strategy        | Agents Used                                        | Rationale                              |
+| ----- | --------------- | -------------------------------------------------- | -------------------------------------- |
+| **A** | Full TDD        | tdd-test-writer → tdd-implementer → tdd-refactorer | Clear APIs, logic in ParatextData      |
+| **B** | Hybrid          | TDD for extracted logic + component-builder for UI | Business logic testable, UI visual     |
+| **C** | Component-First | component-builder → snapshot tests                 | 90%+ UI, visual verification effective |
+
+### Feature Classification
+
+| Feature                 | Level | ParatextData Reuse | Effort      |
+| ----------------------- | ----- | ------------------ | ----------- |
+| Creating Projects       | A     | 95%                | Low         |
+| USB Syncing             | A     | 90%                | Medium      |
+| Translation Resources   | B/C   | 80%                | Medium      |
+| Parallel Passages       | B     | 40%                | Medium-High |
+| Checklists              | C     | 5%                 | High        |
+| S/R Conflict Resolution | B     | 70%                | High        |
+
+---
+
+## 3. Testing Strategy by Type
+
+This section defines the test types used in feature porting.
+
+### TDD as Non-Negotiable Discipline
+
+For Level A and B features, TDD is **mandatory**. We follow the [Testing Trophy model](standards/Testing-Guide.md#test-strategy-the-testing-trophy): favor integration tests at service boundaries over excessive unit tests.
+
+| Phase | Agent | TDD Requirement |
+|-------|-------|-----------------|
+| Phase 3 | TDD Test Writer | Write tests FIRST, verify they FAIL (Revert Test) |
+| Phase 3 | TDD Implementer | Write MINIMUM code to pass tests |
+| Phase 3 | TDD Refactorer | Clean up while tests stay GREEN |
+
+**The Revert Test**: Every test must fail when implementation is absent. Tests that pass without implementation are worthless.
+
+### Unit Tests (TDD)
+
+- **Purpose**: Drive implementation through RED→GREEN→REFACTOR cycle
+- **Scope**: Single functions, methods, or classes in isolation
+- **Location**: Colocated with source (`*.test.ts`) or in `c-sharp-tests/`
+- **Tools**: Vitest (TypeScript), NUnit (C#)
+- **When to use**: All features (Level A, B, C)
+
+### Integration Tests
+
+- **Purpose**: Verify multiple components work together correctly
+- **Scope**: Service interactions, data provider chains, cross-module behavior
+- **Location**: `c-sharp-tests/` with `[Category("Integration")]`
+- **Tools**: NUnit with real (not mocked) dependencies
+- **When to use**: Level A/B features with complex component interactions
+
+### Golden Master Tests
+
+- **Purpose**: Byte-for-byte or semantic comparison of PT10 output against PT9
+- **Scope**: Entire operation outputs captured from PT9
+- **Location**: `c-sharp-tests/GoldenMasters/{Feature}/`
+- **Pattern**: Load input → Run system → Compare to stored PT9 output
+- **When to use**: Level B/C for UI-layer behavior; Level A only if ParatextData behavior needs verification
+
+### Property-Based Tests
+
+- **Purpose**: Verify invariants hold for ALL possible inputs
+- **Scope**: Business rules that must always be true
+- **Location**: `*PropertyTests.cs` files
+- **Tools**: FsCheck (C#), fast-check (TypeScript)
+- **When to use**: **Mandatory** for Level A/B features with defined invariants
+
+**Iteration Requirements:**
+
+| Invariant Criticality | Minimum Iterations |
+|-----------------------|-------------------|
+| Critical (data integrity) | 1000 |
+| Important (business logic) | 500 |
+| Standard | 100 |
+
+**Evidence format:** Include iteration counts in proof files:
+```
+INV-001: ProjectGuid_AlwaysUnique - 1000/1000 passed
+```
+
+### Characterization Tests
+
+- **Purpose**: Capture what PT9 ACTUALLY does (before porting)
+- **Scope**: Document existing behavior, including edge cases and quirks
+- **Location**: `.context/features/{f}/characterization/`
+- **Pattern**: Run PT9 code → Serialize output → Store as reference
+- **When to use**: Phase 1 (Analysis) for all features
+
+### Mutation Testing
+
+- **Purpose**: Verify test quality by checking if tests catch code mutations
+- **Scope**: Critical business logic (not UI code)
+- **Tools**: Stryker.NET (C#), Stryker (TypeScript)
+- **Target**: >= 70% mutation score for critical logic
+- **When to use**: Phase 4 verification for Level A/B features
+
+### Snapshot/Visual Tests
+
+- **Purpose**: Verify UI rendering matches expected output
+- **Scope**: React components, visual layouts
+- **Location**: Storybook stories with play functions
+- **Tools**: Storybook + Playwright
+- **When to use**: Level B UI portions, Level C features
+
+### E2E Tests
+
+- **Purpose**: Test complete user workflows across all processes
+- **Status**: NOT IMPLEMENTED - identified gap in paranext-core
+- **Tools**: Playwright (when implemented)
+- **When to use**: Critical user journeys (future consideration)
+
+---
+
+## 4. Quality Gates
+
+| Gate   | Criteria                              | Phase | Applies To       | Blocking   | Proof Evidence Required                              |
+| ------ | ------------------------------------- | ----- | ---------------- | ---------- | ---------------------------------------------------- |
+| G1     | Characterization tests complete       | 1     | All              | Yes        | test-scenarios.json exists                           |
+| G2     | API contract approved                 | 2     | All              | Yes        | Human sign-off on data-contracts.md                  |
+| G3     | Logic extraction complete             | 2     | Level B          | Yes        | ui-logic-extraction.md complete                      |
+| G4     | TDD tests written (failing)           | 3     | Level A, B logic | Yes        | `test-evidence-red.log` showing RED state            |
+| G4.5   | Test quality verified                 | 3     | Level A, B logic | Yes        | Quality checklist in evidence + no anti-patterns     |
+| G5     | TDD tests passing                     | 3     | Level A, B logic | Yes        | `test-evidence-green.log` + `visual-evidence/*.png`  |
+| G4-alt | Snapshot tests created                | 3     | Level B UI, C    | Yes        | Snapshot files committed                             |
+| G5-alt | Visual match to golden masters        | 3     | Level B UI, C    | Yes        | Side-by-side screenshots in `visual-evidence/`       |
+| G6     | Golden master tests pass              | 4     | All              | Yes        | `test-evidence-equivalence.log`                      |
+| G7     | Property tests pass                   | 4     | All              | Yes        | `test-evidence-invariants.log` with iteration counts |
+| G8     | Integration tests pass                | 4     | All              | Yes        | `test-evidence-final.log`                            |
+| G9     | Mutation score ≥ 70% (critical paths) | 4     | Level A, B logic | Advisory\* | Stryker report in evidence                           |
+| G10    | Human review approved                 | 4     | All              | Yes        | Human sign-off with date                             |
+
+\*G9 starts advisory for first 2-3 features to establish baselines, then becomes blocking.
+
+### Gate Verification
+
+The Validator agent verifies that proof evidence exists for each applicable gate. A gate cannot be marked as passed without its corresponding proof artifact.
+
+### Gate G4.5: Test Quality Verification
+
+**Purpose:** Prevent low-quality AI-generated tests from proceeding to implementation.
+
+**Verification Criteria:**
+- All tests pass The Revert Test (fail without implementation)
+- No implementation-mirroring assertions (tests use known values, not computed expected)
+- Mock count ≤3 per test (or exception documented and justified)
+- All tests are deterministic (time, random, network controlled)
+- No trivial tests (simple accessors, constructor assignments)
+- Quality Report present in test-writer-plan.md
+
+**Blocking:** Implementation CANNOT begin until G4.5 passes.
+
+See [AI Agent Test Quality Guardrails](standards/Testing-Guide.md#ai-agent-test-quality-guardrails) for details.
+
+---
+
+## 5. Test Quality and Traceability
+
+### Rationale
+
+In AI-assisted development, agents write code faster than humans can review. Comprehensive testing ensures:
+
+- Bugs are caught early before they compound
+- Code changes can be made with confidence
+- Structural refactoring is safe
+- Tests run constantly during development
+
+### Test Quality Verification
+
+For Level A and B features, verify test effectiveness:
+
+| Metric          | Threshold | Timing                      | Status             |
+| --------------- | --------- | --------------------------- | ------------------ |
+| Line coverage   | >= 90%    | End of Phase 3 (Refactorer) | Blocking           |
+| Branch coverage | >= 80%    | End of Phase 3 (Refactorer) | Blocking           |
+| Mutation score  | >= 70%    | Phase 4 (Validator)         | Advisory initially |
+
+**Mutation testing graduation**: G9 starts advisory for first 2-3 features to establish baselines, then becomes blocking at 70% threshold.
+
+**Tools**:
+
+- TypeScript: Stryker (`npx stryker run`)
+- C#: Stryker.NET (`dotnet stryker`)
+
+### Traceability Requirements
+
+Every test must trace to a specification:
+
+| ID Type | Format           | Source              | Purpose                 |
+| ------- | ---------------- | ------------------- | ----------------------- |
+| BHV-XXX | Behavior ID      | behavior-catalog.md | What the system does    |
+| TS-XXX  | Test Scenario ID | test-scenarios.json | How to test a behavior  |
+| INV-XXX | Invariant ID     | business-rules.md   | Property that must hold |
+
+**Validation**: The Traceability Validator agent (Phase 3, after Test Writer) ensures:
+
+- Every BHV-XXX has at least one TS-XXX
+- Every TS-XXX has at least one test
+- Every test references a valid scenario ID
+
+**Test Attribute Examples**:
+
+```csharp
+// C# - Use [Property] attributes for traceability
+[Test]
+[Category("Contract")]
+[Property("ScenarioId", "TS-001")]
+[Property("BehaviorId", "BHV-001")]
+public void CreateProject_WithValidSettings_ReturnsSuccess() { }
+```
+
+```typescript
+// TypeScript - Use JSDoc comments
+/**
+ * @scenario TS-001
+ * @behavior BHV-001
+ */
+test('CreateProject with valid settings returns success', () => {});
+```
+
+### AI-Generated Test Quality Standards
+
+AI agents can generate many tests quickly, but quantity ≠ quality. Apply these standards:
+
+**Prohibited Patterns:**
+
+| Pattern | Problem | Detection |
+|---------|---------|-----------|
+| Implementation-mirroring | Test duplicates code logic | Expected value is computed, not literal |
+| Over-mocking | Hides integration issues | >3 mocks per test |
+| Trivial tests | Zero defect-detection value | Tests simple accessors/constructors |
+| Non-deterministic | Flaky tests | Uses real time/random/network |
+
+**Mocking Hierarchy:**
+
+| Level | What to Mock | Notes |
+|-------|--------------|-------|
+| 0 | **Never**: ParatextData.dll | It's the shared oracle |
+| 1 | Rarely: Business logic modules | Use real code when possible |
+| 2 | Sometimes: Cross-feature services | For isolation in unit tests |
+| 3 | Usually: External APIs, file system | Control side effects |
+| 4 | Always: Time, random, network | Ensure determinism |
+
+**Test Curation Protocol:**
+
+Before accepting tests, verify:
+1. **Volume check**: ~3-5 tests per public method (not 15+)
+2. **Value check**: Each test catches a potential defect
+3. **Uniqueness check**: No duplicate coverage
+4. **Brittleness check**: Tests only fail when behavior changes
+
+### Continuous Testing During Agent Work
+
+Agents should run tests constantly, not just at phase checkpoints:
+
+| Agent                 | Testing Requirement                                                          |
+| --------------------- | ---------------------------------------------------------------------------- |
+| **TDD Implementer**   | Run feature tests after each change                                          |
+| **TDD Refactorer**    | Run full suite before/after each refactoring; zero tolerance for regressions |
+| **Component Builder** | Run snapshot tests after visual changes                                      |
+
+**Test Categories for Fast Feedback** (applies to NEW ported features):
+
+| Category    | When to Run     | Time Target |
+| ----------- | --------------- | ----------- |
+| Smoke       | After each edit | < 10s       |
+| Critical    | Every 5 edits   | < 60s       |
+| Full        | Before handoff  | < 5min      |
+| Integration | CI only         | No limit    |
+
+*Note: Test categories apply to new ported features. Existing test categorization will be addressed separately.*
+
+### Phase 3 Flow
+
+For Level A and B features, Phase 3 includes traceability validation:
+
+```
+Alignment → Test Writer → Traceability Validator → Implementer → Refactorer
+                                  ↑
+                         Validates scenario→test coverage
+                         before implementation begins
+```
+
+The Traceability Validator blocks implementation if:
+
+- Any BHV-XXX lacks test coverage
+- Any test lacks a scenario reference
+- Orphan tests exist (except Infrastructure category)
+
+---
+
+## 6. Proof of Work Requirements
+
+### The Fundamental Contract
+
+**Each agent's job is to deliver code they have proven to work.**
+
+This is not the same as "code that has been tested." Testing is an activity; proof is a deliverable. Every AI agent in this workflow must provide verifiable evidence that their work is correct before handoff.
+
+### What Constitutes Proof
+
+Proof requires TWO complementary steps - neither is optional:
+
+| Step                       | Definition                                | Evidence Required                                           |
+| -------------------------- | ----------------------------------------- | ----------------------------------------------------------- |
+| **Manual Verification**    | See the code do the right thing yourself  | Screenshots, console output, live demonstration             |
+| **Automated Verification** | Bundled tests that prove the change works | Tests that PASS when code is correct and FAIL when reverted |
+
+### The Revert Test
+
+If you revert the implementation and the tests still pass, you have not proven anything. The proof must be falsifiable - the tests must detect when the implementation is wrong.
+
+### Human Accountability
+
+The human provides the accountability. AI agents provide the proof; humans provide the judgment.
+
+- **Agents demonstrate**, humans verify
+- **Agents document**, humans approve
+- **Agents propose**, humans decide
+
+No agent may self-certify completion. Every phase ends with human review of proof artifacts.
+
+### Proof vs. Testing: The Critical Distinction
+
+| "I tested it"        | "I proved it"                                                    |
+| -------------------- | ---------------------------------------------------------------- |
+| I ran the test suite | I watched the tests fail, implemented the fix, watched them pass |
+| Tests are green      | I can show you the before/after output                           |
+| The build passes     | I visually confirmed the UI matches the golden master            |
+| No errors in console | I recorded what correct behavior looks like                      |
+
+### The Proof Burden
+
+Every agent deliverable must answer this question:
+
+> "What evidence can the human reviewer examine to verify this work is correct?"
+
+If you cannot point to specific, examinable evidence, you have not finished.
+
+### Required Evidence by Agent
+
+All agents must produce proof artifacts in `.context/features/{feature}/proofs/`:
+
+| Agent               | Evidence File                   | Content                                     |
+| ------------------- | ------------------------------- | ------------------------------------------- |
+| TDD Test Writer     | `test-evidence-red.log`         | Tests compile + FAIL (RED state)            |
+| TDD Implementer     | `test-evidence-green.log`       | Tests PASS with counts (GREEN state)        |
+| TDD Implementer     | `visual-evidence/*.png`         | Screenshots showing feature works in app    |
+| TDD Refactorer      | `test-evidence-refactor.log`    | Tests still PASS after cleanup              |
+| Component Builder   | `visual-evidence/*.png`         | Screenshots + console output                |
+| Equivalence Checker | `test-evidence-equivalence.log` | Golden master test results                  |
+| Invariant Checker   | `test-evidence-invariants.log`  | Property test results with iteration counts |
+| Validator           | `test-evidence-final.log`       | Full test suite results                     |
+
+**Visual Evidence Required for ALL Features**: Even Level A (backend-heavy) features must include screenshots demonstrating the feature works in the running application. Use the `app-runner` and `chrome-browser` skills.
+
+### Cross-Agent Verification
+
+Each agent must verify the previous agent's proof before starting work:
+
+| Current Agent   | Must Verify                                             |
+| --------------- | ------------------------------------------------------- |
+| TDD Implementer | Test Writer's tests actually fail (RED state confirmed) |
+| TDD Refactorer  | Implementer's tests pass (GREEN state confirmed)        |
+| Validator       | All evidence files exist and match claims               |
+
+### Evidence File Format
+
+Evidence files use a simple, human-readable format:
+
+```
+=== TEST EVIDENCE ===
+Timestamp: 2025-01-03T14:30:00Z
+Agent: tdd-implementer
+Phase: GREEN (tests should PASS)
+Command: dotnet test --filter "CreateProject"
+
+--- OUTPUT START ---
+[full test output here]
+--- OUTPUT END ---
+
+Summary: 15 passed, 0 failed
+```
+
+---
+
+## 7. Verification Strategy (Golden Masters + Documentation)
+
+### Why No Oracle MCP Server
+
+ParatextData.dll is **already available in PT10 via NuGet**. The AI agent can directly test against it:
+
+```csharp
+// In paranext-core/c-sharp/ - ParatextData is already here
+var merger = new BookFileMerger();
+var result = merger.Merge(mine, theirs, parent);
+```
+
+An Oracle would only be valuable for UI-layer code (`Paratext/`, `ParatextBase/`) that ISN'T in ParatextData. For that, we use **golden masters + thorough documentation** instead.
+
+### Verification by Feature Level
+
+| Level                      | Code Location                 | Strategy                                                |
+| -------------------------- | ----------------------------- | ------------------------------------------------------- |
+| **A** (ParatextData-heavy) | `ParatextData/`               | Test directly in PT10 against ParatextData.dll          |
+| **B** (Mixed)              | `ParatextData/` + `Paratext/` | ParatextData direct tests + golden masters for UI logic |
+| **C** (Pure UI)            | `Paratext/`                   | Golden masters + comprehensive behavior docs            |
+
+### Golden Master Workflow
+
+1. **Generate in PT9**: Run old code, serialize outputs
+2. **Store in `.context/`**: Save as JSON/XML with input specs
+3. **Port to PT10**: Copy golden masters to test projects
+4. **Test against**: New implementation must match golden output
+
+### When to Use Each Approach
+
+| Scenario                     | Approach                          |
+| ---------------------------- | --------------------------------- |
+| ParatextData method behavior | Direct test in PT10               |
+| UI data transformation       | Golden master                     |
+| Complex algorithm            | Golden master + property tests    |
+| Edge cases discovery         | Behavior catalog + manual testing |
+| Regression prevention        | Golden masters in CI              |
+
+### Golden Master Strategy by Level
+
+The purpose of golden masters varies significantly by feature classification level:
+
+| Level | Golden Master Purpose        | Captured PT9 Outputs? | Rationale                                                                                              |
+| ----- | ---------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------ |
+| **A** | TDD test specifications      | No                    | ParatextData.dll IS the oracle - same binary in PT9 and PT10. Test directly against ParatextData APIs. |
+| **B** | Specs for extracted UI logic | UI-layer only         | ParatextData logic tested directly. Golden masters needed only for UI-layer transformations and state. |
+| **C** | Visual/behavioral reference  | Yes                   | UI rendering, state transitions, and visual behavior must be captured since no shared code exists.     |
+
+**Key Insight for Level A Features**: Since ParatextData.dll is shared between PT9 and PT10 via NuGet, it serves as its own oracle. Capturing PT9 outputs would be redundant - they would just reflect what ParatextData returns, which PT10 can call directly. Instead, golden masters for Level A features document **test specifications** (inputs and expected behaviors) rather than captured outputs.
+
+**For Level B Features**: Only capture golden masters for the UI-embedded logic being extracted. The ParatextData portions are tested directly. Focus golden master efforts on:
+
+- UI data transformations
+- State transitions in UI code
+- Display formatting logic
+- User interaction flows
+
+**For Level C Features**: Comprehensive golden masters are essential since most logic lives in the UI layer. Capture:
+
+- All data transformation outputs
+- Visual rendering states
+- User input processing results
+- Error message formatting
+
+---
+
+## 8. Artifacts Structure
+
+### Directory Structure
+
+```
+.context/features/{feature}/
+├── task-description.md          # Human-defined scope and requirements (before agents start)
+├── README.md                    # CANONICAL SOURCE: classification, scope, strategy (single source of truth)
+├── behavior-catalog.md          # All behaviors: entry points, triggers, inputs/outputs, UI/UX details
+├── business-rules.md            # Invariants, validations, preconditions, state transitions
+├── boundary-map.md              # ParatextData vs UI split, reuse estimate, settings, integrations
+├── data-contracts.md            # TypeScript/C# types with {TBD:*} placeholders (Phase 2)
+├── phase-status.md              # Progress tracking (dates/status only, links to README for details)
+├── spec-summary.md              # Stakeholder summary (links to README, not duplicating content)
+│
+├── decisions/                   # Feature-specific architectural decisions (per phase)
+│   ├── phase-1-decisions.md     # Analysis phase decisions
+│   ├── phase-2-decisions.md     # Specification phase decisions
+│   ├── phase-3-decisions.md     # Implementation phase decisions
+│   └── phase-4-decisions.md     # Verification phase decisions
+│
+├── test-specifications/         # Level A: Structured test specs with assertions (Phase 2)
+│   ├── spec-001-{name}.json     # Assertions against ParatextData APIs
+│   └── ...
+│
+├── golden-masters/              # Level B/C: Captured PT9 outputs (Phase 2)
+│   ├── gm-001-{name}/
+│   │   ├── input.json
+│   │   ├── expected-output.json
+│   │   └── metadata.json
+│   └── ...
+│
+├── characterization/            # Phase 1 test planning artifacts
+│   ├── test-scenarios.json      # Structured test cases with inputs, expected outputs, priorities
+│   ├── requirements.md          # Non-functional: performance, accessibility, localization, errors
+│   └── edge-cases.md            # Unusual scenarios with risk assessment and test coverage
+│
+├── proofs/                      # Phase 3-4 proof artifacts (see Section 0)
+│   ├── test-evidence-red.log    # TDD Test Writer: tests compile + FAIL
+│   ├── test-evidence-green.log  # TDD Implementer: tests PASS
+│   ├── test-evidence-refactor.log # TDD Refactorer: tests still PASS
+│   ├── test-evidence-equivalence.log # Equivalence Checker: golden master results
+│   ├── test-evidence-invariants.log  # Invariant Checker: property test results
+│   ├── test-evidence-final.log  # Validator: full test suite results
+│   └── visual-evidence/         # Screenshots demonstrating feature works
+│       ├── {feature}-initial.png
+│       ├── {feature}-action.png
+│       └── {feature}-result.png
+│
+└── implementation/              # Phase 2-3 implementation artifacts
+    ├── ui-logic-extraction.md   # Level B only: business logic to extract from UI (Phase 2)
+    ├── pt10-alignment.md        # PT10 patterns: namespace, file paths, test infrastructure (Phase 3 Step 0)
+    ├── alignment-decisions.md   # PT10 pattern decisions and rationale (Phase 3 Step 0)
+    ├── implementation-plan.md   # Approved plan before coding begins (Phase 3 Step 1)
+    └── quality-gates.md         # Checklist of G1-G10 gates for this feature
+```
+
+### Artifact Templates
+
+Each feature folder includes standardized templates for:
+
+- **task-description.md**: Human-defined scope, goals, non-goals, and constraints (created before Phase 1, template in `.context/features/task-description-template.md`)
+- **behavior-catalog.md**: Exhaustive list of behaviors with source references
+- **business-rules.md**: Invariants suitable for property-based tests (created by Archaeologist)
+- **data-contracts.md**: TypeScript/C# types for API boundaries
+
+---
+
+## 9. Implementation Sequence
+
+### Recommended Order
+
+1. **Creating Projects** (Level A) - Foundational, low risk
+2. **USB Syncing** (Level A) - Similar pattern
+3. **Translation Resources** (Level B/C) - DBL infrastructure exists
+4. **Parallel Passages** (Level B) - Well-defined data model
+5. **Checklists** (Level C) - Highest UI effort
+6. **S/R Conflict Resolution** (Level B) - Most complex logic
+
+### Per-Feature Workflow
+
+```
+Phase 1: Analysis
+├── /porting/phase-1-analysis {name}
+└── Review & approve behavior catalog
+
+Phase 2: Specification
+├── /porting/phase-2-specification {name}
+└── Stakeholder review of contracts
+
+Phase 3: Implementation
+├── /porting/phase-3-implementation {name}
+└── Tests passing (TDD or snapshot based on level)
+
+Phase 4: Verification
+├── /porting/phase-4-verification {name}
+├── All quality gates pass
+├── Human review
+└── Merge to main
+```
+
+---
+
+## 10. Critical Files Reference
+
+### For Test Infrastructure
+
+- `ParatextData.Tests/DummyScrTextTestBase.cs` - Base test class pattern
+- `ParatextData.Tests/DummyScrText.cs` - In-memory ScrText fixture
+- `ParatextData.Tests/TempScrText.cs` - Zip-based test projects
+
+### For Feature Logic
+
+- `ParatextData/Repository/Mergers/BookFileMerger.cs` - S/R merge logic
+- `Paratext/Checklists/CLDataSource.cs` - Checklist data extraction
+- `ParatextData/ParallelPassages/ParallelPassageStatus.cs` - Status persistence
+- `ParatextData/Repository/FileSharedRepositorySource.cs` - USB sync
+
+### For Golden Master Patterns
+
+- `Paratext.Tests/Checklists/CLDataSourceTests.cs` - XML serialization with normalization
+- `ParatextData.Tests/StudyBibleTests/RegressionTests/` - Existing golden master pattern
+
+---
+
+## 11. Codebase Context
+
+**Critical**: Agents run in different codebases depending on the phase:
+
+| Phase                   | Codebase                 | Access                          |
+| ----------------------- | ------------------------ | ------------------------------- |
+| Phase 1: Analysis       | **PT9** (Paratext)       | Full access to PT9 source code  |
+| Phase 2: Specification  | **PT9** (Paratext)       | Full access to PT9 source code  |
+| Phase 3: Implementation | **PT10** (paranext-core) | Full access to PT10 source code |
+| Phase 4: Verification   | **PT10** (paranext-core) | Full access to PT10 source code |
+
+**Implications**:
+
+- Phase 1-2 agents CANNOT explore paranext-core patterns (no access to `c-sharp/`, `extensions/src/`)
+- Phase 2 contracts use `{TBD:*}` placeholders for PT10-specific values
+- The Alignment Agent (Phase 3 Step 0) is the first point with PT10 access
+- The Alignment Agent fills all `{TBD:*}` placeholders with actual PT10 patterns
+
+---
+
+## 12. Decisions Made
+
+1. **Hybrid Dual-Track approach**: Features are classified by complexity (A/B/C), allowing parallel characterization and TDD work while tailoring testing strategy to each feature's ParatextData reuse percentage
+2. **Implementation strategy by level**: TDD for Level A and extracted logic; Component-First for Level B UI and Level C features where visual verification is more effective than test-first
+3. **Verification approach**: Golden Masters + Documentation (no Oracle MCP so agents can talk with Paratext 9 application - ParatextData already available in PT10 via NuGet)
+4. **Artifact storage**: `.context/` and `.claude/` folders and `CLAUDE.md` files will live in separate git repo
+5. **Agent orchestration**: Manual Claude commands that trigger specialized subagents with human review gates
+6. **Mutation testing**: Critical paths only (merge logic, conflict resolution, data persistence)
+7. **PT10 Alignment step**: Phase 1 & 2 artifacts use abstract naming with `{TBD:*}` placeholders. The Alignment Agent (Phase 3 Step 0) maps these to paranext-core-specific patterns by exploring the PT10 codebase. It creates `implementation/pt10-alignment.md` with concrete namespaces, file paths, and test infrastructure. Reference patterns are documented in `.context/standards/paranext-core-patterns.md`.
+8. **Specification strategy by level**: For Level A features, create structured test specifications in `test-specifications/` (ParatextData.dll is the oracle). For Level B/C, create golden masters in `golden-masters/` capturing UI-layer behavior.
+9. **Single source of truth**: README.md is the canonical source for feature classification, scope, and strategy. Other artifacts (spec-summary.md, phase-status.md) link to README sections rather than duplicating content.
+10. **Test quality graduation**: G9 (mutation testing) starts advisory to establish baselines, then becomes blocking after 2-3 features.
+11. **Traceability validation**: Every test must trace to a specification ID (BHV-XXX, TS-XXX, INV-XXX).
+12. **Proof of work artifacts**: Agents must capture test output and screenshots as proof their code works (see Section 6). Evidence files use a simple human-readable format stored in `proofs/`. Each agent verifies the previous agent's proof before starting. Visual evidence (screenshots) is required for ALL features, including backend-heavy Level A features. The Validator agent verifies all evidence files exist before approving G10.
+13. **Testing Trophy model**: Adopt Testing Trophy/Honeycomb for AI-assisted development - favor integration tests at service boundaries over excessive unit tests. This enables fearless refactoring.
+14. **Quality Gate G4.5**: New blocking gate between G4 (tests written) and G5 (tests passing) verifies test quality before implementation. Prevents low-quality AI-generated tests from proceeding.
+15. **Coverage threshold recommendations**: 70% line coverage, 60% branch coverage (documented as recommendations; actual config changes are separate).
+16. **The Revert Test**: Mandatory verification that tests fail without implementation. Tests that pass without implementation are worthless.

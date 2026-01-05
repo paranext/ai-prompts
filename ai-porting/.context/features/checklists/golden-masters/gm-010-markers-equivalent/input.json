@@ -1,0 +1,29 @@
+{
+  "scenarioId": "TS-053",
+  "checklistType": "Markers",
+  "description": "Markers checklist with equivalent markers for comparison",
+  "projects": [
+    {
+      "id": "TargetProject",
+      "role": "primary",
+      "versification": "English"
+    },
+    {
+      "id": "SourceText",
+      "role": "comparative",
+      "versification": "English"
+    }
+  ],
+  "verseRange": {
+    "first": "GEN 1:1",
+    "last": "GEN 3:24"
+  },
+  "settings": {
+    "markerFilter": "",
+    "equivalentMarkers": "p/m,s/s1"
+  },
+  "preconditions": [
+    "Both projects exist in ScrTextCollection",
+    "Projects have different but equivalent markers (e.g., \\p vs \\m)"
+  ]
+}

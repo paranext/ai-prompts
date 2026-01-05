@@ -1,0 +1,2354 @@
+{
+  "feature": "creating-projects",
+  "classification": "A",
+  "generatedAt": "2026-01-04T00:00:00Z",
+  "version": "1.0.0",
+  "summary": {
+    "totalScenarios": 65,
+    "byCategory": {
+      "happy-path": 25,
+      "edge-case": 24,
+      "error": 16
+    },
+    "byPriority": {
+      "critical": 15,
+      "high": 22,
+      "medium": 20,
+      "low": 8
+    },
+    "goldenMasterCandidates": 8
+  },
+  "scenarios": [
+    {
+      "id": "TS-001",
+      "name": "Create standard translation project with valid settings",
+      "behaviorId": "BHV-001",
+      "category": "happy-path",
+      "priority": "critical",
+      "description": "Create a new ScrText object for a standard translation project",
+      "preconditions": [
+        "User is logged in (not guest)",
+        "No project with short name 'TST' exists",
+        "Projects directory is writable"
+      ],
+      "inputs": {
+        "description": "Valid project creation parameters",
+        "data": {
+          "shortName": "TST",
+          "fullName": "Test Standard Project",
+          "projectType": "Standard",
+          "versification": "English",
+          "languageId": "en",
+          "encoding": "65001"
+        }
+      },
+      "expectedOutputs": {
+        "description": "New ScrText instance created with default settings",
+        "type": "return-value",
+        "data": {
+          "scrTextCreated": true,
+          "defaultSettingsApplied": true
+        }
+      },
+      "postconditions": [
+        "ScrText instance exists in memory",
+        "No files created yet (object not persisted)"
+      ],
+      "assertions": [
+        "ScrText object is not null",
+        "ScrText.Name equals 'TST'",
+        "ScrText.FullName equals 'Test Standard Project'"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "This is the initial object creation; persistence happens in BHV-007"
+    },
+    {
+      "id": "TS-002",
+      "name": "Initialize default project settings for new project",
+      "behaviorId": "BHV-002",
+      "category": "happy-path",
+      "priority": "critical",
+      "description": "Verify default values applied when no base project specified",
+      "preconditions": [
+        "New ScrText object created"
+      ],
+      "inputs": {
+        "description": "No base project, default initialization",
+        "data": {}
+      },
+      "expectedOutputs": {
+        "description": "ScrText with standard default values",
+        "type": "state-change",
+        "data": {
+          "fullName": "",
+          "fileNamePrePart": "",
+          "fileNameForm": "41MAT",
+          "versification": "English",
+          "defaultStylesheetFileName": "usfm.sty",
+          "encoding": "65001",
+          "normalizationForm": "NFC",
+          "usfmVersion": "Version3"
+        }
+      },
+      "postconditions": [
+        "All default values applied to ScrText"
+      ],
+      "assertions": [
+        "scrText.Settings.FullName equals ''",
+        "scrText.Settings.FileNameForm equals '41MAT'",
+        "scrText.Settings.Versification equals ScrVers.English",
+        "scrText.Settings.Encoding equals '65001'",
+        "scrText.Settings.NormalizationForm equals ProjectNormalization.NFC",
+        "scrText.Settings.UsfmVersion equals UsfmVersionOption.Version3"
+      ],
+      "goldenMasterCandidate": true,
+      "notes": "Settings.xml output should be captured as golden master for default project"
+    },
+    {
+      "id": "TS-003",
+      "name": "Initialize project from base project",
+      "behaviorId": "BHV-003",
+      "category": "happy-path",
+      "priority": "critical",
+      "description": "Create derived project inheriting settings from base",
+      "preconditions": [
+        "Base project 'BASE' exists with valid settings",
+        "Base project has versification 'Original'",
+        "Base project has language 'es'"
+      ],
+      "inputs": {
+        "description": "Base project reference and new project names",
+        "data": {
+          "baseProjectName": "BASE",
+          "shortName": "DRV",
+          "longName": "Derived Project"
+        }
+      },
+      "expectedOutputs": {
+        "description": "New ScrText inherits values from base",
+        "type": "state-change",
+        "data": {
+          "versificationFromBase": true,
+          "languageIdFromBase": true,
+          "languageNameFromBase": true,
+          "encodingFromBase": true,
+          "copyrightFromBase": true,
+          "normalizationForm": "NFC",
+          "editable": true
+        }
+      },
+      "postconditions": [
+        "New ScrText has inherited properties from base",
+        "New ScrText has unique name and full name"
+      ],
+      "assertions": [
+        "scrText.Settings.Versification equals baseScrText.Settings.Versification",
+        "scrText.Settings.LanguageId equals baseScrText.Settings.LanguageId",
+        "scrText.Settings.Name equals 'DRV'",
+        "scrText.Settings.FullName equals 'Derived Project'",
+        "scrText.Settings.NormalizationForm equals ProjectNormalization.NFC",
+        "scrText.Editable equals true"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "Derived projects inherit most settings but get unique identity"
+    },
+    {
+      "id": "TS-004",
+      "name": "Generate unique project name when default exists",
+      "behaviorId": "BHV-004",
+      "category": "happy-path",
+      "priority": "high",
+      "description": "Auto-generate unique name when requested name is taken",
+      "preconditions": [
+        "Project 'ABC' already exists",
+        "Project 'ABC1' does not exist"
+      ],
+      "inputs": {
+        "description": "Initial name that conflicts with existing project",
+        "data": {
+          "shortName": "ABC",
+          "longName": "ABC Translation",
+          "forceNumbered": false
+        }
+      },
+      "expectedOutputs": {
+        "description": "Modified names with numeric suffix",
+        "type": "return-value",
+        "data": {
+          "shortName": "ABC1",
+          "longName": "ABC Translation 1"
+        }
+      },
+      "postconditions": [
+        "Returned names are unique in ScrTextCollection"
+      ],
+      "assertions": [
+        "Result shortName is 'ABC1'",
+        "Result longName is 'ABC Translation 1'",
+        "ScrTextCollection.FindByName('ABC1') returns null (not yet created)"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "Algorithm trims trailing digits before appending"
+    },
+    {
+      "id": "TS-005",
+      "name": "Validate short name - minimum length",
+      "behaviorId": "BHV-005",
+      "category": "error",
+      "priority": "high",
+      "description": "Reject short names with fewer than 3 characters",
+      "preconditions": [],
+      "inputs": {
+        "description": "Short name with only 2 characters",
+        "data": {
+          "shortName": "AB",
+          "newProject": true,
+          "originalName": null
+        }
+      },
+      "expectedOutputs": {
+        "description": "Validation error returned",
+        "type": "return-value",
+        "data": {
+          "errorMessage": "Short name must not be less than 3 or more than 8 characters in length"
+        }
+      },
+      "postconditions": [],
+      "assertions": [
+        "ValidateShortName returns non-null error message",
+        "Error message contains 'less than 3'"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "VAL-001 validation rule"
+    },
+    {
+      "id": "TS-006",
+      "name": "Validate short name - maximum length",
+      "behaviorId": "BHV-005",
+      "category": "error",
+      "priority": "high",
+      "description": "Reject short names with more than 8 characters",
+      "preconditions": [],
+      "inputs": {
+        "description": "Short name with 9 characters",
+        "data": {
+          "shortName": "ABCDEFGHI",
+          "newProject": true,
+          "originalName": null
+        }
+      },
+      "expectedOutputs": {
+        "description": "Validation error returned",
+        "type": "return-value",
+        "data": {
+          "errorMessage": "Short name must not be less than 3 or more than 8 characters in length"
+        }
+      },
+      "postconditions": [],
+      "assertions": [
+        "ValidateShortName returns non-null error message",
+        "Error message contains 'more than 8'"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "VAL-001 validation rule"
+    },
+    {
+      "id": "TS-007",
+      "name": "Validate short name - valid characters",
+      "behaviorId": "BHV-005",
+      "category": "happy-path",
+      "priority": "high",
+      "description": "Accept short name with only valid characters",
+      "preconditions": [
+        "No project with name 'Test_1' exists"
+      ],
+      "inputs": {
+        "description": "Short name with alphanumeric and underscore",
+        "data": {
+          "shortName": "Test_1",
+          "newProject": true,
+          "originalName": null
+        }
+      },
+      "expectedOutputs": {
+        "description": "No validation error",
+        "type": "return-value",
+        "data": {
+          "errorMessage": null
+        }
+      },
+      "postconditions": [],
+      "assertions": [
+        "ValidateShortName returns null (no error)"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "VAL-002 - valid characters are A-Z, a-z, 0-9, _"
+    },
+    {
+      "id": "TS-008",
+      "name": "Validate short name - invalid characters",
+      "behaviorId": "BHV-005",
+      "category": "error",
+      "priority": "high",
+      "description": "Reject short name with special characters",
+      "preconditions": [],
+      "inputs": {
+        "description": "Short name with hyphen (invalid character)",
+        "data": {
+          "shortName": "Test-1",
+          "newProject": true,
+          "originalName": null
+        }
+      },
+      "expectedOutputs": {
+        "description": "Validation error for invalid characters",
+        "type": "return-value",
+        "data": {
+          "errorMessage": "Short name can only contain letters A-Z, digits 0-9, and underscores."
+        }
+      },
+      "postconditions": [],
+      "assertions": [
+        "ValidateShortName returns non-null error message",
+        "Error message mentions valid character set"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "VAL-002 validation rule"
+    },
+    {
+      "id": "TS-009",
+      "name": "Validate short name - contains spaces",
+      "behaviorId": "BHV-005",
+      "category": "error",
+      "priority": "high",
+      "description": "Reject short name containing spaces",
+      "preconditions": [],
+      "inputs": {
+        "description": "Short name with space character",
+        "data": {
+          "shortName": "AB CD",
+          "newProject": true,
+          "originalName": null
+        }
+      },
+      "expectedOutputs": {
+        "description": "Validation error for spaces",
+        "type": "return-value",
+        "data": {
+          "errorMessage": "Short name must not contain spaces"
+        }
+      },
+      "postconditions": [],
+      "assertions": [
+        "ValidateShortName returns non-null error message",
+        "Error message mentions spaces"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "VAL-003 validation rule"
+    },
+    {
+      "id": "TS-010",
+      "name": "Validate short name - reserved Windows filename",
+      "behaviorId": "BHV-005",
+      "category": "error",
+      "priority": "medium",
+      "description": "Reject Windows reserved filenames as short names",
+      "preconditions": [],
+      "inputs": {
+        "description": "Windows reserved filename 'CON'",
+        "data": {
+          "shortName": "CON",
+          "newProject": true,
+          "originalName": null
+        }
+      },
+      "expectedOutputs": {
+        "description": "Validation error for reserved name",
+        "type": "return-value",
+        "data": {
+          "errorMessage": "Project Short Name is a reserved file name on Windows and cannot be used."
+        }
+      },
+      "postconditions": [],
+      "assertions": [
+        "ValidateShortName returns non-null error message",
+        "Error message mentions reserved file name"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "VAL-004 - reserved names: CON, PRN, AUX, NUL, COM1-9, LPT1-9"
+    },
+    {
+      "id": "TS-011",
+      "name": "Validate short name - case-insensitive duplicate",
+      "behaviorId": "BHV-005",
+      "category": "error",
+      "priority": "high",
+      "description": "Reject name that differs only in case from existing project",
+      "preconditions": [
+        "Project 'TestPrj' exists"
+      ],
+      "inputs": {
+        "description": "Short name with different case",
+        "data": {
+          "shortName": "TESTPRJ",
+          "newProject": true,
+          "originalName": null
+        }
+      },
+      "expectedOutputs": {
+        "description": "Validation error for case-insensitive duplicate",
+        "type": "return-value",
+        "data": {
+          "errorMessage": "Another project exists (TestPrj) with the same name, but a different case. You will need to use a different short name for this project."
+        }
+      },
+      "postconditions": [],
+      "assertions": [
+        "ValidateShortName returns non-null error message",
+        "Error message contains name of existing project"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "VAL-005 validation rule - INV-001"
+    },
+    {
+      "id": "TS-012",
+      "name": "Validate short name - folder already exists",
+      "behaviorId": "BHV-005",
+      "category": "error",
+      "priority": "medium",
+      "description": "Reject name when folder exists but not as project",
+      "preconditions": [
+        "Folder 'OrphanDir' exists in projects directory",
+        "No project with name 'OrphanDir' in ScrTextCollection"
+      ],
+      "inputs": {
+        "description": "Short name matching existing folder",
+        "data": {
+          "shortName": "OrphanDir",
+          "newProject": true,
+          "originalName": null
+        }
+      },
+      "expectedOutputs": {
+        "description": "Validation error for existing folder",
+        "type": "return-value",
+        "data": {
+          "errorMessage": "A folder exists (OrphanDir) with the same name. You will need to use a different short name for this project."
+        }
+      },
+      "postconditions": [],
+      "assertions": [
+        "ValidateShortName returns non-null error message",
+        "Error message mentions folder exists"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "VAL-006 validation rule"
+    },
+    {
+      "id": "TS-013",
+      "name": "Generate short name from full name - basic words",
+      "behaviorId": "BHV-006",
+      "category": "happy-path",
+      "priority": "medium",
+      "description": "Generate abbreviation from multi-word full name",
+      "preconditions": [],
+      "inputs": {
+        "description": "Full name with multiple words",
+        "data": {
+          "fullName": "New English Translation"
+        }
+      },
+      "expectedOutputs": {
+        "description": "Abbreviation from first letters",
+        "type": "return-value",
+        "data": {
+          "abbreviation": "NET"
+        }
+      },
+      "postconditions": [],
+      "assertions": [
+        "FormTextNameAbbrev('New English Translation') equals 'NET'"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "Basic abbreviation - first letter of each word"
+    },
+    {
+      "id": "TS-014",
+      "name": "Generate short name from full name - with digits",
+      "behaviorId": "BHV-006",
+      "category": "happy-path",
+      "priority": "medium",
+      "description": "Generate abbreviation preserving digits",
+      "preconditions": [],
+      "inputs": {
+        "description": "Full name containing year digits",
+        "data": {
+          "fullName": "Revised Standard Version 2020"
+        }
+      },
+      "expectedOutputs": {
+        "description": "Abbreviation with digits appended",
+        "type": "return-value",
+        "data": {
+          "abbreviation": "RSV20"
+        }
+      },
+      "postconditions": [],
+      "assertions": [
+        "FormTextNameAbbrev includes last 2 digits at end"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "EDGE-007 - digits extracted and appended, last 2 kept"
+    },
+    {
+      "id": "TS-015",
+      "name": "Generate short name - pad to minimum length",
+      "behaviorId": "BHV-006",
+      "category": "edge-case",
+      "priority": "medium",
+      "description": "Pad abbreviation when result is less than 3 characters",
+      "preconditions": [],
+      "inputs": {
+        "description": "Full name that generates short abbreviation",
+        "data": {
+          "fullName": "A B"
+        }
+      },
+      "expectedOutputs": {
+        "description": "Abbreviation padded to 3 characters",
+        "type": "return-value",
+        "data": {
+          "abbreviation": "ABB"
+        }
+      },
+      "postconditions": [],
+      "assertions": [
+        "Result length is at least 3",
+        "Padding uses last valid character"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "EDGE-006 - abbreviated name padded with last valid character"
+    },
+    {
+      "id": "TS-016",
+      "name": "Generate short name - truncate to maximum length",
+      "behaviorId": "BHV-006",
+      "category": "edge-case",
+      "priority": "medium",
+      "description": "Truncate abbreviation when result exceeds 8 characters",
+      "preconditions": [],
+      "inputs": {
+        "description": "Full name that generates long abbreviation",
+        "data": {
+          "fullName": "Very Long Translation Name For Testing"
+        }
+      },
+      "expectedOutputs": {
+        "description": "Abbreviation truncated to 8 characters",
+        "type": "return-value",
+        "data": {
+          "abbreviation": "VLTNFT"
+        }
+      },
+      "postconditions": [],
+      "assertions": [
+        "Result length is at most 8"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "EDGE-007 - truncated to leave room for digits if present"
+    },
+    {
+      "id": "TS-017",
+      "name": "Create project directory",
+      "behaviorId": "BHV-007",
+      "category": "happy-path",
+      "priority": "critical",
+      "description": "Create project folder in settings directory",
+      "preconditions": [
+        "Projects directory exists and is writable",
+        "No folder named 'NewPrj' exists"
+      ],
+      "inputs": {
+        "description": "ScrText with short name",
+        "data": {
+          "shortName": "NewPrj"
+        }
+      },
+      "expectedOutputs": {
+        "description": "Directory created at expected path",
+        "type": "side-effect",
+        "data": {
+          "directoryPath": "{SettingsDirectory}/NewPrj",
+          "directoryExists": true
+        }
+      },
+      "postconditions": [
+        "Directory exists at {SettingsDirectory}/{shortName}",
+        "Directory is writable"
+      ],
+      "assertions": [
+        "Directory.Exists(Path.Combine(SettingsDirectory, 'NewPrj')) is true"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "POST-001 - directory matches short name (INV-003)"
+    },
+    {
+      "id": "TS-018",
+      "name": "Initialize Mercurial repository",
+      "behaviorId": "BHV-008",
+      "category": "happy-path",
+      "priority": "critical",
+      "description": "Create .hg directory for version control",
+      "preconditions": [
+        "Project directory exists",
+        "Project is not a resource project",
+        "Mercurial is available"
+      ],
+      "inputs": {
+        "description": "ScrText for new project",
+        "data": {
+          "shortName": "VrsnPrj"
+        }
+      },
+      "expectedOutputs": {
+        "description": "Mercurial repository initialized",
+        "type": "side-effect",
+        "data": {
+          "hgDirectoryExists": true,
+          "hgDirectoryPath": "{ProjectDir}/.hg"
+        }
+      },
+      "postconditions": [
+        ".hg directory exists in project folder",
+        "Repository is valid Mercurial repository"
+      ],
+      "assertions": [
+        "Directory.Exists(Path.Combine(projectDir, '.hg')) is true",
+        "Hg.Default.IsValidRepository(projectDir) is true"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "POST-003 - Hg.Default.Init called"
+    },
+    {
+      "id": "TS-019",
+      "name": "Initialize repository for resource project fails",
+      "behaviorId": "BHV-008",
+      "category": "error",
+      "priority": "medium",
+      "description": "Resource projects cannot have versioning",
+      "preconditions": [
+        "ScrText is a resource project"
+      ],
+      "inputs": {
+        "description": "Resource project ScrText",
+        "data": {
+          "isResource": true
+        }
+      },
+      "expectedOutputs": {
+        "description": "ArgumentException thrown",
+        "type": "exception",
+        "data": {
+          "exceptionType": "ArgumentException",
+          "message": "Versioning a Resource is forbidden."
+        }
+      },
+      "postconditions": [],
+      "assertions": [
+        "ArgumentException is thrown",
+        "Exception message equals 'Versioning a Resource is forbidden.'"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "INV-005 - Resources cannot be versioned"
+    },
+    {
+      "id": "TS-020",
+      "name": "Assign project GUID",
+      "behaviorId": "BHV-009",
+      "category": "happy-path",
+      "priority": "critical",
+      "description": "Calculate and assign GUID from Mercurial commit",
+      "preconditions": [
+        "Project has Mercurial repository",
+        "At least one commit exists or will be created"
+      ],
+      "inputs": {
+        "description": "ScrText with repository",
+        "data": {
+          "shortName": "GuidPrj"
+        }
+      },
+      "expectedOutputs": {
+        "description": "GUID assigned to project",
+        "type": "state-change",
+        "data": {
+          "guidAssigned": true,
+          "guidFormat": "HexId"
+        }
+      },
+      "postconditions": [
+        "scrText.Settings.Guid is not null",
+        "GUID is valid HexId format"
+      ],
+      "assertions": [
+        "scrText.Settings.Guid is not null",
+        "scrText.Settings.Guid is not empty",
+        "GUID is derived from first commit hash"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "INV-002 - GUID derived from first Mercurial revision hash"
+    },
+    {
+      "id": "TS-021",
+      "name": "Add project to collection",
+      "behaviorId": "BHV-010",
+      "category": "happy-path",
+      "priority": "critical",
+      "description": "Register project in ScrTextCollection after GUID assignment",
+      "preconditions": [
+        "Project has been saved",
+        "Project has valid GUID",
+        "Project not already in collection"
+      ],
+      "inputs": {
+        "description": "Saved ScrText with GUID",
+        "data": {
+          "shortName": "CollPrj"
+        }
+      },
+      "expectedOutputs": {
+        "description": "Project added to collection",
+        "type": "state-change",
+        "data": {
+          "inCollection": true
+        }
+      },
+      "postconditions": [
+        "ScrTextCollection contains project",
+        "Project discoverable by name"
+      ],
+      "assertions": [
+        "ScrTextCollection.FindByName('CollPrj') is not null",
+        "ScrTextCollection.FindByName('CollPrj').Guid equals expected GUID"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "INV-006, INV-007 - must be saved with GUID before add"
+    },
+    {
+      "id": "TS-022",
+      "name": "Set project type - Standard translation",
+      "behaviorId": "BHV-011",
+      "category": "happy-path",
+      "priority": "high",
+      "description": "Configure project as standard translation type",
+      "preconditions": [],
+      "inputs": {
+        "description": "Standard project type selection",
+        "data": {
+          "projectType": "Standard",
+          "baseProject": null
+        }
+      },
+      "expectedOutputs": {
+        "description": "TranslationInformation for standard type",
+        "type": "return-value",
+        "data": {
+          "type": "Standard",
+          "baseProjectName": null,
+          "baseProjectGuid": null
+        }
+      },
+      "postconditions": [],
+      "assertions": [
+        "TranslationInfo.Type equals ProjectType.Standard",
+        "TranslationInfo.BaseProjectName is null"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "Standard projects do not require base project"
+    },
+    {
+      "id": "TS-023",
+      "name": "Set project type - Back translation with base",
+      "behaviorId": "BHV-011",
+      "category": "happy-path",
+      "priority": "high",
+      "description": "Configure project as back translation with base project reference",
+      "preconditions": [
+        "Base project 'BaseTrans' exists with valid GUID"
+      ],
+      "inputs": {
+        "description": "Back translation type with base project",
+        "data": {
+          "projectType": "BackTranslation",
+          "baseProjectName": "BaseTrans"
+        }
+      },
+      "expectedOutputs": {
+        "description": "TranslationInformation with base reference",
+        "type": "return-value",
+        "data": {
+          "type": "BackTranslation",
+          "baseProjectName": "BaseTrans",
+          "baseProjectGuid": "{GUID of BaseTrans}"
+        }
+      },
+      "postconditions": [
+        "Base project GUID ensured via VersioningManager.EnsureHasGuid"
+      ],
+      "assertions": [
+        "TranslationInfo.Type equals ProjectType.BackTranslation",
+        "TranslationInfo.BaseProjectName equals 'BaseTrans'",
+        "TranslationInfo.BaseProjectGuid is not null"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "INV-004 - derived types require base project"
+    },
+    {
+      "id": "TS-024",
+      "name": "Set project type - Daughter translation",
+      "behaviorId": "BHV-011",
+      "category": "happy-path",
+      "priority": "high",
+      "description": "Configure project as daughter translation",
+      "preconditions": [
+        "Base project 'ParentTrans' exists"
+      ],
+      "inputs": {
+        "description": "Daughter type with base project",
+        "data": {
+          "projectType": "Daughter",
+          "baseProjectName": "ParentTrans"
+        }
+      },
+      "expectedOutputs": {
+        "description": "TranslationInformation for daughter type",
+        "type": "return-value",
+        "data": {
+          "type": "Daughter",
+          "baseProjectName": "ParentTrans"
+        }
+      },
+      "postconditions": [],
+      "assertions": [
+        "TranslationInfo.Type equals ProjectType.Daughter",
+        "TranslationInfo.BaseProjectName equals 'ParentTrans'"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "Daughter projects inherit versification from parent"
+    },
+    {
+      "id": "TS-025",
+      "name": "Set project type - Study Bible additions",
+      "behaviorId": "BHV-011",
+      "category": "happy-path",
+      "priority": "high",
+      "description": "Configure project as Study Bible additions",
+      "preconditions": [
+        "Base scripture project 'BaseScr' exists"
+      ],
+      "inputs": {
+        "description": "Study Bible additions type",
+        "data": {
+          "projectType": "StudyBibleAdditions",
+          "baseProjectName": "BaseScr"
+        }
+      },
+      "expectedOutputs": {
+        "description": "TranslationInformation for Study Bible",
+        "type": "return-value",
+        "data": {
+          "type": "StudyBibleAdditions",
+          "baseProjectName": "BaseScr"
+        }
+      },
+      "postconditions": [],
+      "assertions": [
+        "TranslationInfo.Type equals ProjectType.StudyBibleAdditions",
+        "Default stylesheet is 'usfm_sb.sty'"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "CON-005 - Study Bible uses special stylesheet"
+    },
+    {
+      "id": "TS-026",
+      "name": "Set project type - Consultant notes",
+      "behaviorId": "BHV-011",
+      "category": "happy-path",
+      "priority": "high",
+      "description": "Configure project as consultant notes",
+      "preconditions": [
+        "Base project exists for notes"
+      ],
+      "inputs": {
+        "description": "Consultant notes type",
+        "data": {
+          "projectType": "ConsultantNotes",
+          "baseProjectName": "BaseProj"
+        }
+      },
+      "expectedOutputs": {
+        "description": "TranslationInformation for consultant notes",
+        "type": "return-value",
+        "data": {
+          "type": "ConsultantNotes",
+          "baseProjectName": "BaseProj"
+        }
+      },
+      "postconditions": [],
+      "assertions": [
+        "TranslationInfo.Type equals ProjectType.ConsultantNotes"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "Consultant notes projects get special auto-correct file (CON-006)"
+    },
+    {
+      "id": "TS-027",
+      "name": "Set project type - derived without base fails",
+      "behaviorId": "BHV-011",
+      "category": "error",
+      "priority": "critical",
+      "description": "Derived project type without base project throws error",
+      "preconditions": [],
+      "inputs": {
+        "description": "Derived type without base project",
+        "data": {
+          "projectType": "BackTranslation",
+          "baseProjectName": null
+        }
+      },
+      "expectedOutputs": {
+        "description": "InvalidOperationException thrown",
+        "type": "exception",
+        "data": {
+          "exceptionType": "InvalidOperationException"
+        }
+      },
+      "postconditions": [],
+      "assertions": [
+        "InvalidOperationException is thrown when creating TranslationInformation"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "INV-004 - enforced by TranslationInformation constructor"
+    },
+    {
+      "id": "TS-028",
+      "name": "Copy books from base project for Study Bible",
+      "behaviorId": "BHV-012",
+      "category": "happy-path",
+      "priority": "high",
+      "description": "Copy all scripture books from base to Study Bible project",
+      "preconditions": [
+        "Base project has books GEN, EXO, MAT",
+        "New Study Bible project created"
+      ],
+      "inputs": {
+        "description": "Study Bible ScrText with base project",
+        "data": {
+          "projectType": "StudyBibleAdditions",
+          "baseProjectName": "BaseScripture"
+        }
+      },
+      "expectedOutputs": {
+        "description": "Books copied to new project",
+        "type": "side-effect",
+        "data": {
+          "booksCopied": ["GEN", "EXO", "MAT"],
+          "derivedTranslationStatusCreated": true
+        }
+      },
+      "postconditions": [
+        "All base project books exist in new project",
+        "DerivedTranslationStatus baseline created"
+      ],
+      "assertions": [
+        "New project has all books from base",
+        "Book content matches base project"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "POST-006 - only for Study Bible projects"
+    },
+    {
+      "id": "TS-029",
+      "name": "Copy license from base project",
+      "behaviorId": "BHV-013",
+      "category": "happy-path",
+      "priority": "medium",
+      "description": "Copy license.json when derived project shares parent license",
+      "preconditions": [
+        "Base project has license.json",
+        "Project type shares license with parent (BackTranslation)"
+      ],
+      "inputs": {
+        "description": "Back translation project",
+        "data": {
+          "projectType": "BackTranslation",
+          "baseProjectName": "LicensedBase"
+        }
+      },
+      "expectedOutputs": {
+        "description": "License file copied",
+        "type": "side-effect",
+        "data": {
+          "licenseFileCopied": true,
+          "licenseFilePath": "{NewProjectDir}/license.json"
+        }
+      },
+      "postconditions": [
+        "license.json exists in new project directory",
+        "license.json content matches base project"
+      ],
+      "assertions": [
+        "File.Exists(Path.Combine(newProjectDir, 'license.json')) is true"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "CON-004 - BackTranslation, Auxiliary, Transliteration share license"
+    },
+    {
+      "id": "TS-030",
+      "name": "Set up comment tags for notes project",
+      "behaviorId": "BHV-014",
+      "category": "happy-path",
+      "priority": "medium",
+      "description": "Configure default comment tags for note projects",
+      "preconditions": [
+        "Note project being created"
+      ],
+      "inputs": {
+        "description": "Comment tags configuration",
+        "data": {
+          "commentTags": ["Important", "Question", "Review"]
+        }
+      },
+      "expectedOutputs": {
+        "description": "Comment tags saved",
+        "type": "side-effect",
+        "data": {
+          "commentTagsXmlCreated": true
+        }
+      },
+      "postconditions": [
+        "CommentTags.xml exists in project directory"
+      ],
+      "assertions": [
+        "CommentTags.xml contains configured tags"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "Note projects have specific default tags"
+    },
+    {
+      "id": "TS-031",
+      "name": "Cancel project creation - cleanup directory",
+      "behaviorId": "BHV-015",
+      "category": "happy-path",
+      "priority": "high",
+      "description": "Remove project directory when user cancels creation",
+      "preconditions": [
+        "Project directory was created during dialog",
+        "User has not clicked OK"
+      ],
+      "inputs": {
+        "description": "Cancel button clicked",
+        "data": {
+          "shortName": "CancelPrj"
+        }
+      },
+      "expectedOutputs": {
+        "description": "Project directory removed",
+        "type": "side-effect",
+        "data": {
+          "directoryDeleted": true,
+          "versionedTextRemoved": true
+        }
+      },
+      "postconditions": [
+        "Project directory no longer exists",
+        "VersionedText removed from VersioningManager",
+        "No orphan files remain"
+      ],
+      "assertions": [
+        "Directory.Exists(projectDir) is false after cancel"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "Cleanup must be thorough to avoid orphan directories"
+    },
+    {
+      "id": "TS-032",
+      "name": "Cancel after registration started",
+      "behaviorId": "BHV-015",
+      "category": "edge-case",
+      "priority": "medium",
+      "description": "Handle cancel when project registration was initiated",
+      "preconditions": [
+        "Project directory created",
+        "Project registration started with registry server"
+      ],
+      "inputs": {
+        "description": "Cancel with registered project",
+        "data": {
+          "shortName": "RegPrj",
+          "registrationStarted": true
+        }
+      },
+      "expectedOutputs": {
+        "description": "Registration and directory cleaned up",
+        "type": "side-effect",
+        "data": {
+          "registrationDeleted": true,
+          "directoryDeleted": true
+        }
+      },
+      "postconditions": [
+        "Registry entry deleted",
+        "Project directory deleted"
+      ],
+      "assertions": [
+        "Registry entry removed before directory deletion"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "EDGE-009 - registration cleanup before directory"
+    },
+    {
+      "id": "TS-033",
+      "name": "Save language settings with LDML",
+      "behaviorId": "BHV-016",
+      "category": "happy-path",
+      "priority": "medium",
+      "description": "Create LDML file for language settings",
+      "preconditions": [
+        "Language ID configured",
+        "Font settings specified"
+      ],
+      "inputs": {
+        "description": "Language and font configuration",
+        "data": {
+          "languageId": "es",
+          "languageName": "Spanish",
+          "fontName": "Charis SIL",
+          "fontSize": 12
+        }
+      },
+      "expectedOutputs": {
+        "description": "LDML file created if needed",
+        "type": "side-effect",
+        "data": {
+          "ldmlCreated": true
+        }
+      },
+      "postconditions": [
+        "LDML file exists in project directory if custom settings used"
+      ],
+      "assertions": [
+        "Language settings persisted correctly"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "May use global LDML if it exists"
+    },
+    {
+      "id": "TS-034",
+      "name": "Set file naming pattern - default",
+      "behaviorId": "BHV-017",
+      "category": "happy-path",
+      "priority": "medium",
+      "description": "Configure default file naming for book files",
+      "preconditions": [],
+      "inputs": {
+        "description": "Default file naming settings",
+        "data": {
+          "shortName": "NewPrj",
+          "fileNameForm": "41MAT",
+          "fileNamePrePart": "",
+          "fileNamePostPart": ""
+        }
+      },
+      "expectedOutputs": {
+        "description": "File naming configured with short name suffix",
+        "type": "state-change",
+        "data": {
+          "fileNamePostPart": "NewPrj.SFM"
+        }
+      },
+      "postconditions": [
+        "Book files will be named like '41MATNewPrj.SFM'"
+      ],
+      "assertions": [
+        "scrText.Settings.FileNamePostPart contains short name",
+        "Default extension is '.SFM'"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "CalcFileNamePostPart generates {shortName}.SFM"
+    },
+    {
+      "id": "TS-035",
+      "name": "Set planned books",
+      "behaviorId": "BHV-018",
+      "category": "happy-path",
+      "priority": "low",
+      "description": "Configure which books are planned for the project",
+      "preconditions": [
+        "Project created successfully"
+      ],
+      "inputs": {
+        "description": "Book selection",
+        "data": {
+          "plannedBooks": ["GEN", "EXO", "LEV", "MAT", "MRK", "LUK", "JHN"]
+        }
+      },
+      "expectedOutputs": {
+        "description": "Planned books saved to progress",
+        "type": "side-effect",
+        "data": {
+          "progressDataSaved": true
+        }
+      },
+      "postconditions": [
+        "Project progress contains planned books"
+      ],
+      "assertions": [
+        "Planned books saved to project"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "Updates parallel passages books intersection"
+    },
+    {
+      "id": "TS-036",
+      "name": "Create project via plugin API - success",
+      "behaviorId": "BHV-019",
+      "category": "happy-path",
+      "priority": "high",
+      "description": "Plugin creates project programmatically",
+      "preconditions": [
+        "Valid NewProjectSettings provided",
+        "No project with same name exists"
+      ],
+      "inputs": {
+        "description": "Plugin project creation request",
+        "data": {
+          "shortName": "PlugPrj",
+          "longName": "Plugin Project",
+          "languageId": "en",
+          "languageName": "English",
+          "copyright": "Public Domain",
+          "versification": "English",
+          "normalizationType": "NFC",
+          "type": "Standard"
+        }
+      },
+      "expectedOutputs": {
+        "description": "IProject interface returned",
+        "type": "return-value",
+        "data": {
+          "projectCreated": true,
+          "projectInterface": "IProject"
+        }
+      },
+      "postconditions": [
+        "Project directory created",
+        "Mercurial initialized",
+        "GUID assigned",
+        "Project in collection"
+      ],
+      "assertions": [
+        "Returned IProject is not null",
+        "IProject.Name equals 'PlugPrj'",
+        "Project exists in ScrTextCollection"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "Plugin API sets specific file naming to prevent book file creation"
+    },
+    {
+      "id": "TS-037",
+      "name": "Create project via plugin API - invalid short name",
+      "behaviorId": "BHV-019",
+      "category": "error",
+      "priority": "high",
+      "description": "Plugin creation fails with invalid short name",
+      "preconditions": [],
+      "inputs": {
+        "description": "Invalid short name in settings",
+        "data": {
+          "shortName": "AB",
+          "longName": "Too Short Name"
+        }
+      },
+      "expectedOutputs": {
+        "description": "ParatextPluginException thrown",
+        "type": "exception",
+        "data": {
+          "exceptionType": "ParatextPluginException",
+          "message": "Invalid short name"
+        }
+      },
+      "postconditions": [],
+      "assertions": [
+        "ParatextPluginException thrown",
+        "No project directory created"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "Plugin API validates short name before creation"
+    },
+    {
+      "id": "TS-038",
+      "name": "Create project via plugin API - invalid language ID",
+      "behaviorId": "BHV-019",
+      "category": "error",
+      "priority": "high",
+      "description": "Plugin creation fails with invalid language ID",
+      "preconditions": [],
+      "inputs": {
+        "description": "Invalid language ID",
+        "data": {
+          "shortName": "LangPrj",
+          "longName": "Invalid Language Project",
+          "languageId": "not-a-valid-tag"
+        }
+      },
+      "expectedOutputs": {
+        "description": "ParatextPluginException thrown",
+        "type": "exception",
+        "data": {
+          "exceptionType": "ParatextPluginException",
+          "message": "Language ID 'not-a-valid-tag' is not a valid language tag."
+        }
+      },
+      "postconditions": [],
+      "assertions": [
+        "ParatextPluginException thrown with language ID in message"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "VAL-008 - BCP-47 validation"
+    },
+    {
+      "id": "TS-039",
+      "name": "Validate full name - required",
+      "behaviorId": "BHV-020",
+      "category": "error",
+      "priority": "medium",
+      "description": "Full name must have at least one character",
+      "preconditions": [],
+      "inputs": {
+        "description": "Empty full name",
+        "data": {
+          "fullName": ""
+        }
+      },
+      "expectedOutputs": {
+        "description": "Validation error returned",
+        "type": "return-value",
+        "data": {
+          "errorMessage": "You must enter a full name"
+        }
+      },
+      "postconditions": [],
+      "assertions": [
+        "Validation returns error for empty full name"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "VAL-007 - minimum 1 character after trimming"
+    },
+    {
+      "id": "TS-040",
+      "name": "Validate full name - backslash conversion",
+      "behaviorId": "BHV-020",
+      "category": "edge-case",
+      "priority": "low",
+      "description": "Backslashes in full name converted to forward slashes",
+      "preconditions": [],
+      "inputs": {
+        "description": "Full name with backslash",
+        "data": {
+          "fullName": "Test\\Project"
+        }
+      },
+      "expectedOutputs": {
+        "description": "Backslash converted to forward slash",
+        "type": "state-change",
+        "data": {
+          "convertedFullName": "Test/Project"
+        }
+      },
+      "postconditions": [],
+      "assertions": [
+        "Full name contains forward slash instead of backslash"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "EDGE-004 - automatic conversion"
+    },
+    {
+      "id": "TS-041",
+      "name": "Generate unique name - trailing digits trimmed",
+      "behaviorId": "BHV-004",
+      "category": "edge-case",
+      "priority": "medium",
+      "description": "Trailing digits trimmed before appending sequence number",
+      "preconditions": [
+        "Project 'Proj99' exists"
+      ],
+      "inputs": {
+        "description": "Name with trailing digits",
+        "data": {
+          "shortName": "Proj99",
+          "longName": "Project 99"
+        }
+      },
+      "expectedOutputs": {
+        "description": "Digits trimmed, sequence starts fresh",
+        "type": "return-value",
+        "data": {
+          "shortName": "Proj1",
+          "longName": "Project 1"
+        }
+      },
+      "postconditions": [],
+      "assertions": [
+        "Trailing '99' is trimmed before numbering",
+        "Result is 'Proj1' (assuming 'Proj' doesn't exist)"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "EDGE-003 - digits trimmed then incrementing starts"
+    },
+    {
+      "id": "TS-042",
+      "name": "Generate unique name - iterate up to 9999",
+      "behaviorId": "BHV-004",
+      "category": "edge-case",
+      "priority": "low",
+      "description": "Name generation iterates to find unused name",
+      "preconditions": [
+        "Projects 'TST', 'TST1', 'TST2', 'TST3' all exist"
+      ],
+      "inputs": {
+        "description": "Name with many existing variants",
+        "data": {
+          "shortName": "TST",
+          "longName": "Test"
+        }
+      },
+      "expectedOutputs": {
+        "description": "First available number used",
+        "type": "return-value",
+        "data": {
+          "shortName": "TST4",
+          "longName": "Test 4"
+        }
+      },
+      "postconditions": [],
+      "assertions": [
+        "Algorithm finds 'TST4' as first available"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "Iterates up to 9999 to find unused name"
+    },
+    {
+      "id": "TS-043",
+      "name": "Validate TranslationInfo not null",
+      "behaviorId": "BHV-011",
+      "category": "error",
+      "priority": "medium",
+      "description": "UpdateScrText requires non-null TranslationInformation",
+      "preconditions": [],
+      "inputs": {
+        "description": "Null TranslationInformation",
+        "data": {
+          "translationInfo": null
+        }
+      },
+      "expectedOutputs": {
+        "description": "ArgumentNullException thrown",
+        "type": "exception",
+        "data": {
+          "exceptionType": "ArgumentNullException"
+        }
+      },
+      "postconditions": [],
+      "assertions": [
+        "ArgumentNullException thrown for null translationInfo"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "VAL-009 validation"
+    },
+    {
+      "id": "TS-044",
+      "name": "Validate LanguageId not null",
+      "behaviorId": "BHV-011",
+      "category": "error",
+      "priority": "medium",
+      "description": "UpdateScrText requires non-null LanguageId",
+      "preconditions": [],
+      "inputs": {
+        "description": "Null LanguageId",
+        "data": {
+          "languageId": null
+        }
+      },
+      "expectedOutputs": {
+        "description": "ArgumentNullException thrown",
+        "type": "exception",
+        "data": {
+          "exceptionType": "ArgumentNullException"
+        }
+      },
+      "postconditions": [],
+      "assertions": [
+        "ArgumentNullException thrown for null languageId"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "VAL-010 validation"
+    },
+    {
+      "id": "TS-045",
+      "name": "Cannot change existing project short name",
+      "behaviorId": "BHV-007",
+      "category": "error",
+      "priority": "high",
+      "description": "Existing project short name is immutable",
+      "preconditions": [
+        "Project 'ExistPrj' already exists and saved"
+      ],
+      "inputs": {
+        "description": "Attempt to change short name",
+        "data": {
+          "existingShortName": "ExistPrj",
+          "newShortName": "ChangedPrj"
+        }
+      },
+      "expectedOutputs": {
+        "description": "ArgumentException thrown",
+        "type": "exception",
+        "data": {
+          "exceptionType": "ArgumentException",
+          "message": "project short name cannot be changed"
+        }
+      },
+      "postconditions": [],
+      "assertions": [
+        "ArgumentException thrown when attempting name change"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "VAL-011 - short name immutable after creation"
+    },
+    {
+      "id": "TS-046",
+      "name": "Customized versification copied from base",
+      "behaviorId": "BHV-003",
+      "category": "edge-case",
+      "priority": "medium",
+      "description": "Custom versification from base project is copied to derived",
+      "preconditions": [
+        "Base project has customized versification"
+      ],
+      "inputs": {
+        "description": "Derived project from customized base",
+        "data": {
+          "baseProjectName": "CustomVrsBase",
+          "hasCustomVersification": true
+        }
+      },
+      "expectedOutputs": {
+        "description": "Custom versification copied",
+        "type": "side-effect",
+        "data": {
+          "customVersificationCopied": true
+        }
+      },
+      "postconditions": [
+        "New project has same custom versification as base"
+      ],
+      "assertions": [
+        "Custom versification files copied to new project",
+        "Versification matches base project"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "EDGE-001 - ProjectSettings.CopyCustomVersification called"
+    },
+    {
+      "id": "TS-047",
+      "name": "Base project missing after selection",
+      "behaviorId": "BHV-011",
+      "category": "edge-case",
+      "priority": "medium",
+      "description": "Handle case where selected base project becomes unavailable",
+      "preconditions": [
+        "Base project was selected",
+        "Base project deleted or moved after selection"
+      ],
+      "inputs": {
+        "description": "Reference to missing base project",
+        "data": {
+          "baseProjectName": "DeletedBase"
+        }
+      },
+      "expectedOutputs": {
+        "description": "BaseScrText returns null",
+        "type": "return-value",
+        "data": {
+          "baseScrText": null
+        }
+      },
+      "postconditions": [],
+      "assertions": [
+        "TranslationInformation.BaseScrText returns null"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "EDGE-005 - UI should prevent this scenario"
+    },
+    {
+      "id": "TS-048",
+      "name": "Plugin cleanup on error",
+      "behaviorId": "BHV-019",
+      "category": "edge-case",
+      "priority": "medium",
+      "description": "Plugin creation cleans up on failure after directory created",
+      "preconditions": [
+        "Directory created",
+        "Error occurs during GUID assignment"
+      ],
+      "inputs": {
+        "description": "Plugin creation that fails mid-process",
+        "data": {
+          "shortName": "FailPrj",
+          "simulateError": "GUID_FAILURE"
+        }
+      },
+      "expectedOutputs": {
+        "description": "Cleanup performed, null returned",
+        "type": "side-effect",
+        "data": {
+          "versionedTextRemoved": true,
+          "projectDeleted": true,
+          "returnValue": null
+        }
+      },
+      "postconditions": [
+        "VersioningManager.RemoveVersionedText called",
+        "ScrTextCollection.DeleteProject called",
+        "No orphan files"
+      ],
+      "assertions": [
+        "Project directory does not exist after error",
+        "Method returns null"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "EDGE-008 - cleanup on plugin creation failure"
+    },
+    {
+      "id": "TS-049",
+      "name": "Interlinearizer output project creation",
+      "behaviorId": "BHV-001",
+      "category": "edge-case",
+      "priority": "low",
+      "description": "Create project from interlinearizer workflow with fixed settings",
+      "preconditions": [
+        "Interlinearizer workflow active"
+      ],
+      "inputs": {
+        "description": "Interlinearizer output settings",
+        "data": {
+          "sourceProject": "InterSrc",
+          "outputProjectName": "InterOut"
+        }
+      },
+      "expectedOutputs": {
+        "description": "Project created with controls disabled",
+        "type": "state-change",
+        "data": {
+          "projectTypeFixed": true,
+          "versificationInherited": true
+        }
+      },
+      "postconditions": [
+        "Output project created with inherited versification",
+        "Certain form controls disabled"
+      ],
+      "assertions": [
+        "Versification matches source project",
+        "Project type is preset"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "EDGE-010 - SetupForInterlinearOutputProject pre-configures form"
+    },
+    {
+      "id": "TS-050",
+      "name": "Study Bible publication project creation",
+      "behaviorId": "BHV-001",
+      "category": "happy-path",
+      "priority": "medium",
+      "description": "Create merged Study Bible publication from base and additions",
+      "preconditions": [
+        "Base scripture project exists",
+        "Study Bible additions project exists"
+      ],
+      "inputs": {
+        "description": "Study Bible publication settings",
+        "data": {
+          "baseProject": "BaseScripture",
+          "additionsProject": "SBAdditions"
+        }
+      },
+      "expectedOutputs": {
+        "description": "Publication project created",
+        "type": "state-change",
+        "data": {
+          "projectType": "StudyBiblePublished"
+        }
+      },
+      "postconditions": [
+        "Merged publication project created"
+      ],
+      "assertions": [
+        "Project type is StudyBiblePublished",
+        "Combines base text and additions"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "Entry point: SetupForStudyBiblePublicationProject"
+    },
+    {
+      "id": "TS-051",
+      "name": "Consultant notes project with auto-correct file",
+      "behaviorId": "BHV-014",
+      "category": "happy-path",
+      "priority": "low",
+      "description": "Consultant notes project gets special auto-correct file",
+      "preconditions": [
+        "Creating consultant notes project"
+      ],
+      "inputs": {
+        "description": "Consultant notes project type",
+        "data": {
+          "projectType": "ConsultantNotes"
+        }
+      },
+      "expectedOutputs": {
+        "description": "Auto-correct file copied",
+        "type": "side-effect",
+        "data": {
+          "autoCorrectFileCopied": true
+        }
+      },
+      "postconditions": [
+        "Standard abbreviations auto-correct file exists"
+      ],
+      "assertions": [
+        "Auto-correct file present in project directory"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "CON-006 - special auto-correct for consultant workflow"
+    },
+    {
+      "id": "TS-052",
+      "name": "Versification inheritance for derived projects",
+      "behaviorId": "BHV-003",
+      "category": "happy-path",
+      "priority": "high",
+      "description": "Derived projects inherit versification and cannot change it",
+      "preconditions": [
+        "Base project has 'Original' versification"
+      ],
+      "inputs": {
+        "description": "Derived project creation",
+        "data": {
+          "projectType": "BackTranslation",
+          "baseProjectName": "OrigVrsBase"
+        }
+      },
+      "expectedOutputs": {
+        "description": "Versification inherited from base",
+        "type": "state-change",
+        "data": {
+          "versification": "Original",
+          "versificationEditable": false
+        }
+      },
+      "postconditions": [
+        "New project has same versification as base",
+        "Versification cannot be modified"
+      ],
+      "assertions": [
+        "scrText.Settings.Versification equals base versification",
+        "Versification control is disabled in UI"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "CON-003 - versification inherited, ensures chapter/verse alignment"
+    },
+    {
+      "id": "TS-053",
+      "name": "MinParatextDataVersion set on new project",
+      "behaviorId": "BHV-002",
+      "category": "happy-path",
+      "priority": "medium",
+      "description": "New projects set minimum ParatextData version",
+      "preconditions": [],
+      "inputs": {
+        "description": "New project creation",
+        "data": {}
+      },
+      "expectedOutputs": {
+        "description": "MinParatextDataVersion set",
+        "type": "state-change",
+        "data": {
+          "minParatextDataVersion": "MinSupportedParatextDataVersion"
+        }
+      },
+      "postconditions": [
+        "MinParatextDataVersion set in settings"
+      ],
+      "assertions": [
+        "scrText.Settings.MinParatextDataVersion equals expected version"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "CON-007 - prevents older Paratext versions from corrupting data"
+    },
+    {
+      "id": "TS-054",
+      "name": "Validate reserved Windows filenames - COM ports",
+      "behaviorId": "BHV-005",
+      "category": "error",
+      "priority": "low",
+      "description": "Reject COM1-9 as short names",
+      "preconditions": [],
+      "inputs": {
+        "description": "Reserved COM port name",
+        "data": {
+          "shortName": "COM1",
+          "newProject": true
+        }
+      },
+      "expectedOutputs": {
+        "description": "Validation error for reserved name",
+        "type": "return-value",
+        "data": {
+          "errorMessage": "Project Short Name is a reserved file name on Windows and cannot be used."
+        }
+      },
+      "postconditions": [],
+      "assertions": [
+        "ValidateShortName rejects 'COM1'"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "VAL-004 - COM1-9 are reserved"
+    },
+    {
+      "id": "TS-055",
+      "name": "Validate reserved Windows filenames - LPT ports",
+      "behaviorId": "BHV-005",
+      "category": "error",
+      "priority": "low",
+      "description": "Reject LPT1-9 as short names",
+      "preconditions": [],
+      "inputs": {
+        "description": "Reserved LPT port name",
+        "data": {
+          "shortName": "LPT1",
+          "newProject": true
+        }
+      },
+      "expectedOutputs": {
+        "description": "Validation error for reserved name",
+        "type": "return-value",
+        "data": {
+          "errorMessage": "Project Short Name is a reserved file name on Windows and cannot be used."
+        }
+      },
+      "postconditions": [],
+      "assertions": [
+        "ValidateShortName rejects 'LPT1'"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "VAL-004 - LPT1-9 are reserved"
+    },
+    {
+      "id": "TS-056",
+      "name": "Validate reserved Windows filenames - PRN, AUX, NUL",
+      "behaviorId": "BHV-005",
+      "category": "error",
+      "priority": "low",
+      "description": "Reject PRN, AUX, NUL as short names",
+      "preconditions": [],
+      "inputs": {
+        "description": "Other reserved names",
+        "data": {
+          "shortNames": ["PRN", "AUX", "NUL"]
+        }
+      },
+      "expectedOutputs": {
+        "description": "Validation error for each reserved name",
+        "type": "return-value",
+        "data": {
+          "allRejected": true
+        }
+      },
+      "postconditions": [],
+      "assertions": [
+        "ValidateShortName rejects 'PRN'",
+        "ValidateShortName rejects 'AUX'",
+        "ValidateShortName rejects 'NUL'"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "VAL-004 - all Windows reserved names"
+    },
+    {
+      "id": "TS-057",
+      "name": "Guest user cannot create projects",
+      "behaviorId": "BHV-001",
+      "category": "error",
+      "priority": "high",
+      "description": "New Project menu disabled for guest users",
+      "preconditions": [
+        "User is logged in as guest"
+      ],
+      "inputs": {
+        "description": "Guest user attempts project creation",
+        "data": {
+          "userType": "guest"
+        }
+      },
+      "expectedOutputs": {
+        "description": "Menu item disabled",
+        "type": "state-change",
+        "data": {
+          "newProjectMenuEnabled": false
+        }
+      },
+      "postconditions": [],
+      "assertions": [
+        "New Project menu item is disabled for guest users"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "PRE-001 - guest users cannot create projects"
+    },
+    {
+      "id": "TS-058",
+      "name": "Settings.xml created after save",
+      "behaviorId": "BHV-007",
+      "category": "happy-path",
+      "priority": "critical",
+      "description": "Settings.xml file created in project directory",
+      "preconditions": [
+        "Project directory created",
+        "All settings configured"
+      ],
+      "inputs": {
+        "description": "Complete project settings",
+        "data": {
+          "shortName": "SettPrj",
+          "fullName": "Settings Test Project",
+          "projectType": "Standard",
+          "versification": "English"
+        }
+      },
+      "expectedOutputs": {
+        "description": "Settings.xml created",
+        "type": "side-effect",
+        "data": {
+          "settingsXmlExists": true,
+          "settingsXmlPath": "{ProjectDir}/Settings.xml"
+        }
+      },
+      "postconditions": [
+        "Settings.xml exists in project directory",
+        "Settings.xml contains correct project settings"
+      ],
+      "assertions": [
+        "File.Exists(Path.Combine(projectDir, 'Settings.xml')) is true",
+        "Settings.xml is valid XML"
+      ],
+      "goldenMasterCandidate": true,
+      "notes": "POST-002 - Settings.xml format is critical for compatibility"
+    },
+    {
+      "id": "TS-059",
+      "name": "All project types create valid TranslationInformation",
+      "behaviorId": "BHV-011",
+      "category": "happy-path",
+      "priority": "high",
+      "description": "Each ProjectType enum creates valid TranslationInformation",
+      "preconditions": [],
+      "inputs": {
+        "description": "All non-derived project types",
+        "data": {
+          "projectTypes": [
+            "Standard",
+            "NotSpecified"
+          ]
+        }
+      },
+      "expectedOutputs": {
+        "description": "TranslationInformation created for each",
+        "type": "return-value",
+        "data": {
+          "allValid": true
+        }
+      },
+      "postconditions": [],
+      "assertions": [
+        "TranslationInformation successfully created for each non-derived type"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "Comprehensive test for all project types"
+    },
+    {
+      "id": "TS-060",
+      "name": "All derived project types require base",
+      "behaviorId": "BHV-011",
+      "category": "error",
+      "priority": "high",
+      "description": "All derived types fail without base project",
+      "preconditions": [],
+      "inputs": {
+        "description": "Derived types without base",
+        "data": {
+          "derivedTypes": [
+            "BackTranslation",
+            "Daughter",
+            "StudyBibleAdditions",
+            "StudyBiblePublished",
+            "ConsultantNotes",
+            "Auxiliary",
+            "TransliterationManual",
+            "TransliterationWithEncoder"
+          ]
+        }
+      },
+      "expectedOutputs": {
+        "description": "All throw InvalidOperationException",
+        "type": "exception",
+        "data": {
+          "allThrow": true
+        }
+      },
+      "postconditions": [],
+      "assertions": [
+        "Each derived type throws InvalidOperationException without base"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "INV-004 comprehensive test"
+    },
+    {
+      "id": "TS-061",
+      "name": "Validate short name - exactly 3 characters valid",
+      "behaviorId": "BHV-005",
+      "category": "edge-case",
+      "priority": "medium",
+      "description": "Minimum valid length short name accepted",
+      "preconditions": [
+        "No project 'ABC' exists"
+      ],
+      "inputs": {
+        "description": "Exactly 3 character name",
+        "data": {
+          "shortName": "ABC",
+          "newProject": true
+        }
+      },
+      "expectedOutputs": {
+        "description": "No validation error",
+        "type": "return-value",
+        "data": {
+          "errorMessage": null
+        }
+      },
+      "postconditions": [],
+      "assertions": [
+        "ValidateShortName returns null for 'ABC'"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "Boundary value test - minimum valid length"
+    },
+    {
+      "id": "TS-062",
+      "name": "Validate short name - exactly 8 characters valid",
+      "behaviorId": "BHV-005",
+      "category": "edge-case",
+      "priority": "medium",
+      "description": "Maximum valid length short name accepted",
+      "preconditions": [
+        "No project 'ABCDEFGH' exists"
+      ],
+      "inputs": {
+        "description": "Exactly 8 character name",
+        "data": {
+          "shortName": "ABCDEFGH",
+          "newProject": true
+        }
+      },
+      "expectedOutputs": {
+        "description": "No validation error",
+        "type": "return-value",
+        "data": {
+          "errorMessage": null
+        }
+      },
+      "postconditions": [],
+      "assertions": [
+        "ValidateShortName returns null for 'ABCDEFGH'"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "Boundary value test - maximum valid length"
+    },
+    {
+      "id": "TS-063",
+      "name": "Unicode characters in short name rejected",
+      "behaviorId": "BHV-005",
+      "category": "edge-case",
+      "priority": "medium",
+      "description": "Non-ASCII characters rejected in short name",
+      "preconditions": [],
+      "inputs": {
+        "description": "Short name with unicode",
+        "data": {
+          "shortName": "Proj\u00e9ct"
+        }
+      },
+      "expectedOutputs": {
+        "description": "Validation error for invalid characters",
+        "type": "return-value",
+        "data": {
+          "errorMessage": "Short name can only contain letters A-Z, digits 0-9, and underscores."
+        }
+      },
+      "postconditions": [],
+      "assertions": [
+        "Unicode characters cause validation failure"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "Only ASCII alphanumeric and underscore allowed"
+    },
+    {
+      "id": "TS-064",
+      "name": "Full name with only whitespace rejected",
+      "behaviorId": "BHV-020",
+      "category": "edge-case",
+      "priority": "low",
+      "description": "Full name with only spaces is invalid",
+      "preconditions": [],
+      "inputs": {
+        "description": "Whitespace-only full name",
+        "data": {
+          "fullName": "   "
+        }
+      },
+      "expectedOutputs": {
+        "description": "Validation error after trim",
+        "type": "return-value",
+        "data": {
+          "errorMessage": "You must enter a full name"
+        }
+      },
+      "postconditions": [],
+      "assertions": [
+        "Whitespace-only full name fails validation after trim"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "VAL-007 - trimmed length must be >= 1"
+    },
+    {
+      "id": "TS-065",
+      "name": "Project type Transliteration with encoder",
+      "behaviorId": "BHV-011",
+      "category": "happy-path",
+      "priority": "low",
+      "description": "Create transliteration project with encoding support",
+      "preconditions": [
+        "Base project exists"
+      ],
+      "inputs": {
+        "description": "Transliteration with encoder type",
+        "data": {
+          "projectType": "TransliterationWithEncoder",
+          "baseProjectName": "SourceProj"
+        }
+      },
+      "expectedOutputs": {
+        "description": "TranslationInformation for transliteration",
+        "type": "return-value",
+        "data": {
+          "type": "TransliterationWithEncoder"
+        }
+      },
+      "postconditions": [],
+      "assertions": [
+        "TranslationInfo.Type equals ProjectType.TransliterationWithEncoder"
+      ],
+      "goldenMasterCandidate": false,
+      "notes": "CON-004 - shares license with parent"
+    }
+  ],
+  "propertyTests": [
+    {
+      "id": "PT-001",
+      "invariantId": "INV-001",
+      "name": "Project short names are unique (case-insensitive)",
+      "property": "No two projects in ScrTextCollection have names that match when compared case-insensitively",
+      "generator": {
+        "type": "random-valid-short-names",
+        "constraints": {
+          "length": { "min": 3, "max": 8 },
+          "characters": "A-Za-z0-9_"
+        }
+      },
+      "iterations": 1000,
+      "assertions": [
+        "After creating N projects with unique names, all are discoverable",
+        "Attempt to create duplicate (case-insensitive) fails validation"
+      ],
+      "priority": "critical"
+    },
+    {
+      "id": "PT-002",
+      "invariantId": "INV-002",
+      "name": "Project GUIDs are globally unique",
+      "property": "Every project GUID is unique across all projects in collection",
+      "generator": {
+        "type": "random-project-creation",
+        "constraints": {
+          "uniqueNames": true
+        }
+      },
+      "iterations": 1000,
+      "assertions": [
+        "No two projects have identical GUIDs",
+        "GUID format is valid HexId"
+      ],
+      "priority": "critical"
+    },
+    {
+      "id": "PT-003",
+      "invariantId": "INV-003",
+      "name": "Project directory matches short name",
+      "property": "Project directory path always ends with project short name",
+      "generator": {
+        "type": "random-valid-short-names",
+        "constraints": {
+          "length": { "min": 3, "max": 8 },
+          "characters": "A-Za-z0-9_"
+        }
+      },
+      "iterations": 500,
+      "assertions": [
+        "Path.GetFileName(scrText.Directory) equals scrText.Name"
+      ],
+      "priority": "critical"
+    },
+    {
+      "id": "PT-004",
+      "invariantId": "INV-004",
+      "name": "Derived projects always have valid base reference",
+      "property": "All derived project types have non-null BaseProjectName and BaseProjectGuid",
+      "generator": {
+        "type": "derived-project-types",
+        "constraints": {
+          "includeTypes": ["BackTranslation", "Daughter", "StudyBibleAdditions", "ConsultantNotes", "Auxiliary", "TransliterationManual", "TransliterationWithEncoder"]
+        }
+      },
+      "iterations": 500,
+      "assertions": [
+        "TranslationInformation.BaseProjectName is not null for derived types",
+        "TranslationInformation.BaseProjectGuid is not null for derived types"
+      ],
+      "priority": "critical"
+    },
+    {
+      "id": "PT-005",
+      "name": "Short name validation accepts all valid inputs",
+      "property": "Any string of 3-8 characters using only A-Za-z0-9_ passes validation if name is unique",
+      "generator": {
+        "type": "random-strings",
+        "constraints": {
+          "length": { "min": 3, "max": 8 },
+          "characters": "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_",
+          "exclude": ["CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"]
+        }
+      },
+      "iterations": 1000,
+      "assertions": [
+        "ValidateShortName returns null for all generated valid names"
+      ],
+      "priority": "high"
+    },
+    {
+      "id": "PT-006",
+      "name": "Short name validation rejects all invalid inputs",
+      "property": "Any string violating length, character, or uniqueness rules fails validation",
+      "generator": {
+        "type": "invalid-short-names",
+        "variants": [
+          { "type": "too-short", "length": { "min": 0, "max": 2 } },
+          { "type": "too-long", "length": { "min": 9, "max": 50 } },
+          { "type": "invalid-chars", "includeChars": "-!@#$%^&*()+=[]{}|;:',.<>?/\\\"" },
+          { "type": "contains-space", "pattern": ".*\\s.*" }
+        ]
+      },
+      "iterations": 500,
+      "assertions": [
+        "ValidateShortName returns non-null error for all invalid names"
+      ],
+      "priority": "high"
+    },
+    {
+      "id": "PT-007",
+      "name": "Abbreviation always produces valid short name",
+      "property": "FormTextNameAbbrev output always passes short name validation",
+      "generator": {
+        "type": "random-full-names",
+        "constraints": {
+          "wordCount": { "min": 1, "max": 10 },
+          "wordLength": { "min": 1, "max": 20 }
+        }
+      },
+      "iterations": 500,
+      "assertions": [
+        "Result length is between 3 and 8",
+        "Result contains only valid characters",
+        "ValidateShortName returns null for result"
+      ],
+      "priority": "medium"
+    },
+    {
+      "id": "PT-008",
+      "name": "NextUnusedProjectName always returns unique name",
+      "property": "NextUnusedProjectName output is never in ScrTextCollection",
+      "generator": {
+        "type": "existing-project-sets",
+        "constraints": {
+          "projectCount": { "min": 0, "max": 100 },
+          "namePattern": "sequential"
+        }
+      },
+      "iterations": 500,
+      "assertions": [
+        "Returned name is not in existing collection",
+        "Returned name passes validation"
+      ],
+      "priority": "medium"
+    },
+    {
+      "id": "PT-009",
+      "invariantId": "INV-005",
+      "name": "Resource projects cannot have versioning",
+      "property": "VersionedText constructor throws for resource projects",
+      "generator": {
+        "type": "resource-project",
+        "constraints": {}
+      },
+      "iterations": 100,
+      "assertions": [
+        "ArgumentException thrown with message 'Versioning a Resource is forbidden.'"
+      ],
+      "priority": "medium"
+    },
+    {
+      "id": "PT-010",
+      "invariantId": "INV-006",
+      "name": "Save before collection add ordering",
+      "property": "ScrText must exist on disk before Add to collection",
+      "generator": {
+        "type": "project-creation-sequence",
+        "constraints": {}
+      },
+      "iterations": 100,
+      "assertions": [
+        "Settings.xml exists before ScrTextCollection.Add is called"
+      ],
+      "priority": "medium"
+    }
+  ]
+}

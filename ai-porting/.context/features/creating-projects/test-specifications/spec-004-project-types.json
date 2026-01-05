@@ -1,0 +1,435 @@
+{
+  "id": "spec-004",
+  "name": "Project Types",
+  "description": "Specifications for all ProjectType enum values and their specific behaviors. Tests type-specific defaults, constraints, and TranslationInformation construction.",
+  "targetApis": ["ProjectType", "ProjectTypeExtensions", "TranslationInformation"],
+  "relatedBehaviors": ["BHV-011"],
+  "relatedInvariants": ["INV-004"],
+  "specifications": [
+    {
+      "id": "spec-004-01",
+      "name": "Standard project type - no base required",
+      "scenarioRefs": ["TS-022", "TS-059"],
+      "paratextDataApi": {
+        "class": "ProjectPropertiesUtils",
+        "method": "CalculateTranslationInfo",
+        "namespace": "Paratext.ToolsMenu"
+      },
+      "preconditions": [],
+      "inputs": {
+        "projectType": "ProjectType.Standard",
+        "baseScrText": null
+      },
+      "expectedBehavior": [
+        "TranslationInformation created without base project",
+        "BaseProjectName is null",
+        "BaseProjectGuid is null"
+      ],
+      "assertions": [
+        {
+          "type": "equals",
+          "target": "translationInfo.Type",
+          "expected": "ProjectType.Standard",
+          "description": "Type is Standard"
+        },
+        {
+          "type": "isNull",
+          "target": "translationInfo.BaseProjectName",
+          "description": "No base project name"
+        },
+        {
+          "type": "isNull",
+          "target": "translationInfo.BaseProjectGuid",
+          "description": "No base project GUID"
+        }
+      ],
+      "invariants": [],
+      "priority": "high"
+    },
+    {
+      "id": "spec-004-02",
+      "name": "NotSpecified project type - no base required",
+      "scenarioRefs": ["TS-059"],
+      "paratextDataApi": {
+        "class": "ProjectPropertiesUtils",
+        "method": "CalculateTranslationInfo",
+        "namespace": "Paratext.ToolsMenu"
+      },
+      "preconditions": [],
+      "inputs": {
+        "projectType": "ProjectType.NotSpecified",
+        "baseScrText": null
+      },
+      "expectedBehavior": [
+        "TranslationInformation created without base project"
+      ],
+      "assertions": [
+        {
+          "type": "equals",
+          "target": "translationInfo.Type",
+          "expected": "ProjectType.NotSpecified",
+          "description": "Type is NotSpecified"
+        }
+      ],
+      "invariants": [],
+      "priority": "low"
+    },
+    {
+      "id": "spec-004-03",
+      "name": "IsDerivedType extension method",
+      "scenarioRefs": ["TS-059", "TS-060"],
+      "paratextDataApi": {
+        "class": "ProjectTypeExtensions",
+        "method": "IsDerivedType",
+        "signature": "bool IsDerivedType(this ProjectType type)",
+        "namespace": "Paratext.Data"
+      },
+      "preconditions": [],
+      "inputs": {
+        "derivedTypes": [
+          "BackTranslation",
+          "Daughter",
+          "StudyBibleAdditions",
+          "StudyBiblePublished",
+          "ConsultantNotes",
+          "Auxiliary",
+          "TransliterationManual",
+          "TransliterationWithEncoder"
+        ],
+        "nonDerivedTypes": [
+          "Standard",
+          "NotSpecified"
+        ]
+      },
+      "expectedBehavior": [
+        "Returns true for all derived types",
+        "Returns false for non-derived types"
+      ],
+      "assertions": [
+        {
+          "type": "isTrue",
+          "target": "ProjectType.BackTranslation.IsDerivedType()",
+          "description": "BackTranslation is derived"
+        },
+        {
+          "type": "isTrue",
+          "target": "ProjectType.Daughter.IsDerivedType()",
+          "description": "Daughter is derived"
+        },
+        {
+          "type": "isTrue",
+          "target": "ProjectType.StudyBibleAdditions.IsDerivedType()",
+          "description": "StudyBibleAdditions is derived"
+        },
+        {
+          "type": "isTrue",
+          "target": "ProjectType.ConsultantNotes.IsDerivedType()",
+          "description": "ConsultantNotes is derived"
+        },
+        {
+          "type": "isFalse",
+          "target": "ProjectType.Standard.IsDerivedType()",
+          "description": "Standard is not derived"
+        },
+        {
+          "type": "isFalse",
+          "target": "ProjectType.NotSpecified.IsDerivedType()",
+          "description": "NotSpecified is not derived"
+        }
+      ],
+      "invariants": [],
+      "priority": "high"
+    },
+    {
+      "id": "spec-004-04",
+      "name": "IsStudyBible extension method",
+      "scenarioRefs": ["TS-025", "TS-050"],
+      "paratextDataApi": {
+        "class": "ProjectTypeExtensions",
+        "method": "IsStudyBible",
+        "signature": "bool IsStudyBible(this ProjectType type)",
+        "namespace": "Paratext.Data"
+      },
+      "preconditions": [],
+      "inputs": {
+        "studyBibleTypes": [
+          "StudyBibleAdditions",
+          "StudyBiblePublished"
+        ],
+        "nonStudyBibleTypes": [
+          "Standard",
+          "BackTranslation",
+          "Daughter"
+        ]
+      },
+      "expectedBehavior": [
+        "Returns true for Study Bible types",
+        "Returns false for non-Study Bible types"
+      ],
+      "assertions": [
+        {
+          "type": "isTrue",
+          "target": "ProjectType.StudyBibleAdditions.IsStudyBible()",
+          "description": "StudyBibleAdditions is Study Bible"
+        },
+        {
+          "type": "isTrue",
+          "target": "ProjectType.StudyBiblePublished.IsStudyBible()",
+          "description": "StudyBiblePublished is Study Bible"
+        },
+        {
+          "type": "isFalse",
+          "target": "ProjectType.Standard.IsStudyBible()",
+          "description": "Standard is not Study Bible"
+        }
+      ],
+      "invariants": [],
+      "priority": "medium"
+    },
+    {
+      "id": "spec-004-05",
+      "name": "SharesProjectLicenseWithParent extension method",
+      "scenarioRefs": ["TS-029", "TS-065"],
+      "paratextDataApi": {
+        "class": "ProjectTypeExtensions",
+        "method": "SharesProjectLicenseWithParent",
+        "signature": "bool SharesProjectLicenseWithParent(this ProjectType type)",
+        "namespace": "Paratext.Data"
+      },
+      "preconditions": [],
+      "inputs": {
+        "licenseSharingTypes": [
+          "BackTranslation",
+          "Auxiliary",
+          "TransliterationManual",
+          "TransliterationWithEncoder"
+        ],
+        "nonSharingTypes": [
+          "Standard",
+          "Daughter",
+          "StudyBibleAdditions"
+        ]
+      },
+      "expectedBehavior": [
+        "Returns true for license sharing types",
+        "Returns false for non-sharing types"
+      ],
+      "assertions": [
+        {
+          "type": "isTrue",
+          "target": "ProjectType.BackTranslation.SharesProjectLicenseWithParent()",
+          "description": "BackTranslation shares license"
+        },
+        {
+          "type": "isTrue",
+          "target": "ProjectType.Auxiliary.SharesProjectLicenseWithParent()",
+          "description": "Auxiliary shares license"
+        },
+        {
+          "type": "isTrue",
+          "target": "ProjectType.TransliterationWithEncoder.SharesProjectLicenseWithParent()",
+          "description": "TransliterationWithEncoder shares license"
+        },
+        {
+          "type": "isFalse",
+          "target": "ProjectType.Standard.SharesProjectLicenseWithParent()",
+          "description": "Standard does not share license"
+        }
+      ],
+      "invariants": [],
+      "priority": "medium"
+    },
+    {
+      "id": "spec-004-06",
+      "name": "StandardStyleSheetName for project types",
+      "scenarioRefs": ["TS-025"],
+      "paratextDataApi": {
+        "class": "ProjectTypeExtensions",
+        "method": "StandardStyleSheetName",
+        "signature": "string StandardStyleSheetName(this ProjectType type)",
+        "namespace": "Paratext.Data"
+      },
+      "preconditions": [],
+      "inputs": {
+        "projectTypes": {
+          "Standard": "usfm.sty",
+          "StudyBibleAdditions": "usfm_sb.sty",
+          "StudyBiblePublished": "usfm_sb.sty"
+        }
+      },
+      "expectedBehavior": [
+        "Standard types use 'usfm.sty'",
+        "Study Bible types use 'usfm_sb.sty'"
+      ],
+      "assertions": [
+        {
+          "type": "equals",
+          "target": "ProjectType.Standard.StandardStyleSheetName()",
+          "expected": "usfm.sty",
+          "description": "Standard uses usfm.sty"
+        },
+        {
+          "type": "equals",
+          "target": "ProjectType.StudyBibleAdditions.StandardStyleSheetName()",
+          "expected": "usfm_sb.sty",
+          "description": "StudyBibleAdditions uses usfm_sb.sty"
+        }
+      ],
+      "invariants": [],
+      "priority": "medium"
+    },
+    {
+      "id": "spec-004-07",
+      "name": "Study Bible publication project creation",
+      "scenarioRefs": ["TS-050"],
+      "paratextDataApi": {
+        "class": "ProjectPropertiesForm",
+        "method": "SetupForStudyBiblePublicationProject",
+        "namespace": "Paratext.ProjectMenu"
+      },
+      "preconditions": [
+        "Base scripture project exists",
+        "Study Bible additions project exists"
+      ],
+      "inputs": {
+        "baseProject": "BaseScripture",
+        "additionsProject": "SBAdditions"
+      },
+      "expectedBehavior": [
+        "Publication project created with StudyBiblePublished type",
+        "Merges base text and additions"
+      ],
+      "assertions": [
+        {
+          "type": "equals",
+          "target": "translationInfo.Type",
+          "expected": "ProjectType.StudyBiblePublished",
+          "description": "Type is StudyBiblePublished"
+        }
+      ],
+      "invariants": ["INV-004"],
+      "priority": "medium"
+    },
+    {
+      "id": "spec-004-08",
+      "name": "Interlinearizer output project creation",
+      "scenarioRefs": ["TS-049"],
+      "paratextDataApi": {
+        "class": "ProjectPropertiesForm",
+        "method": "SetupForInterlinearOutputProject",
+        "namespace": "Paratext.ProjectMenu"
+      },
+      "preconditions": [
+        "Interlinearizer workflow active"
+      ],
+      "inputs": {
+        "sourceProject": "InterSrc"
+      },
+      "expectedBehavior": [
+        "Project created with inherited versification",
+        "Project type is preset",
+        "Certain form controls disabled"
+      ],
+      "assertions": [
+        {
+          "type": "equals",
+          "target": "scrText.Settings.Versification",
+          "expected": "sourceProject.Settings.Versification",
+          "description": "Versification inherited from source"
+        }
+      ],
+      "invariants": [],
+      "priority": "low"
+    },
+    {
+      "id": "spec-004-09",
+      "name": "All ProjectType enum values create valid TranslationInformation",
+      "scenarioRefs": ["TS-059"],
+      "paratextDataApi": {
+        "class": "TranslationInformation",
+        "method": "constructor",
+        "namespace": "Paratext.Data.ProjectSettingsAccess"
+      },
+      "preconditions": [
+        "For derived types: valid base project exists"
+      ],
+      "inputs": {
+        "allProjectTypes": "All ProjectType enum values"
+      },
+      "expectedBehavior": [
+        "TranslationInformation successfully created for each type",
+        "Non-derived types: no base required",
+        "Derived types: base required"
+      ],
+      "assertions": [
+        {
+          "type": "not-null",
+          "target": "translationInfo",
+          "description": "TranslationInformation created for each valid input"
+        }
+      ],
+      "invariants": ["INV-004"],
+      "priority": "high"
+    },
+    {
+      "id": "spec-004-10",
+      "name": "Project type serialization in Settings.xml",
+      "scenarioRefs": ["TS-058"],
+      "paratextDataApi": {
+        "class": "TranslationInformation",
+        "method": "ToString",
+        "namespace": "Paratext.Data.ProjectSettingsAccess"
+      },
+      "preconditions": [],
+      "inputs": {
+        "projectType": "ProjectType.BackTranslation",
+        "baseProjectName": "BaseTrans",
+        "baseProjectGuid": "abc123..."
+      },
+      "expectedBehavior": [
+        "Serialized as 'Type:BaseName:BaseGuid' format",
+        "Stored in TranslationInfo setting"
+      ],
+      "assertions": [
+        {
+          "type": "matches",
+          "target": "translationInfo.ToString()",
+          "expected": "BackTranslation:BaseTrans:[a-f0-9]{40}",
+          "description": "Correct serialization format"
+        }
+      ],
+      "invariants": [],
+      "priority": "medium"
+    }
+  ],
+  "propertyTests": [
+    {
+      "id": "prop-004-01",
+      "name": "IsDerivedType is consistent with base project requirement",
+      "property": "ProjectType.IsDerivedType() == (TranslationInformation requires base project)",
+      "generator": {
+        "type": "all-project-types",
+        "constraints": {}
+      },
+      "iterations": "all-enum-values",
+      "assertions": [
+        "IsDerivedType() returns true iff base project is required"
+      ],
+      "priority": "high"
+    },
+    {
+      "id": "prop-004-02",
+      "name": "All project types have valid stylesheet name",
+      "property": "StandardStyleSheetName returns non-empty string for all types",
+      "generator": {
+        "type": "all-project-types",
+        "constraints": {}
+      },
+      "iterations": "all-enum-values",
+      "assertions": [
+        "StandardStyleSheetName() is not null or empty"
+      ],
+      "priority": "medium"
+    }
+  ]
+}

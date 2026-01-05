@@ -1,0 +1,41 @@
+{
+  "scenarioId": "gm-001",
+  "name": "Verses Checklist - Single Project",
+  "scenarioIds": ["TS-038", "TS-007", "TS-040"],
+  "behaviorIds": ["BHV-100", "BHV-002"],
+  "invariantIds": ["INV-001", "INV-003", "POST-003"],
+  "domainConstraints": ["DC-003"],
+  "createdDate": "2025-01-04",
+  "priority": "high",
+  "riskLevel": "low",
+  "checklistType": "Verses",
+  "testCategory": "single-project",
+  "comparisonConfig": {
+    "strategy": "structural",
+    "ignoreFields": [
+      "captureDate",
+      "actualVerseContent"
+    ],
+    "normalizations": [
+      "strip-timestamps",
+      "normalize-whitespace"
+    ],
+    "tolerance": {
+      "rowCountVariance": 0
+    }
+  },
+  "coverage": {
+    "behaviors": ["BHV-100 Verses Data Extraction", "BHV-002 Display Checklist"],
+    "invariants": [
+      "INV-001: Row cell count equals column count",
+      "INV-003: First cell reference required",
+      "POST-003: Rows ordered by reference"
+    ],
+    "edgeCases": ["EC-013 Verse 0 exclusion"]
+  },
+  "pt10Notes": {
+    "renderingTarget": "React DataTable component",
+    "navigationMethod": "PAPI command for verse navigation",
+    "htmlReplacement": "Replace XSLT with React rendering"
+  }
+}

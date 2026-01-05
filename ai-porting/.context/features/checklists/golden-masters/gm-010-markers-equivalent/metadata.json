@@ -1,0 +1,28 @@
+{
+  "scenarioId": "gm-010",
+  "name": "Markers Checklist - Equivalent Markers",
+  "scenarioIds": ["TS-053"],
+  "behaviorIds": ["BHV-105", "BHV-013"],
+  "invariantIds": ["INV-001"],
+  "domainConstraints": ["DC-007"],
+  "createdDate": "2025-01-04",
+  "priority": "high",
+  "riskLevel": "medium",
+  "checklistType": "Markers",
+  "testCategory": "settings-variation",
+  "comparisonConfig": {
+    "strategy": "structural",
+    "ignoreFields": ["captureDate", "actualParagraphContent"],
+    "normalizations": ["strip-timestamps", "normalize-whitespace"],
+    "tolerance": {}
+  },
+  "coverage": {
+    "behaviors": ["BHV-105 Markers Data Extraction with equivalence"],
+    "domainConstraints": ["DC-007: Equivalent markers for matching"],
+    "settings": ["equivalentMarkers=p/m,s/s1"]
+  },
+  "pt10Notes": {
+    "settingsDialog": "MarkerSettingsForm configures equivalences",
+    "matchingAlgorithm": "Build equivalence groups for comparison"
+  }
+}

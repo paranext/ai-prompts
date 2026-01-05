@@ -1,0 +1,32 @@
+{
+  "scenarioId": "gm-011",
+  "name": "Relatively Long Verses Checklist",
+  "scenarioIds": ["TS-054", "TS-055", "TS-056"],
+  "behaviorIds": ["BHV-106"],
+  "invariantIds": ["INV-001", "POST-002"],
+  "preconditions": ["PRE-005"],
+  "createdDate": "2025-01-04",
+  "priority": "high",
+  "riskLevel": "medium",
+  "checklistType": "RelativelyLongVerses",
+  "testCategory": "type-specific",
+  "comparisonConfig": {
+    "strategy": "structural",
+    "ignoreFields": ["captureDate", "actualVerseContent", "exactScore"],
+    "normalizations": ["strip-timestamps"],
+    "tolerance": {
+      "scoreVariance": 0.01
+    }
+  },
+  "coverage": {
+    "behaviors": ["BHV-106 Relatively Long/Short Verses Data Extraction"],
+    "invariants": ["INV-001: Row cell count equals column count", "POST-002: Score-based sorting"],
+    "edgeCases": ["EC-005: Empty verse gets infinity score"],
+    "preconditions": ["PRE-005: At least two ScrTexts required"]
+  },
+  "pt10Notes": {
+    "scoreAlgorithm": "target.length / source.length",
+    "infinityScore": "Use 1000000 for missing verses",
+    "limitResults": "HighScoresOnly = true caps at 100"
+  }
+}

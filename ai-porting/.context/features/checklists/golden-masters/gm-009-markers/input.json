@@ -1,0 +1,24 @@
+{
+  "scenarioId": "TS-051",
+  "checklistType": "Markers",
+  "description": "Markers checklist showing paragraph markers with content",
+  "projects": [
+    {
+      "id": "TestProject",
+      "role": "primary",
+      "versification": "English"
+    }
+  ],
+  "verseRange": {
+    "first": "GEN 1:1",
+    "last": "GEN 3:24"
+  },
+  "settings": {
+    "markerFilter": "",
+    "equivalentMarkers": ""
+  },
+  "preconditions": [
+    "Project TestProject exists in ScrTextCollection",
+    "Project has various paragraph markers in Genesis 1-3"
+  ]
+}

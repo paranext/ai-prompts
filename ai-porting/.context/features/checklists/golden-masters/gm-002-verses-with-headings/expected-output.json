@@ -1,0 +1,51 @@
+{
+  "scenarioId": "TS-039",
+  "capturedFrom": "PT9 behavior specification",
+  "captureDate": "2025-01-04",
+  "description": "Verses checklist with section headings visible includes heading text prepended to verse content",
+  "structure": {
+    "columnCount": 2,
+    "columnHeaders": ["Reference", "TestProject"],
+    "rowCountApprox": "17-20 depending on superscription handling"
+  },
+  "expectedBehavior": {
+    "sectionHeadingDisplay": "Section heading text appears at start of verse cell content when showSectionHeadings=true",
+    "headingFormatting": "Heading text is distinguished from verse text (may have special styling/markers)",
+    "psalmSuperscriptions": "Psalm superscriptions (verse 0) may be handled differently from regular section headings"
+  },
+  "sampleRows": [
+    {
+      "reference": "PSA 1:1",
+      "cells": [
+        {
+          "projectId": "TestProject",
+          "contentType": "verseTextWithHeading",
+          "hasContent": true,
+          "mayInclude": "Section heading before Psalm 1 if present"
+        }
+      ]
+    },
+    {
+      "reference": "PSA 2:1",
+      "cells": [
+        {
+          "projectId": "TestProject",
+          "contentType": "verseTextWithHeading",
+          "hasContent": true,
+          "mayInclude": "Section heading before Psalm 2 if present"
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "hiddenRows": 0,
+    "maxRowsReached": false,
+    "windowTitle": "Verses for TestProject PSA 1:1-3:8"
+  },
+  "verificationNotes": [
+    "Section heading text should appear in verse cells when showSectionHeadings=true",
+    "Heading text should be visually distinct from verse text",
+    "Psalm superscriptions in verse 0 are still excluded (verse 0 exclusion applies)",
+    "Section headings between verses should appear with the following verse"
+  ]
+}

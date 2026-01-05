@@ -1,0 +1,21 @@
+{
+  "scenarioId": "TS-060",
+  "checklistType": "LongParagraphs",
+  "description": "Top 100 longest paragraphs sorted by character count",
+  "projects": [
+    {
+      "id": "TestProject",
+      "role": "primary",
+      "versification": "English"
+    }
+  ],
+  "verseRange": {
+    "first": "GEN 1:1",
+    "last": "GEN 50:26"
+  },
+  "settings": {},
+  "preconditions": [
+    "Project TestProject exists in ScrTextCollection",
+    "Project has complete content for Genesis"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "scenarioId": "TS-047",
+  "checklistType": "CrossReferences",
+  "description": "Cross references checklist extracting reference content without verse text",
+  "projects": [
+    {
+      "id": "TestProject",
+      "role": "primary",
+      "versification": "English"
+    }
+  ],
+  "verseRange": {
+    "first": "MAT 1:1",
+    "last": "MAT 5:48"
+  },
+  "settings": {
+    "showReferencedVerseText": false
+  },
+  "preconditions": [
+    "Project TestProject exists in ScrTextCollection",
+    "Project has cross-references in Matthew 1-5",
+    "Scripture reference settings have been reviewed (VAL-002)"
+  ]
+}

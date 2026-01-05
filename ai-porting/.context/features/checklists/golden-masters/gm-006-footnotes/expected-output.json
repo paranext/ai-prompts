@@ -1,0 +1,41 @@
+{
+  "scenarioId": "TS-046",
+  "capturedFrom": "PT9 behavior specification",
+  "captureDate": "2025-01-04",
+  "description": "Footnotes checklist extracts only \\f markers, not \\x cross-references",
+  "structure": {
+    "columnCount": 2,
+    "columnHeaders": ["Reference", "TestProject"],
+    "rowCountVariable": "Depends on number of footnotes in Matthew 1-5"
+  },
+  "expectedBehavior": {
+    "markerExtraction": "Only \\f footnote markers are extracted",
+    "excludedMarkers": "\\x cross-reference markers are NOT included",
+    "referenceAssignment": "Reference is the verse containing the footnote",
+    "contentDisplay": "Full footnote content including caller and text"
+  },
+  "sampleRows": [
+    {
+      "reference": "MAT 1:1",
+      "cells": [
+        {
+          "projectId": "TestProject",
+          "contentType": "footnoteContent",
+          "hasContent": true,
+          "description": "Footnote from Matthew 1:1 if present"
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "hiddenRows": 0,
+    "maxRowsReached": false,
+    "windowTitle": "Footnotes for TestProject MAT 1:1-5:48"
+  },
+  "verificationNotes": [
+    "Only \\f markers extracted, NOT \\x cross-references",
+    "Multiple footnotes in same verse may create multiple rows",
+    "Footnote content includes all nested markers (\\ft, \\fk, etc.)",
+    "Reference points to verse containing the footnote"
+  ]
+}
