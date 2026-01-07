@@ -67,13 +67,69 @@ We use **4 phase commands** that orchestrate **specialized subagents**:
     └── validator.md                 # Quality gate check
 ```
 
-### Workflow
+### Visual Workflow
 
 ```
-Phase 1 → Phase 2 → [Stakeholder Review] → Phase 3 → Phase 4 → Human Review
-                          │
-                          ├── spec-summary.md generated
-                          └── GitHub issue created
+┌─────────────────────────────────────────────────────────────────────────┐
+│  PHASE 1: ANALYSIS                          Codebase: PT9              │
+│  ┌──────────────────┐  ┌──────────────────┐  ┌────────────────────┐    │
+│  │  Archaeologist   │→ │   Classifier     │→ │  Characterizer     │    │
+│  └──────────────────┘  └──────────────────┘  └────────────────────┘    │
+└─────────────────────────────────────────────────────────────────────────┘
+                                   │
+                                   ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│  PHASE 2: SPECIFICATION                     Codebase: PT9              │
+│  ┌──────────────────┐  ┌──────────────────┐  ┌────────────────────┐    │
+│  │UI Logic Extractor│→ │  Spec Generator  │→ │ Contract Writer    │    │
+│  │ (Level B only)   │  │                  │  │                    │    │
+│  └──────────────────┘  └──────────────────┘  └────────────────────┘    │
+│                                   │                                    │
+│                   ┌───────────────┴───────────────┐                    │
+│                   │  Spec Summary + GitHub Issue  │                    │
+│                   │   (Stakeholder Review Gate)   │                    │
+│                   └───────────────────────────────┘                    │
+└─────────────────────────────────────────────────────────────────────────┘
+                                   │
+                         [Stakeholder Approval]
+                                   │
+                                   ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│  PHASE 3: IMPLEMENTATION                    Codebase: PT10             │
+│                                                                         │
+│  ┌──────────────────┐                                                  │
+│  │ Alignment Agent  │ (Step 0: Maps contracts to PT10 patterns)        │
+│  └────────┬─────────┘                                                  │
+│           │                                                            │
+│           ▼                                                            │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │                    Level A / B Logic Path                        │   │
+│  │  ┌─────────────┐  ┌─────────────┐  ┌───────────┐  ┌───────────┐ │   │
+│  │  │ Test Writer │→ │ Traceability│→ │Implementer│→ │ Refactorer│ │   │
+│  │  │   (RED)     │  │  Validator  │  │  (GREEN)  │  │           │ │   │
+│  │  └─────────────┘  └─────────────┘  └───────────┘  └───────────┘ │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+│                                                                         │
+│  ┌─────────────────────────────────────────────────────────────────┐   │
+│  │                    Level B UI / C Path                           │   │
+│  │  ┌───────────────────────────────────────────────────────────┐  │   │
+│  │  │              Component Builder                             │  │   │
+│  │  │         (iterative visual verification)                    │  │   │
+│  │  └───────────────────────────────────────────────────────────┘  │   │
+│  └─────────────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────────────┘
+                                   │
+                                   ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│  PHASE 4: VERIFICATION                      Codebase: PT10             │
+│  ┌──────────────────┐  ┌──────────────────┐  ┌────────────────────┐    │
+│  │  Equivalence     │→ │   Invariant      │→ │    Validator       │    │
+│  │   Checker        │  │    Checker       │  │                    │    │
+│  └──────────────────┘  └──────────────────┘  └────────────────────┘    │
+└─────────────────────────────────────────────────────────────────────────┘
+                                   │
+                                   ▼
+                         Human Review → Merge
 ```
 
 ### Phase Commands
@@ -155,11 +211,11 @@ This section defines the test types used in feature porting.
 
 For Level A and B features, TDD is **mandatory**. We follow the [Testing Trophy model](standards/Testing-Guide.md#test-strategy-the-testing-trophy): favor integration tests at service boundaries over excessive unit tests.
 
-| Phase | Agent | TDD Requirement |
-|-------|-------|-----------------|
+| Phase   | Agent           | TDD Requirement                                   |
+| ------- | --------------- | ------------------------------------------------- |
 | Phase 3 | TDD Test Writer | Write tests FIRST, verify they FAIL (Revert Test) |
-| Phase 3 | TDD Implementer | Write MINIMUM code to pass tests |
-| Phase 3 | TDD Refactorer | Clean up while tests stay GREEN |
+| Phase 3 | TDD Implementer | Write MINIMUM code to pass tests                  |
+| Phase 3 | TDD Refactorer  | Clean up while tests stay GREEN                   |
 
 **The Revert Test**: Every test must fail when implementation is absent. Tests that pass without implementation are worthless.
 
@@ -197,13 +253,14 @@ For Level A and B features, TDD is **mandatory**. We follow the [Testing Trophy 
 
 **Iteration Requirements:**
 
-| Invariant Criticality | Minimum Iterations |
-|-----------------------|-------------------|
-| Critical (data integrity) | 1000 |
-| Important (business logic) | 500 |
-| Standard | 100 |
+| Invariant Criticality      | Minimum Iterations |
+| -------------------------- | ------------------ |
+| Critical (data integrity)  | 1000               |
+| Important (business logic) | 500                |
+| Standard                   | 100                |
 
 **Evidence format:** Include iteration counts in proof files:
+
 ```
 INV-001: ProjectGuid_AlwaysUnique - 1000/1000 passed
 ```
@@ -270,6 +327,7 @@ The Validator agent verifies that proof evidence exists for each applicable gate
 **Purpose:** Prevent low-quality AI-generated tests from proceeding to implementation.
 
 **Verification Criteria:**
+
 - All tests pass The Revert Test (fail without implementation)
 - No implementation-mirroring assertions (tests use known values, not computed expected)
 - Mock count ≤3 per test (or exception documented and justified)
@@ -353,26 +411,27 @@ AI agents can generate many tests quickly, but quantity ≠ quality. Apply these
 
 **Prohibited Patterns:**
 
-| Pattern | Problem | Detection |
-|---------|---------|-----------|
-| Implementation-mirroring | Test duplicates code logic | Expected value is computed, not literal |
-| Over-mocking | Hides integration issues | >3 mocks per test |
-| Trivial tests | Zero defect-detection value | Tests simple accessors/constructors |
-| Non-deterministic | Flaky tests | Uses real time/random/network |
+| Pattern                  | Problem                     | Detection                               |
+| ------------------------ | --------------------------- | --------------------------------------- |
+| Implementation-mirroring | Test duplicates code logic  | Expected value is computed, not literal |
+| Over-mocking             | Hides integration issues    | >3 mocks per test                       |
+| Trivial tests            | Zero defect-detection value | Tests simple accessors/constructors     |
+| Non-deterministic        | Flaky tests                 | Uses real time/random/network           |
 
 **Mocking Hierarchy:**
 
-| Level | What to Mock | Notes |
-|-------|--------------|-------|
-| 0 | **Never**: ParatextData.dll | It's the shared oracle |
-| 1 | Rarely: Business logic modules | Use real code when possible |
-| 2 | Sometimes: Cross-feature services | For isolation in unit tests |
-| 3 | Usually: External APIs, file system | Control side effects |
-| 4 | Always: Time, random, network | Ensure determinism |
+| Level | What to Mock                        | Notes                       |
+| ----- | ----------------------------------- | --------------------------- |
+| 0     | **Never**: ParatextData.dll         | It's the shared oracle      |
+| 1     | Rarely: Business logic modules      | Use real code when possible |
+| 2     | Sometimes: Cross-feature services   | For isolation in unit tests |
+| 3     | Usually: External APIs, file system | Control side effects        |
+| 4     | Always: Time, random, network       | Ensure determinism          |
 
 **Test Curation Protocol:**
 
 Before accepting tests, verify:
+
 1. **Volume check**: ~3-5 tests per public method (not 15+)
 2. **Value check**: Each test catches a potential defect
 3. **Uniqueness check**: No duplicate coverage
@@ -397,7 +456,7 @@ Agents should run tests constantly, not just at phase checkpoints:
 | Full        | Before handoff  | < 5min      |
 | Integration | CI only         | No limit    |
 
-*Note: Test categories apply to new ported features. Existing test categorization will be addressed separately.*
+_Note: Test categories apply to new ported features. Existing test categorization will be addressed separately._
 
 ### Phase 3 Flow
 
@@ -523,14 +582,14 @@ TIMESTAMP|SESSION_ID|EVENT|AGENT|TOOL|INPUT_SUMMARY
 
 **What's Tracked:**
 
-| Tool       | Logged Details                   |
-| ---------- | -------------------------------- |
+| Tool       | Logged Details                    |
+| ---------- | --------------------------------- |
 | Read       | File path, full/partial indicator |
-| Glob       | Pattern, search path             |
-| Grep       | Search pattern, path             |
-| Task       | Subagent type, prompt summary    |
-| Bash       | Command executed                 |
-| Edit/Write | File path modified               |
+| Glob       | Pattern, search path              |
+| Grep       | Search pattern, path              |
+| Task       | Subagent type, prompt summary     |
+| Bash       | Command executed                  |
+| Edit/Write | File path modified                |
 
 **Reviewing Phase 1 Coverage:**
 
