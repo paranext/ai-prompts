@@ -511,6 +511,46 @@ Command: dotnet test --filter "CreateProject"
 Summary: 15 passed, 0 failed
 ```
 
+### Audit Trail for Agent Actions
+
+Claude Code hooks automatically log all tool calls to `.context/audit-logs/sessions/`. This provides an audit trail for verifying agent exploration coverage.
+
+**Log Format:**
+
+```
+TIMESTAMP|SESSION_ID|EVENT|AGENT|TOOL|INPUT_SUMMARY
+```
+
+**What's Tracked:**
+
+| Tool       | Logged Details                   |
+| ---------- | -------------------------------- |
+| Read       | File path, full/partial indicator |
+| Glob       | Pattern, search path             |
+| Grep       | Search pattern, path             |
+| Task       | Subagent type, prompt summary    |
+| Bash       | Command executed                 |
+| Edit/Write | File path modified               |
+
+**Reviewing Phase 1 Coverage:**
+
+After `/porting/phase-1-analysis {feature}`, verify the archaeologist explored comprehensively:
+
+```bash
+# Files read by archaeologist
+grep "|archaeologist|Read|" .context/audit-logs/sessions/*.log
+
+# Search patterns used
+grep "|archaeologist|Glob\|Grep|" .context/audit-logs/sessions/*.log
+```
+
+**When to Commit Audit Logs:**
+
+- Commit important trails as documentation (e.g., Phase 1 analysis of critical features)
+- Leave routine session logs uncommitted
+
+Scripts: `.claude/scripts/audit-*.sh`
+
 ---
 
 ## 7. Verification Strategy (Golden Masters + Documentation)
@@ -743,3 +783,4 @@ Phase 4: Verification
 14. **Quality Gate G4.5**: New blocking gate between G4 (tests written) and G5 (tests passing) verifies test quality before implementation. Prevents low-quality AI-generated tests from proceeding.
 15. **Coverage threshold recommendations**: 70% line coverage, 60% branch coverage (documented as recommendations; actual config changes are separate).
 16. **The Revert Test**: Mandatory verification that tests fail without implementation. Tests that pass without implementation are worthless.
+17. **Audit trail hooks**: Claude Code hooks log all tool calls to `.context/audit-logs/` for verifying agent exploration coverage. Logs track file reads (full/partial), search patterns, and subagent transitions. Important trails can be committed as documentation.
