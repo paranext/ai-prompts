@@ -17,5 +17,36 @@
       "Bash(git push origin main:*)",
       "Bash(git push origin master:*)"
     ]
+  },
+  "hooks": {
+    "SessionStart": [{
+      "hooks": [{
+        "type": "command",
+        "command": ".claude/scripts/audit-session-start.sh",
+        "timeout": 5
+      }]
+    }],
+    "PreToolUse": [{
+      "matcher": "*",
+      "hooks": [{
+        "type": "command",
+        "command": ".claude/scripts/audit-tool.sh",
+        "timeout": 5
+      }]
+    }],
+    "SubagentStop": [{
+      "hooks": [{
+        "type": "command",
+        "command": ".claude/scripts/audit-subagent-stop.sh",
+        "timeout": 5
+      }]
+    }],
+    "SessionEnd": [{
+      "hooks": [{
+        "type": "command",
+        "command": ".claude/scripts/audit-session-end.sh",
+        "timeout": 5
+      }]
+    }]
   }
 }
