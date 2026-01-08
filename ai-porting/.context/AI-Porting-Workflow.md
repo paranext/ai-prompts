@@ -19,8 +19,8 @@ This document defines the workflow for porting features from Paratext 9 (PT9) to
 
 ```
 Phase 0: Task Description → Human defines scope, goals, non-goals (task-description.md)
-Phase 1: Analysis         → Understand PT9 behavior, classify feature [PT9 CODEBASE]
-Phase 2: Specification    → Generate test specs/golden masters, define contracts [PT9 CODEBASE]
+Phase 1: Discovery        → Discover PT9 behaviors, logic distribution, classify feature [PT9 CODEBASE]
+Phase 2: Specification    → Generate test scenarios, specs/golden masters, define contracts [PT9 CODEBASE]
 Phase 3: Implementation   → Align to PT10, TDD or Component-First (based on level) [PT10 CODEBASE]
 Phase 4: Verification     → Equivalence tests, property tests, human review [PT10 CODEBASE]
 ```
@@ -43,18 +43,18 @@ We use **4 phase commands** that orchestrate **specialized subagents**:
 .claude/
 ├── commands/porting/
 │   ├── README.md                    # Documentation
-│   ├── phase-1-analysis.md          # Agents: archaeologist → classifier → characterizer
-│   ├── phase-2-specification.md     # Agents: logic-extractor → spec-generator → contract-writer
+│   ├── phase-1-discovery.md         # Agents: archaeologist → logic-locator → classifier
+│   ├── phase-2-specification.md     # Agents: test-scenario-writer → spec-generator → contract-writer
 │   │                                # + Spec summary + GitHub issue creation
 │   ├── phase-3-implementation.md    # Agents: alignment → TDD path OR component-builder (based on level)
 │   └── phase-4-verification.md      # Agents: equivalence-checker → invariant-checker → validator
 │
 └── agents/
     ├── archaeologist.md             # Discover behaviors, entry points, invariants
-    ├── classifier.md                # Determine Level A/B/C
-    ├── characterizer.md             # Generate test scenarios
-    ├── ui-logic-extractor.md        # Document UI logic (Level B)
-    ├── spec-generator.md            # Create test specs (Level A) or golden masters (Level B/C)
+    ├── logic-locator.md             # Identify WHERE logic lives (ParatextData vs UI)
+    ├── feature-classifier.md        # Determine Level A/B/C
+    ├── test-scenario-writer.md      # Generate test scenarios (Phase 2)
+    ├── spec-generator.md            # Create test specs (A), extraction plans + golden masters (B/C)
     ├── contract-writer.md           # Define API types (with {TBD:*} placeholders for PT10)
     ├── alignment-agent.md           # Map Phase 2 contracts to PT10 patterns (Phase 3 Step 0)
     ├── tdd-test-writer.md           # Write failing tests (RED)
@@ -71,9 +71,9 @@ We use **4 phase commands** that orchestrate **specialized subagents**:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│  PHASE 1: ANALYSIS                          Codebase: PT9              │
+│  PHASE 1: DISCOVERY                         Codebase: PT9              │
 │  ┌──────────────────┐  ┌──────────────────┐  ┌────────────────────┐    │
-│  │  Archaeologist   │→ │   Classifier     │→ │  Characterizer     │    │
+│  │  Archaeologist   │→ │  Logic Locator   │→ │    Classifier      │    │
 │  └──────────────────┘  └──────────────────┘  └────────────────────┘    │
 └─────────────────────────────────────────────────────────────────────────┘
                                    │
@@ -81,8 +81,8 @@ We use **4 phase commands** that orchestrate **specialized subagents**:
 ┌─────────────────────────────────────────────────────────────────────────┐
 │  PHASE 2: SPECIFICATION                     Codebase: PT9              │
 │  ┌──────────────────┐  ┌──────────────────┐  ┌────────────────────┐    │
-│  │UI Logic Extractor│→ │  Spec Generator  │→ │ Contract Writer    │    │
-│  │ (Level B only)   │  │                  │  │                    │    │
+│  │Test Scenario     │→ │  Spec Generator  │→ │ Contract Writer    │    │
+│  │   Writer         │  │                  │  │                    │    │
 │  └──────────────────┘  └──────────────────┘  └────────────────────┘    │
 │                                   │                                    │
 │                   ┌───────────────┴───────────────┐                    │
@@ -134,32 +134,32 @@ We use **4 phase commands** that orchestrate **specialized subagents**:
 
 ### Phase Commands
 
-| Command                                  | Purpose                           | Outputs                                                                                                         |
-| ---------------------------------------- | --------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `/porting/phase-1-analysis {name}`       | Understand PT9                    | behavior-catalog.md, boundary-map.md, business-rules.md, requirements.md                                        |
-| `/porting/phase-2-specification {name}`  | Define specs + stakeholder review | data-contracts.md, test-specifications/ (Level A) or golden-masters/ (Level B/C), spec-summary.md, GitHub issue |
-| `/porting/phase-3-implementation {name}` | Build feature                     | Test files, implementation (strategy varies by level)                                                           |
-| `/porting/phase-4-verification {name}`   | Verify correctness                | equivalence-report.md, invariant-report.md, validation-report.md                                                |
+| Command                                  | Purpose                           | Outputs                                                                                                                               |
+| ---------------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `/porting/phase-1-discovery {name}`      | Discover PT9 behaviors            | behavior-catalog.md, boundary-map.md, business-rules.md, logic-distribution.md, README.md (classification)                            |
+| `/porting/phase-2-specification {name}`  | Define specs + stakeholder review | test-scenarios.json, test-specifications/ (A/B), extraction-plan.md (B), golden-masters/ (B/C), data-contracts.md, spec-summary.md    |
+| `/porting/phase-3-implementation {name}` | Build feature                     | Test files, implementation (strategy varies by level)                                                                                 |
+| `/porting/phase-4-verification {name}`   | Verify correctness                | equivalence-report.md, invariant-report.md, validation-report.md                                                                      |
 
 ### Agent Summary
 
-| Phase | Agent                  | Responsibility                                | Output                                                     |
-| ----- | ---------------------- | --------------------------------------------- | ---------------------------------------------------------- |
-| 1     | Archaeologist          | Discover behaviors, entry points, invariants  | behavior-catalog.md, boundary-map.md, business-rules.md    |
-| 1     | Classifier             | Determine Level A/B/C                         | README.md classification (with TBD PT10 integration notes) |
-| 1     | Characterizer          | Generate test scenarios, capture requirements | test-scenarios.json, edge-cases.md, requirements.md        |
-| 2     | UI Logic Extractor     | Document UI logic (Level B only)              | ui-logic-extraction.md                                     |
-| 2     | Spec Generator         | Create test specs (A) or golden masters (B/C) | test-specifications/ or golden-masters/                    |
-| 2     | Contract Writer        | Define API types with `{TBD:*}` placeholders  | data-contracts.md                                          |
-| 3     | Alignment Agent        | Map Phase 2 contracts to PT10 patterns        | pt10-alignment.md, fills TBD sections                      |
-| 3     | TDD Test Writer        | Write failing tests (RED) - Level A/B logic   | Test files in PT10                                         |
-| 3     | Traceability Validator | Validate test→spec coverage - Level A/B       | traceability-report.md                                     |
-| 3     | TDD Implementer        | Minimal code (GREEN) - Level A/B logic        | Implementation code                                        |
-| 3     | TDD Refactorer         | Clean up (REFACTOR) - Level A/B logic         | Refactored code                                            |
-| 3     | Component Builder      | Build UI iteratively - Level B UI/C           | React components, snapshot tests                           |
-| 4     | Equivalence Checker    | Compare PT9 vs PT10 outputs                   | equivalence-report.md                                      |
-| 4     | Invariant Checker      | Property tests                                | invariant-report.md                                        |
-| 4     | Validator              | Quality gate check                            | validation-report.md                                       |
+| Phase | Agent                  | Responsibility                                | Output                                                          |
+| ----- | ---------------------- | --------------------------------------------- | --------------------------------------------------------------- |
+| 1     | Archaeologist          | Discover behaviors, entry points, invariants  | behavior-catalog.md, boundary-map.md, business-rules.md         |
+| 1     | Logic Locator          | Identify WHERE logic lives (ParatextData/UI)  | logic-distribution.md                                           |
+| 1     | Classifier             | Determine Level A/B/C                         | README.md classification (with TBD PT10 integration notes)      |
+| 2     | Test Scenario Writer   | Generate test scenarios from behaviors        | test-scenarios.json, edge-cases.md, requirements.md             |
+| 2     | Spec Generator         | Create specs (A/B), extraction plans (B), GMs | test-specifications/, extraction-plan.md (B), golden-masters/   |
+| 2     | Contract Writer        | Define API types with `{TBD:*}` placeholders  | data-contracts.md                                               |
+| 3     | Alignment Agent        | Map Phase 2 contracts to PT10 patterns        | pt10-alignment.md, fills TBD sections                           |
+| 3     | TDD Test Writer        | Write failing tests (RED) - Level A/B logic   | Test files in PT10                                              |
+| 3     | Traceability Validator | Validate test→spec coverage - Level A/B       | traceability-report.md                                          |
+| 3     | TDD Implementer        | Minimal code (GREEN) - Level A/B logic        | Implementation code                                             |
+| 3     | TDD Refactorer         | Clean up (REFACTOR) - Level A/B logic         | Refactored code                                                 |
+| 3     | Component Builder      | Build UI iteratively - Level B UI/C           | React components, snapshot tests                                |
+| 4     | Equivalence Checker    | Compare PT9 vs PT10 outputs                   | equivalence-report.md                                           |
+| 4     | Invariant Checker      | Property tests                                | invariant-report.md                                             |
+| 4     | Validator              | Quality gate check                            | validation-report.md                                            |
 
 ### Agent Handoff
 
@@ -690,29 +690,31 @@ The purpose of golden masters varies significantly by feature classification lev
 ├── behavior-catalog.md          # All behaviors: entry points, triggers, inputs/outputs, UI/UX details
 ├── business-rules.md            # Invariants, validations, preconditions, state transitions
 ├── boundary-map.md              # ParatextData vs UI split, reuse estimate, settings, integrations
+├── logic-distribution.md        # WHERE logic lives: ParatextData vs UI (Phase 1 - Logic Locator)
 ├── data-contracts.md            # TypeScript/C# types with {TBD:*} placeholders (Phase 2)
 ├── phase-status.md              # Progress tracking (dates/status only, links to README for details)
 ├── spec-summary.md              # Stakeholder summary (links to README, not duplicating content)
 │
 ├── decisions/                   # Feature-specific architectural decisions (per phase)
-│   ├── phase-1-decisions.md     # Analysis phase decisions
+│   ├── phase-1-decisions.md     # Discovery phase decisions
 │   ├── phase-2-decisions.md     # Specification phase decisions
 │   ├── phase-3-decisions.md     # Implementation phase decisions
 │   └── phase-4-decisions.md     # Verification phase decisions
 │
-├── test-specifications/         # Level A: Structured test specs with assertions (Phase 2)
+├── test-specifications/         # Level A/B: Structured test specs with assertions (Phase 2)
 │   ├── spec-001-{name}.json     # Assertions against ParatextData APIs
 │   └── ...
 │
 ├── golden-masters/              # Level B/C: Captured PT9 outputs (Phase 2)
+│   ├── CAPTURE-CHECKLIST.md     # Guide for manual PT9 captures
 │   ├── gm-001-{name}/
 │   │   ├── input.json
 │   │   ├── expected-output.json
 │   │   └── metadata.json
 │   └── ...
 │
-├── characterization/            # Phase 1 test planning artifacts
-│   ├── test-scenarios.json      # Structured test cases with inputs, expected outputs, priorities
+├── characterization/            # Phase 2 test scenario artifacts
+│   ├── test-scenarios.json      # Structured test cases with inputs, expected outputs, logicLayer tags
 │   ├── requirements.md          # Non-functional: performance, accessibility, localization, errors
 │   └── edge-cases.md            # Unusual scenarios with risk assessment and test coverage
 │
@@ -729,7 +731,7 @@ The purpose of golden masters varies significantly by feature classification lev
 │       └── {feature}-result.png
 │
 └── implementation/              # Phase 2-3 implementation artifacts
-    ├── ui-logic-extraction.md   # Level B only: business logic to extract from UI (Phase 2)
+    ├── extraction-plan.md       # Level B only: function signatures and contracts (Phase 2 - Spec Generator)
     ├── pt10-alignment.md        # PT10 patterns: namespace, file paths, test infrastructure (Phase 3 Step 0)
     ├── alignment-decisions.md   # PT10 pattern decisions and rationale (Phase 3 Step 0)
     ├── implementation-plan.md   # Approved plan before coding begins (Phase 3 Step 1)
@@ -741,9 +743,10 @@ The purpose of golden masters varies significantly by feature classification lev
 Each feature folder includes standardized templates for:
 
 - **task-description.md**: Human-defined scope, goals, non-goals, and constraints (created before Phase 1, template in `.context/features/task-description-template.md`)
-- **behavior-catalog.md**: Exhaustive list of behaviors with source references
+- **behavior-catalog.md**: Exhaustive list of behaviors with source references (created by Archaeologist)
+- **logic-distribution.md**: Where logic lives - ParatextData vs UI (created by Logic Locator)
 - **business-rules.md**: Invariants suitable for property-based tests (created by Archaeologist)
-- **data-contracts.md**: TypeScript/C# types for API boundaries
+- **data-contracts.md**: TypeScript/C# types for API boundaries (created by Contract Writer)
 
 ---
 

@@ -4,7 +4,9 @@ Create specifications for feature: **$ARGUMENTS**
 
 ## Overview
 
-This phase creates the formal specifications that PT10 must implement: extracted logic docs, golden masters, and API contracts.
+This phase creates the formal specifications that PT10 must implement: test scenarios, extraction plans (Level B), golden masters, and API contracts.
+
+**Purpose**: Define what PT10 must do. Create testable specifications.
 
 ## Context
 
@@ -12,17 +14,18 @@ Before proceeding, read `.context/AI-Porting-Workflow.md` for overall workflow c
 
 ## Prerequisites
 
-- [ ] Phase 1 complete
+- [ ] Phase 1 (Discovery) complete
 - [ ] `task-description.md` exists (original scope)
 - [ ] `behavior-catalog.md` exists
+- [ ] `logic-distribution.md` exists
 - [ ] `README.md` has classification
 
 ## Subagents in this Phase
 
 | # | Agent | Purpose | When | Output |
 |---|-------|---------|------|--------|
-| 1 | **UI Logic Extractor** | Document UI-embedded logic | Level B only | ui-logic-extraction.md |
-| 2 | **Spec Generator** | Create test specs (Level A) or golden masters (Level B/C) | All levels | test-specifications/ or golden-masters/ |
+| 1 | **Test Scenario Writer** | Create test scenarios from behaviors | All levels | test-scenarios.json, edge-cases.md, requirements.md |
+| 2 | **Spec Generator** | Create test specs (A), extraction plans + golden masters (B), or golden masters (C) | All levels | test-specifications/, extraction-plan.md, golden-masters/ |
 | 3 | **Contract Writer** | Define API types & signatures | All levels | data-contracts.md |
 
 ## Workflow
@@ -31,30 +34,33 @@ I will run each subagent sequentially. After each subagent completes, I'll show 
 
 ---
 
-## Subagent 1: UI Logic Extractor (Level B Only)
+## Subagent 1: Test Scenario Writer
 
-**Skip this agent for Level A or Level C features.**
+**Mission**: Generate test scenarios that define what PT10 must implement, based on discovered behaviors.
 
-**Mission**: Document all UI-embedded business logic that should be implemented in PT10.
+**Running test-scenario-writer agent...**
 
-**Running ui-logic-extractor agent...**
-
-[Delegate to ui-logic-extractor subagent with:
+[Delegate to test-scenario-writer subagent with:
 - Feature name: {feature}
 - Feature directory: `.context/features/{feature}/`
-- Required reading FIRST: task-description.md (scope/non-goals), behavior-catalog.md, README.md (for Level B confirmation), test-scenarios.json]
+- Required reading FIRST: task-description.md, behavior-catalog.md, logic-distribution.md, README.md (classification), business-rules.md]
 
 ### Output Artifacts
-- `.context/features/{feature}/implementation/ui-logic-extraction.md`
+- `.context/features/{feature}/characterization/test-scenarios.json`
+- `.context/features/{feature}/characterization/edge-cases.md`
+- `.context/features/{feature}/characterization/requirements.md`
+- `.context/features/{feature}/golden-masters/CAPTURE-CHECKLIST.md`
 
 ### Review Checkpoint
 
-Please review the extraction plan:
-- [ ] **All embedded logic identified** - Did we find everything?
-- [ ] **Proposed signatures** - Are the pure functions well-designed?
-- [ ] **Test coverage** - Are extraction scenarios covered?
+Please review the test scenarios:
+- [ ] **Test scenarios** - Are key behaviors covered? Is `logicLayer` field set correctly?
+- [ ] **Edge cases** - Are unusual cases documented?
+- [ ] **Requirements** - Non-functional requirements, error messages, accessibility noted?
+- [ ] **Capture checklist** - Can PT9 captures be completed from this?
+- [ ] **Coverage** - Any gaps in the behavior catalog?
 
-**Ready to proceed to Golden Master Generator?** (yes / no / need edits)
+**Ready to proceed to Spec Generator?** (yes / no / need edits)
 
 ---
 
@@ -67,7 +73,7 @@ Please review the extraction plan:
 [Delegate to spec-generator subagent with:
 - Feature name: {feature}
 - Feature directory: `.context/features/{feature}/`
-- Required reading FIRST: task-description.md (scope), test-scenarios.json, README.md (for classification), ui-logic-extraction.md (if Level B)]
+- Required reading FIRST: task-description.md (scope), test-scenarios.json, logic-distribution.md, README.md (for classification)]
 
 ### Output Artifacts
 
@@ -80,7 +86,24 @@ Please review the extraction plan:
 ```
 Note: Level A does NOT create golden-masters/ - ParatextData.dll is the oracle.
 
-**For Level B/C:**
+**For Level B (Mixed Logic):**
+```
+.context/features/{feature}/
+├── test-specifications/          # For ParatextData scenarios
+│   ├── spec-001-{name}.json
+│   └── ...
+├── implementation/
+│   └── extraction-plan.md        # Function signatures, contracts for UI logic
+└── golden-masters/               # For UI scenarios
+    ├── gm-001-{name}/
+    │   ├── input.json
+    │   ├── expected-output.json
+    │   ├── metadata.json
+    │   └── notes.md
+    └── ...
+```
+
+**For Level C (Pure UI):**
 ```
 .context/features/{feature}/golden-masters/
 ├── gm-001-{name}/
@@ -98,7 +121,13 @@ Note: Level A does NOT create golden-masters/ - ParatextData.dll is the oracle.
 - [ ] **ParatextData APIs identified** - Do we know what to test against?
 - [ ] **Invariants documented** - Property tests defined?
 
-**For Level B/C**, review golden masters:
+**For Level B**, review all outputs:
+- [ ] **Test specifications** - ParatextData scenarios covered?
+- [ ] **Extraction plan** - Function signatures well-designed? Contracts clear?
+- [ ] **Golden masters** - UI scenarios captured?
+- [ ] **Input specs complete** - Can scenarios be reproduced?
+
+**For Level C**, review golden masters:
 - [ ] **Key scenarios covered** - Are the important cases captured?
 - [ ] **Input specs complete** - Can scenarios be reproduced?
 - [ ] **Comparison config** - Are normalizations appropriate?
@@ -116,7 +145,7 @@ Note: Level A does NOT create golden-masters/ - ParatextData.dll is the oracle.
 [Delegate to contract-writer subagent with:
 - Feature name: {feature}
 - Feature directory: `.context/features/{feature}/`
-- Required reading FIRST: task-description.md (scope/non-goals), behavior-catalog.md, boundary-map.md, golden-masters/, ui-logic-extraction.md (if Level B)]
+- Required reading FIRST: task-description.md (scope/non-goals), behavior-catalog.md, boundary-map.md, golden-masters/, extraction-plan.md (if Level B)]
 
 ### Output Artifacts
 - `.context/features/{feature}/data-contracts.md`
@@ -182,7 +211,8 @@ Create `.context/features/{feature}/spec-summary.md`:
 |----------|-------|
 | Behaviors | {N} |
 | Test Scenarios | {N} |
-| Test Specifications | {N} (Level A) |
+| Test Specifications | {N} (Level A/B) |
+| Extraction Plans | {N} (Level B) |
 | Golden Masters | {N} (Level B/C) |
 | API Methods | {N} |
 
@@ -192,10 +222,12 @@ Create `.context/features/{feature}/spec-summary.md`:
 |----------|-------------|
 | [README.md](./README.md) | **Canonical source** - classification, scope, strategy |
 | [Behavior Catalog](./behavior-catalog.md) | All discovered behaviors |
+| [Logic Distribution](./logic-distribution.md) | WHERE logic lives |
 | [Boundary Map](./boundary-map.md) | Architecture boundaries |
 | [Data Contracts](./data-contracts.md) | API specifications |
 | [Test Scenarios](./characterization/test-scenarios.json) | Test coverage |
-| [Test Specifications](./test-specifications/) | Assertions for Level A |
+| [Test Specifications](./test-specifications/) | Assertions for Level A/B |
+| [Extraction Plan](./implementation/extraction-plan.md) | Function signatures (Level B) |
 | [Golden Masters](./golden-masters/) | Captured outputs for Level B/C |
 
 ## Stakeholder Questions
@@ -239,7 +271,7 @@ Create `.context/features/{feature}/github-issue.md`:
 ```
 
 ### Create GitHub Issue
-We will create the Github Issue later when Github project is ready. 
+We will create the Github Issue later when Github project is ready.
 <!-- ```bash
 gh issue create \
   --title "Port: {Feature Name}" \
@@ -265,8 +297,8 @@ After all subagents complete, consolidate the decisions they noted into a perman
 ### Gather Decisions from Subagents
 
 Review the "Decisions Made" section from each subagent's output:
-- UI Logic Extractor decisions (if Level B)
-- Golden Master Generator decisions
+- Test Scenario Writer decisions
+- Spec Generator decisions
 - Contract Writer decisions
 
 ### Create Decision Record
@@ -308,8 +340,8 @@ Create `.context/features/{feature}/decisions/phase-2-decisions.md`:
 
 | Step | Status | Output |
 |------|--------|--------|
-| UI Logic Extractor | ✅/N/A | ui-logic-extraction.md |
-| Spec Generator | ✅ | test-specifications/ (Level A) or golden-masters/ (Level B/C) |
+| Test Scenario Writer | ✅ | test-scenarios.json, edge-cases.md, requirements.md |
+| Spec Generator | ✅ | test-specifications/ (A/B), extraction-plan.md (B), golden-masters/ (B/C) |
 | Contract Writer | ✅ | data-contracts.md |
 | Spec Summary | ✅ | spec-summary.md |
 | GitHub Issue | ✅ | Issue #{number} |
@@ -319,12 +351,17 @@ Create `.context/features/{feature}/decisions/phase-2-decisions.md`:
 ```
 .context/features/{feature}/
 ├── task-description.md          # Human-defined scope (input)
+├── characterization/
+│   ├── test-scenarios.json      # Test scenarios with logicLayer tags
+│   ├── edge-cases.md            # Documented edge cases
+│   └── requirements.md          # Non-functional requirements
 ├── implementation/
-│   └── ui-logic-extraction.md   # (Level B only)
-├── test-specifications/         # (Level A) Structured test specs
+│   └── extraction-plan.md       # (Level B only) Function signatures, contracts
+├── test-specifications/         # (Level A/B) Structured test specs
 │   ├── spec-001-{name}.json
 │   └── ...
 ├── golden-masters/              # (Level B/C) Captured PT9 outputs
+│   ├── CAPTURE-CHECKLIST.md     # Guide for manual captures
 │   ├── gm-001-{name}/
 │   └── ...
 ├── data-contracts.md            # API contracts (with {TBD:*} placeholders)
@@ -334,8 +371,9 @@ Create `.context/features/{feature}/decisions/phase-2-decisions.md`:
 
 ### Quality Gates
 
+- **G1: Test Scenarios** - ✅ Complete
 - **G2: API Contract** - ✅ Documented
-- **G3: Logic Extraction** - ✅ Complete (Level B) / N/A
+- **G3: Extraction Plan** - ✅ Complete (Level B) / N/A
 
 ### Stakeholder Review
 
@@ -344,7 +382,8 @@ GitHub Issue #{number} created for stakeholder review.
 **Next steps:**
 1. Stakeholders review the GitHub issue
 2. Address any questions/feedback
-3. Once approved, proceed to Phase 3:
+3. Complete PT9 captures from CAPTURE-CHECKLIST.md
+4. Once approved, proceed to Phase 3:
 
 ```
 /porting/phase-3-implementation {feature}
@@ -354,14 +393,14 @@ GitHub Issue #{number} created for stakeholder review.
 
 ## Progress Tracking
 
-Update `.context/features/{feature}/implementation/phase-status.md`:
+Update `.context/features/{feature}/phase-status.md`:
 
 ```markdown
 ## Phase 2: Specification
 | Step | Status | Completed | Artifacts |
 |------|--------|-----------|-----------|
-| UI Logic Extractor | ✅/N/A | {date} | ui-logic-extraction.md |
-| Golden Master Gen | ✅ | {date} | golden-masters/ |
+| Test Scenario Writer | ✅ | {date} | test-scenarios.json, edge-cases.md, requirements.md |
+| Spec Generator | ✅ | {date} | test-specifications/, extraction-plan.md, golden-masters/ |
 | Contract Writer | ✅ | {date} | data-contracts.md |
 | Spec Summary | ✅ | {date} | spec-summary.md |
 | GitHub Issue | ✅ | {date} | Issue #{number} |

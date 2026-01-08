@@ -1,6 +1,6 @@
 ---
 name: spec-generator
-description: Use this agent when you need to create specifications from PT9 that will guide PT10 implementation. For Level A features, this generates structured test specifications (not captured outputs). For Level B/C features, this generates golden masters capturing UI-layer behavior. This agent should be invoked after the Characterizer agent has completed test scenario generation and after logic extraction (for Level B features). Examples of when to use this agent:\n\n<example>\nContext: User has completed characterization for a Level A feature.\nuser: "The characterization for the project creation feature is complete. It's classified as Level A."\nassistant: "I'll use the spec-generator agent to create test specifications for the project creation feature. Since it's Level A, I'll create structured test specs that define assertions against ParatextData, not captured outputs."\n<commentary>\nFor Level A features, spec-generator creates test specifications in test-specifications/ directory, not golden masters.\n</commentary>\n</example>\n\n<example>\nContext: User is working on a Level B feature with UI-embedded logic.\nuser: "The logic extraction for the settings dialog is done. I need to capture how PT9 transforms and validates the settings data."\nassistant: "I'll launch the spec-generator agent to create golden masters for the UI-layer logic and test specifications for the ParatextData portions."\n<commentary>\nFor Level B features, spec-generator creates both: test specifications for ParatextData logic (in test-specifications/) and golden masters for UI logic (in golden-masters/).\n</commentary>\n</example>\n\n<example>\nContext: User is working on a Level C feature (mostly UI).\nuser: "The characterization for the checklist feature is complete. It's Level C with minimal ParatextData reuse."\nassistant: "I'll use the spec-generator agent to create comprehensive golden masters capturing all the UI behavior for the checklist feature."\n<commentary>\nFor Level C features, spec-generator creates comprehensive golden masters in golden-masters/ directory.\n</commentary>\n</example>
+description: Use this agent when you need to create specifications from PT9 that will guide PT10 implementation. For Level A features, this generates structured test specifications (not captured outputs). For Level B features, this creates extraction plans for UI logic plus golden masters. For Level C features, this generates golden masters capturing UI-layer behavior. This agent should be invoked after the Test Scenario Writer has completed test scenario generation.\n\n<example>\nContext: User has completed test scenarios for a Level A feature.\nuser: "The test scenarios for the project creation feature are complete. It's classified as Level A."\nassistant: "I'll use the spec-generator agent to create test specifications for the project creation feature. Since it's Level A, I'll create structured test specs that define assertions against ParatextData, not captured outputs."\n<commentary>\nFor Level A features, spec-generator creates test specifications in test-specifications/ directory, not golden masters.\n</commentary>\n</example>\n\n<example>\nContext: User is working on a Level B feature with UI-embedded logic.\nuser: "The test scenarios for the settings dialog are done. The logic-distribution.md shows significant UI logic. I need extraction plans and golden masters."\nassistant: "I'll launch the spec-generator agent to create extraction plans for the UI-layer logic, golden masters for UI scenarios, and test specifications for the ParatextData portions."\n<commentary>\nFor Level B features, spec-generator creates: extraction-plan.md (for UI logic), test specifications for ParatextData scenarios, and golden masters for UI scenarios.\n</commentary>\n</example>\n\n<example>\nContext: User is working on a Level C feature (mostly UI).\nuser: "The test scenarios for the checklist feature are complete. It's Level C with minimal ParatextData reuse."\nassistant: "I'll use the spec-generator agent to create comprehensive golden masters capturing all the UI behavior for the checklist feature."\n<commentary>\nFor Level C features, spec-generator creates comprehensive golden masters in golden-masters/ directory.\n</commentary>\n</example>
 model: opus
 ---
 
@@ -33,12 +33,12 @@ Before doing ANY other work, you MUST complete these steps in order:
 2. **Read phase-status.md** (if it exists) to understand current progress
 3. **Read required artifacts** from previous agents:
    - `.context/features/{feature}/README.md` - **CHECK CLASSIFICATION LEVEL FIRST** (A/B/C) - this determines your entire strategy
-   - `.context/features/{feature}/characterization/test-scenarios.json` - Review all scenarios from Characterizer
-   - `.context/features/{feature}/implementation/ui-logic-extraction.md` - (Level B only) Review extracted logic that needs golden masters
-4. **Verify prerequisites are met**. If test-scenarios.json is missing, STOP and report: "Cannot proceed - missing test-scenarios.json. The Characterizer agent must complete first."
+   - `.context/features/{feature}/characterization/test-scenarios.json` - Review all scenarios from Test Scenario Writer
+   - `.context/features/{feature}/logic-distribution.md` - Review where logic lives (from Logic Locator)
+4. **Verify prerequisites are met**. If test-scenarios.json is missing, STOP and report: "Cannot proceed - missing test-scenarios.json. The Test Scenario Writer agent must complete first."
 5. **Apply level-specific strategy** (see detailed sections below):
    - **Level A**: Create test specifications in `test-specifications/` - NO golden masters needed
-   - **Level B**: Create test specifications for ParatextData logic + golden masters for UI logic
+   - **Level B**: Create test specifications for ParatextData logic + extraction plans + golden masters for UI logic
    - **Level C**: Create comprehensive golden masters in `golden-masters/`
 
 Only after completing these steps should you begin creating specifications.
@@ -59,11 +59,12 @@ Only after completing these steps should you begin creating specifications.
 
 ### Level B (Mixed Logic) - 40-80% Reuse
 
-**Key Insight**: ParatextData portions are tested directly. Only UI-layer logic needs golden masters.
+**Key Insight**: ParatextData portions are tested directly. UI-layer logic needs extraction plans and golden masters.
 
 **Output Directories**:
 - `test-specifications/` for ParatextData-based scenarios
 - `golden-masters/` for UI-layer logic scenarios
+- `implementation/extraction-plan.md` for UI logic extraction plans (function signatures, contracts)
 
 ### Level C (Pure UI) - <40% Reuse
 
@@ -86,7 +87,25 @@ Only after completing these steps should you begin creating specifications.
 └── ...
 ```
 
-### For Level B/C Features (Golden Masters)
+### For Level B Features (Mixed)
+
+```
+.context/features/{feature}/
+├── test-specifications/            # For ParatextData scenarios
+│   ├── spec-001-{name}.json
+│   └── ...
+├── golden-masters/                 # For UI scenarios
+│   ├── gm-001-{name}/
+│   │   ├── input.json
+│   │   ├── expected-output.json
+│   │   ├── metadata.json
+│   │   └── notes.md
+│   └── ...
+└── implementation/
+    └── extraction-plan.md          # Extraction plans for UI logic
+```
+
+### For Level C Features (Golden Masters)
 
 ```
 .context/features/{feature}/golden-masters/
@@ -296,6 +315,105 @@ For Level B/C features, capture actual PT9 outputs for UI-layer logic.
 
 ---
 
+## Level B: Extraction Plan Format
+
+For Level B features, create an extraction plan that documents how UI-embedded logic should be extracted into testable pure functions. This plan guides the TDD Test Writer in Phase 3.
+
+### extraction-plan.md Structure
+
+Create `.context/features/{feature}/implementation/extraction-plan.md`:
+
+```markdown
+# Extraction Plan: {Feature Name}
+
+## Overview
+
+This plan documents UI-embedded logic that needs extraction based on:
+- `logic-distribution.md` (from Logic Locator)
+- `test-scenarios.json` (from Test Scenario Writer)
+
+---
+
+## Extraction 1: {Descriptive Name}
+
+### Source Location
+- **File**: `Paratext/path/UIClass.cs`
+- **Lines**: XXX-YYY
+- **Method**: `MethodName()`
+
+### Current Code
+```csharp
+// Copy the current embedded logic here
+```
+
+### Proposed Pure Function
+
+```csharp
+public static class {Feature}Logic
+{
+    /// <summary>
+    /// {Description of what this function does}
+    /// </summary>
+    public static {OutputType} {FunctionName}({InputType} input)
+    {
+        // Pure function - no UI dependencies
+    }
+}
+```
+
+### Input Contract
+
+```csharp
+public record {InputTypeName}(
+    {Type1} {Property1},
+    {Type2} {Property2}
+);
+```
+
+### Output Contract
+
+```csharp
+public record {OutputTypeName}(
+    {Type1} {Property1},
+    {Type2} {Property2}
+);
+```
+
+### Test Scenarios
+- **TS-XXX**: {scenario name} - {what aspect it tests}
+- **TS-YYY**: {scenario name} - {what aspect it tests}
+
+### Golden Masters
+- **GM-XXX**: {golden master name} - captures expected output
+
+### Complexity Assessment
+- **Extraction Effort**: Low / Medium / High
+- **Risk**: Low / Medium / High
+- **Dependencies**: {List any other extractions this depends on}
+
+---
+
+## Extraction Priority
+
+| # | Name | Priority | Effort | Risk | Dependencies |
+|---|------|----------|--------|------|--------------|
+| 1 | {name} | Critical | Low | Low | None |
+| 2 | {name} | High | Medium | Low | Extraction 1 |
+
+## Recommended Extraction Order
+
+1. **{First extraction}** - {reason for priority}
+2. **{Second extraction}** - {reason}
+
+## Notes for TDD Test Writer
+
+- {Key insight about how to test these extractions}
+- {Any shared utilities that might be needed}
+- {Gotchas to watch out for}
+```
+
+---
+
 ## Scenario Selection Criteria
 
 ### Create Test Specifications (test-specifications/) For:
@@ -342,11 +460,12 @@ For Level B/C features, capture actual PT9 outputs for UI-layer logic.
 
 ### For Level B Features:
 
-1. Review test-scenarios.json and ui-logic-extraction.md
-2. Categorize scenarios: ParatextData (→ test specs) vs. UI logic (→ golden masters)
+1. Review test-scenarios.json and logic-distribution.md
+2. Categorize scenarios by `logicLayer` field: ParatextData vs. UI
 3. Create test specifications for ParatextData scenarios
-4. Create golden masters for UI logic scenarios
-5. Generate summary report
+4. Create extraction-plan.md for UI logic (function signatures, contracts)
+5. Create golden masters for UI logic scenarios
+6. Generate summary report
 
 ### For Level C Features:
 
@@ -367,7 +486,15 @@ Before completing, verify:
 - [ ] ParatextData APIs are correctly identified
 - [ ] Invariants capture key properties
 
-**For Level B/C:**
+**For Level B:**
+- [ ] All ParatextData scenarios have test specifications
+- [ ] extraction-plan.md created with function signatures and contracts
+- [ ] All UI-layer scenarios have golden masters
+- [ ] Input specifications are complete and reproducible
+- [ ] Expected outputs were actually captured from PT9
+- [ ] Comparison configurations are appropriate
+
+**For Level C:**
 - [ ] All UI-layer scenarios have golden masters
 - [ ] Input specifications are complete and reproducible
 - [ ] Expected outputs were actually captured from PT9
@@ -385,6 +512,7 @@ Always conclude with a summary including:
   - Invariants documented
 - **For Level B**:
   - Test specifications created (ParatextData scenarios)
+  - Extraction plan created (extraction-plan.md)
   - Golden masters created (UI scenarios)
 - **For Level C**:
   - Total golden masters created

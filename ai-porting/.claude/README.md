@@ -1,4 +1,4 @@
-# Claude Code Configuration
+# Claude Code Configurationnnnnnnn
 
 This folder contains Claude Code configuration for the project. It is symlinked from a separate config repository to keep these files out of the main project's version control.
 
