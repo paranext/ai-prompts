@@ -69,35 +69,54 @@ Please review the alignment:
 
 ---
 
-## Step 1: Strategic Planning (Orchestrator Step)
+## Step 1: Capability Decomposition (Orchestrator Step)
 
 > **Note**: This step is performed by the Phase 3 orchestrator, NOT delegated to a subagent.
 > The strategic plan must be created and approved BEFORE any TDD or Component Builder agents run.
 
-After alignment is complete, create a strategic plan that will guide all subagents.
+After alignment is complete, decompose the feature into **capabilities** - fine-grained units of work that each have their own acceptance test and implementation strategy.
 
-### Why the Orchestrator Creates This
+### Why Capability-Based Decomposition
 
-1. The orchestrator has full context from Phase 1 & 2 artifacts
-2. Strategic decisions affect ALL subsequent subagents
-3. Subagents need a stable plan to reference - they shouldn't modify it
-4. Human approval happens once here, not repeatedly per-agent
+We use [Outside-In TDD](https://outsidein.dev/concepts/outside-in-tdd/) where each capability has:
+- **One outer acceptance test** from Phase 2 specs (test-specification or golden-master)
+- **Its own strategy** (TDD or Component-First) based on its nature
+- **Clear done signal** - when the outer test passes, the capability is complete
+
+This constrains AI agents - the outer test acts as a "fence" preventing deviation from PT9 behavior.
 
 ### Review Phase 1 & 2 Artifacts
 
 Read and analyze all artifacts from `.context/features/{feature}/`:
 
 - [ ] `task-description.md` - Original scope, goals, non-goals, constraints
-- [ ] `README.md` - Feature classification (Level A/B/C) and implementation strategy
+- [ ] `README.md` - Feature classification (Level A/B/C) and default strategy
 - [ ] `behavior-catalog.md` - All behaviors to implement (incl. user stories, UI/UX)
 - [ ] `boundary-map.md` - ParatextData vs UI split (incl. settings, integrations)
 - [ ] `business-rules.md` - Invariants and constraints
-- [ ] `data-contracts.md` - API signatures and types
-- [ ] `golden-masters/` - Reference outputs to match
+- [ ] `data-contracts.md` - API signatures and types (one capability per method typically)
+- [ ] `test-specifications/` - Structured test specs (Level A/B) - map to capabilities
+- [ ] `golden-masters/` - Reference outputs to match (Level B/C) - map to capabilities
 - [ ] `characterization/test-scenarios.json` - Test cases to cover
 - [ ] `characterization/requirements.md` - Non-functional requirements, error messages, accessibility
 - [ ] `implementation/ui-logic-extraction.md` - Logic to extract (Level B only)
-- [ ] `implementation/pt10-alignment.md` - PT10 patterns from Alignment Agent (namespaces, file paths, test infrastructure)
+- [ ] `implementation/pt10-alignment.md` - PT10 patterns from Alignment Agent
+
+### Identify Capabilities
+
+For each API method in `data-contracts.md` or distinct UI component, create a capability:
+
+**Capability Identification Rules:**
+- One API method = one capability (typically)
+- One distinct UI component = one capability
+- Each capability maps to one test-specification OR one golden-master
+- If a capability needs both TDD and Component-First, split it into sub-capabilities
+
+**Strategy Assignment:**
+- **Level A default**: TDD (all capabilities)
+- **Level B default**: TDD for logic, Component-First for UI
+- **Level C default**: Component-First (all capabilities)
+- **Overrides allowed**: Per-capability when nature differs from default
 
 ### Create Strategic Plan (Orchestrator Action)
 
@@ -105,81 +124,131 @@ The Phase 3 orchestrator writes the strategic plan to `.context/features/{featur
 
 This is NOT delegated to a subagent. The orchestrator:
 1. Reads all Phase 1 & 2 artifacts (listed above)
-2. Creates the strategic plan based on the template below
-3. Presents it for human approval
-4. Only then proceeds to spawn subagents
+2. Identifies capabilities from contracts and golden masters
+3. Assigns strategy per capability
+4. Maps dependencies between capabilities
+5. Creates the strategic plan based on the template below
+6. Presents it for human approval
+7. Only then proceeds to spawn subagents per capability
 
 **Template:**
 
 ```markdown
 # Strategic Plan: {Feature}
 
-## Classification & Strategy
+## Feature Overview
 - **Level**: {A / B / C}
-- **Path**: {TDD / Hybrid / Component-First}
+- **Default Strategy**: {TDD for A/B, Component-First for C}
 - **Date**: {date}
 
-## Implementation Units
+## Capability Decomposition
 
-Break down the feature into logical units. Each unit will be assigned to subagents.
+| ID | Capability | Acceptance Test | Strategy | Dependencies |
+|----|------------|-----------------|----------|--------------|
+| CAP-001 | {name} | spec-XXX / gm-XXX | TDD | None |
+| CAP-002 | {name} | spec-XXX / gm-XXX | TDD | CAP-001 |
+| CAP-003 | {name} | gm-XXX | CF (override) | CAP-001 |
 
-### Unit 1: {Name}
-- **Path**: TDD / Component-First
+### CAP-001: {Capability Name}
+- **Type**: {Data Provider / Business Logic / Visual Component / Integration}
+- **Strategy**: {TDD / Component-First}
+- **Rationale**: {Why this strategy - default or override reason}
+- **Acceptance Test**: {spec-XXX or gm-XXX} - "{brief description of what passes}"
 - **Contracts**: {list from data-contracts.md}
-- **Golden Masters**: {list from golden-masters/}
 - **Location**: {target directory in paranext-core}
-- **Dependencies**: None / {list of prerequisite units}
-- **Success Criteria**: {specific measurable outcome}
+- **Dependencies**: None / {list of prerequisite capabilities}
+- **Success Criteria**: Outer acceptance test passes
 
-### Unit 2: {Name}
+### CAP-002: {Capability Name}
 ...
 
-## Implementation Order
+## Execution Order
 
-Based on dependencies:
-1. **{Unit}** - {why first}
-2. **{Unit}** - {depends on #1}
-...
+Based on dependencies (capabilities in same group can run in parallel):
+
+**Group 1** (no dependencies):
+1. **CAP-001** - {why first / no deps}
+
+**Group 2** (depends on Group 1):
+2. **CAP-002** - depends on CAP-001
+3. **CAP-003** - depends on CAP-001
+
+## Cross-Capability Interfaces
+
+| Interface | Provider | Consumer |
+|-----------|----------|----------|
+| {interface name} | CAP-XXX | CAP-YYY |
 
 ## Risks & Mitigations
 
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| {description} | High/Med/Low | {approach} |
-
-## Subagent Assignments
-
-| Unit | Subagent | Contracts Assigned | Golden Masters Assigned |
-|------|----------|-------------------|------------------------|
-| {unit} | Test Writer | {list} | {list} |
-| {unit} | Implementer | {list} | {list} |
-| {unit} | Component Builder | {list} | {list} |
+| Risk | Impact | Affected Capabilities | Mitigation |
+|------|--------|----------------------|------------|
+| {description} | High/Med/Low | CAP-XXX | {approach} |
 ```
 
 ### Review Checkpoint
 
 Please review the strategic plan:
-- [ ] **Units correctly identified** - Logical breakdown of work?
-- [ ] **Order respects dependencies** - Can build in this sequence?
-- [ ] **Strategy matches classification** - TDD for Level A, Hybrid for B, Component-First for C?
-- [ ] **Risks addressed** - Major unknowns have mitigations?
-- [ ] **Subagent assignments clear** - Each agent knows its scope?
+- [ ] **Capabilities fine-grained** - Each maps to one API method or UI component?
+- [ ] **Acceptance tests assigned** - Each capability has one spec or golden master?
+- [ ] **Strategy per capability** - Each has TDD or Component-First (not both)?
+- [ ] **Dependencies mapped** - Execution order respects dependencies?
+- [ ] **Cross-capability interfaces** - Shared code ownership is clear?
 
 **Approve this strategic plan?** (yes / no / revise)
 
-⚠️ **Do not proceed to subagents until strategic plan is approved.**
+⚠️ **Do not proceed to Step 2 until strategic plan is approved.**
 
 ---
 
-## Step 2: Determine Implementation Strategy
+## Step 2: Execute Per Capability
 
-Check the feature's classification in `.context/features/{feature}/README.md`:
+Execute each capability in dependency order. For each capability, run the appropriate agent sequence based on its assigned strategy.
 
-| If Classification | Then Use |
-|-------------------|----------|
-| Level A | **Path A: Full TDD** (below) |
-| Level B | **Path B: Hybrid** - TDD for logic, then Component Builder for UI |
-| Level C | **Path C: Component-First** (skip to Component Builder section) |
+### Execution Flow
+
+```
+For each capability in dependency order:
+  If strategy == TDD:
+    Test Writer (outer + inner tests) → Traceability Validator → Implementer → Refactorer
+  If strategy == Component-First:
+    Component Builder (visual match = acceptance test)
+```
+
+### Per-Capability TDD Flow (Outside-In)
+
+For capabilities with TDD strategy:
+
+1. **Test Writer** writes:
+   - **Outer acceptance test** from the capability's test-specification
+   - **Inner unit tests** that will drive implementation
+   - All tests must FAIL (RED state)
+
+2. **Traceability Validator** verifies coverage
+
+3. **Implementer** writes minimal code:
+   - Focus on making the **outer test pass** - this is the done signal
+   - Inner tests guide the implementation structure
+
+4. **Refactorer** cleans up while keeping all tests GREEN
+
+### Per-Capability Component-First Flow
+
+For capabilities with Component-First strategy:
+
+1. **Component Builder**:
+   - Builds component to visually match golden master
+   - Visual match = acceptance test passed
+   - Adds snapshot/interaction tests AFTER visual match confirmed
+
+### Review Checkpoint Per Capability
+
+After each capability completes:
+- [ ] **Acceptance test passes** (TDD: outer test green / CF: visual match confirmed)
+- [ ] **Evidence captured** in `proofs/capability-{id}/`
+- [ ] **No regressions** in previously completed capabilities
+
+**Proceed to next capability?** (yes / no / fix issues first)
 
 ---
 
@@ -382,7 +451,7 @@ Please review the refactored code:
 - [ ] **No duplication** - DRY principles applied?
 - [ ] **Good names** - Clear and descriptive?
 
-**TDD Path Complete** → Continue to "Consolidate Decisions" section
+**TDD Path Complete** → Continue to "Step 3: Integration Verification"
 
 ---
 
@@ -473,11 +542,52 @@ Please review the component:
 
 ⚠️ **Component-Builder agent must create tests before completing.** If tests are missing or failing, the agent is not done.
 
-**Component-First Path Complete** → Continue to "Consolidate Decisions"
+**Component-First Path Complete** → Continue to "Step 3: Integration Verification"
 
 ---
 
-## Step: Consolidate Decisions
+## Step 3: Integration Verification
+
+After all capabilities are complete, verify they work together as a cohesive feature.
+
+### Why This Step
+
+Each capability was developed and tested in isolation with its own acceptance test. Integration verification ensures:
+- Capabilities work together correctly
+- No regressions in previously completed capabilities
+- The full feature functions end-to-end
+
+### Run Integration Tests
+
+```bash
+# Run all tests for this feature
+dotnet test c-sharp-tests/ --filter "{Feature}"
+
+# Run TypeScript tests
+npm test -- --testPathPattern={feature}
+```
+
+### Verify Cross-Capability Interfaces
+
+Check that capabilities that depend on each other work correctly:
+- [ ] Provider capabilities expose expected interfaces
+- [ ] Consumer capabilities receive expected data
+- [ ] No type mismatches at boundaries
+
+### Review Checkpoint
+
+- [ ] **All capability tests pass** - No regressions from earlier capabilities?
+- [ ] **Integration tests pass** - Cross-capability communication works?
+- [ ] **Feature demo works** - Can demonstrate the full feature?
+- [ ] **Visual evidence captured** - Screenshots in `proofs/integration/`?
+
+**Integration verified?** (yes / no / fix issues)
+
+⚠️ **Do not proceed to Consolidate Decisions until integration is verified.**
+
+---
+
+## Step 4: Consolidate Decisions
 
 After all subagents complete, consolidate the decisions they noted into a permanent record.
 

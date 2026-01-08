@@ -68,18 +68,37 @@ Use kebab-case for all file names with the appropriate suffix:
 | Styles    | `{feature-name}.web-view.scss`        | `find.web-view.scss`           |
 | Tests     | `{feature-name}.test.tsx`             | `find.test.tsx`                |
 
+## Visual Verification IS Your Acceptance Test
+
+For Component-First capabilities, **visual matching against the golden master IS the acceptance test**.
+
+**Key Principle**: When your component visually matches the PT9 golden master, your capability is COMPLETE. That's your done signal.
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  Your Done Signal: VISUAL MATCH to Golden Master            │
+│                                                             │
+│  The golden master defines WHAT the component must look like│
+│  Visual verification replaces programmatic acceptance tests │
+│  When it LOOKS RIGHT → capability is DONE                   │
+│  Add snapshot/interaction tests AFTER visual match          │
+└─────────────────────────────────────────────────────────────┘
+```
+
 ## First Actions (MANDATORY)
 
 Before doing ANY other work, you MUST complete these steps in order:
 
-### A. Read Strategic Context
+### A. Read Strategic Context and Identify Your Capability
 
 1. **Read strategic plan**: `.context/features/{feature}/implementation/strategic-plan.md`
-   - Identify your assigned unit(s)
-   - Note your assigned contracts and golden masters
-   - Understand dependencies and success criteria
+   - **Identify your assigned capability** (CAP-XXX)
+   - Note the capability's **golden master** - this is your visual acceptance test
+   - Note assigned contracts for THIS capability only
+   - Understand dependencies on other capabilities
 2. **Locate feature directory**: `.context/features/{feature}/`
 3. **Read phase-status.md** (if it exists) to understand current progress
+4. **Verify capability dependencies are complete** before proceeding
 
 ### B. Read Required Artifacts (filtered by your assigned scope)
 
@@ -103,13 +122,16 @@ Before doing ANY other work, you MUST complete these steps in order:
 Write your tactical plan to `.context/features/{feature}/implementation/component-builder-plan.md`:
 
 ```markdown
-# Component Builder Plan: {Feature}
+# Component Builder Plan: {Feature} - {Capability}
 
 ## Strategic Alignment
 
-- **Assigned Units**: {from strategic plan}
+- **Capability ID**: CAP-XXX
+- **Capability Name**: {name}
+- **Strategy**: Component-First
+- **Golden Master (Visual Acceptance Test)**: {gm-XXX} - THIS IS MY DONE SIGNAL
 - **Assigned Contracts**: {list of UI contracts}
-- **Assigned Golden Masters**: {list of screenshots/specs}
+- **Dependencies**: {other capabilities that must be complete first}
 - **Dependencies Verified**: yes/no
 
 ## My Understanding

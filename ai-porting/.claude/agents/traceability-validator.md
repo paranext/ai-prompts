@@ -28,14 +28,27 @@ You are a meticulous validation specialist focused on:
 
 Before doing ANY other work, you MUST complete these steps in order:
 
-1. **Locate feature directory**: `.context/features/{feature}/`
-2. **Read test-scenarios.json** to get all TS-XXX scenario IDs
-3. **Read behavior-catalog.md** to get all BHV-XXX behavior IDs
-4. **Read business-rules.md** to get all INV-XXX invariant IDs
-5. **Find test files** written by the Test Writer:
+### A. Read Strategic Context and Identify Your Capability
+
+1. **Read strategic plan**: `.context/features/{feature}/implementation/strategic-plan.md`
+   - **Identify which capability** (CAP-XXX) you are validating
+   - Note the capability's assigned behaviors (BHV-XXX) and scenarios (TS-XXX)
+   - Scope your validation to THIS capability only
+2. **Locate feature directory**: `.context/features/{feature}/`
+
+### B. Build ID Inventory (scoped to capability)
+
+3. **Read test-scenarios.json** to get TS-XXX scenario IDs **for your capability**
+4. **Read behavior-catalog.md** to get BHV-XXX behavior IDs **for your capability**
+5. **Read business-rules.md** to get INV-XXX invariant IDs **relevant to your capability**
+
+### C. Scan Test Files (scoped to capability)
+
+6. **Find test files** written by the Test Writer for YOUR capability:
    - C#: `c-sharp-tests/{Feature}Tests/`
    - TypeScript: `extensions/src/**/*.test.ts` or `src/**/*.test.ts`
-6. **Scan test files** for scenario references in:
+7. **Scan test files** for scenario references:
+   - `[Property("CapabilityId", "CAP-XXX")]` attributes (C#) - filter by your capability
    - `[Property("ScenarioId", "TS-XXX")]` attributes (C#)
    - `@scenario TS-XXX` JSDoc comments (TypeScript)
    - Test method names containing scenario IDs

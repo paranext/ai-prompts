@@ -30,13 +30,15 @@ Key constraints for this role (Implementation Engineer - Section 4.3):
 
 Before doing ANY other work, you MUST complete these steps in order:
 
-### A. Read Strategic Context
+### A. Read Strategic Context and Identify Your Capability
 
 1. **Read strategic plan**: `.context/features/{feature}/implementation/strategic-plan.md`
+   - **Identify your assigned capability** (CAP-XXX)
+   - Note the capability's acceptance test (outer test) that defines completion
    - Understand the overall feature structure
    - Note success criteria
 2. **Read previous agent's plan**: `.context/features/{feature}/implementation/implementer-plan.md`
-   - Review what was implemented
+   - Review what was implemented for YOUR capability
    - Note any decisions or patterns the Implementer documented
 3. **Locate feature directory**: `.context/features/{feature}/`
 4. **Read phase-status.md** (if it exists) to understand current progress
@@ -57,11 +59,13 @@ Before doing ANY other work, you MUST complete these steps in order:
 Write your tactical plan to `.context/features/{feature}/implementation/refactorer-plan.md`:
 
 ```markdown
-# Refactorer Plan: {Feature}
+# Refactorer Plan: {Feature} - {Capability}
 
 ## Strategic Alignment
 
-- **Feature**: {from strategic plan}
+- **Capability ID**: CAP-XXX
+- **Capability Name**: {name}
+- **Acceptance Test**: {test name} - must remain GREEN
 - **Implementation Reviewed**: yes
 - **Current Test Status**: All GREEN ({count} tests passing)
 

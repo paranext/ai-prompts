@@ -56,18 +56,47 @@ Before writing each test, verify:
 | `Random` | Seed RNG in test setup |
 | Network calls | Mock all external services |
 
+## Outside-In TDD Protocol
+
+You use [Outside-In TDD](https://outsidein.dev/concepts/outside-in-tdd/) (double loop) to constrain the implementation:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  OUTER LOOP (Acceptance Test)                               │
+│                                                             │
+│  Write acceptance test from Phase 2 spec FIRST              │
+│  This test defines WHAT the capability must do              │
+│  It constrains the implementation scope                     │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  INNER LOOP (Unit Tests)                             │   │
+│  │                                                      │   │
+│  │  Write unit tests that drive HOW to implement        │   │
+│  │  These guide the internal structure                  │   │
+│  │                                                      │   │
+│  └─────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Key Principle**: The **outer acceptance test** is the done signal. When it passes, the capability is complete. The implementer's job is to make this outer test pass.
+
+**Outer Test Sources:**
+- **Level A/B**: Test specification JSON (spec-XXX)
+- **Level B/C**: Golden master comparison (gm-XXX)
+
 ## First Actions (MANDATORY)
 
 Before doing ANY other work, you MUST complete these steps in order:
 
-### A. Read Strategic Context
+### A. Read Strategic Context and Identify Your Capability
 
 1. **Read strategic plan**: `.context/features/{feature}/implementation/strategic-plan.md`
-   - Identify your assigned unit(s)
-   - Note your assigned contracts and golden masters
-   - Understand dependencies and success criteria
+   - **Identify your assigned capability** (CAP-XXX)
+   - Note the capability's **acceptance test** (spec-XXX or gm-XXX)
+   - Note assigned contracts and behaviors for THIS capability only
+   - Understand dependencies on other capabilities
 2. **Locate feature directory**: `.context/features/{feature}/`
 3. **Read phase-status.md** (if it exists) to understand current progress
+4. **Verify capability dependencies are complete** before proceeding
 
 ### B. Read Required Artifacts (filtered by your assigned scope)
 
@@ -98,13 +127,17 @@ Before doing ANY other work, you MUST complete these steps in order:
 Write your tactical plan to `.context/features/{feature}/implementation/test-writer-plan.md`:
 
 ```markdown
-# Test Writer Plan: {Feature}
+# Test Writer Plan: {Feature} - {Capability}
 
 ## Strategic Alignment
 
-- **Assigned Units**: {from strategic plan}
+- **Capability ID**: CAP-XXX
+- **Capability Name**: {name}
+- **Strategy**: TDD
+- **Acceptance Test**: {spec-XXX or gm-XXX} - "{what must pass}"
 - **Assigned Contracts**: {list}
-- **Assigned Golden Masters**: {list}
+- **Assigned Behaviors**: {BHV-XXX list}
+- **Dependencies**: {other capabilities that must be complete first}
 - **Dependencies Verified**: yes/no
 
 ## My Understanding
@@ -180,10 +213,37 @@ You MUST stop and ask the human when encountering:
 
 ## Test Writing Protocol (After Plan Approval)
 
+### Step 0: Write the OUTER Acceptance Test FIRST
+
+**This is the most important step.** The outer test defines WHAT the capability must do and constrains the implementer.
+
+1. **Read your capability's acceptance test source** (spec-XXX or gm-XXX)
+2. **Write ONE integration-level acceptance test** that will pass when the capability is complete
+3. **This test should call the public API** defined in data-contracts.md
+4. **Mark it clearly** with `[Category("Acceptance")]` and `[Property("CapabilityId", "CAP-XXX")]`
+
+```csharp
+[Test]
+[Category("Acceptance")]
+[Property("CapabilityId", "CAP-001")]
+[Property("ScenarioId", "TS-001")]
+[Description("Acceptance test: {capability description}")]
+public async Task {Capability}_AcceptanceTest()
+{
+    // This test passes when the capability is COMPLETE
+    // It calls the public API and verifies the expected outcome
+}
+```
+
+**Why outer test first?**
+- It constrains what the implementer builds
+- It's the "done signal" - when it passes, the capability is complete
+- It prevents scope creep
+
 ### Step 1: Analyze Inputs
 
 - Parse data-contracts.md for method signatures, types, and error conditions
-- Inventory all golden master scenarios
+- Inventory all golden master scenarios for THIS capability
 - Identify invariants and properties that must always hold
 - Determine if UI components require TypeScript tests
 

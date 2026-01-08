@@ -219,6 +219,86 @@ For Level A and B features, TDD is **mandatory**. We follow the [Testing Trophy 
 
 **The Revert Test**: Every test must fail when implementation is absent. Tests that pass without implementation are worthless.
 
+### Outside-In TDD (Double Loop)
+
+Phase 3 uses [Outside-In TDD](https://outsidein.dev/concepts/outside-in-tdd/) (London School) to constrain AI agents:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  OUTER LOOP (Acceptance Test from Phase 2 Specs)            │
+│                                                             │
+│  Test Writer: Write integration/acceptance test from        │
+│               test-specification (Level A/B) or             │
+│               golden-master (Level B/C)                     │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │  INNER LOOP (Unit Tests)                             │   │
+│  │                                                      │   │
+│  │  Test Writer: Write unit tests for components        │   │
+│  │  Implementer: Write minimal code to pass unit tests  │   │
+│  │  (Repeat until outer test passes)                    │   │
+│  │                                                      │   │
+│  └─────────────────────────────────────────────────────┘   │
+│  Refactorer: Clean up while keeping all tests green         │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Why Outside-In TDD for AI Agents:**
+
+| Benefit | How It Helps |
+|---------|-------------|
+| **Tests as constraints** | The outer test acts as a "fence" - agent can't deviate from PT9 behavior |
+| **Clear done signal** | When outer test passes, capability is complete |
+| **User-facing focus** | Tests come from Phase 2 specs, not implementation guesses |
+| **Emergent design** | Internal structure emerges from passing tests, not upfront design |
+
+**Outer Test Sources by Strategy:**
+
+| Strategy | Outer Test Source | Done Signal |
+|----------|-------------------|-------------|
+| TDD (Level A/B) | test-specification JSON | Acceptance test passes |
+| Component-First (Level C) | golden-master screenshot | Visual match confirmed |
+
+### Capability-Based Work Units
+
+Features are decomposed into **capabilities** - fine-grained units of work that each have their own acceptance test and implementation strategy.
+
+**What is a Capability:**
+
+- One API method OR one distinct UI component
+- Has one outer acceptance test (from test-specification or golden-master)
+- Uses TDD (default for Level A/B logic) or Component-First (default for Level C/UI)
+- Can be implemented independently with clear success criteria
+
+**Capability Granularity:**
+
+| Right-Sized | Too Small | Too Large |
+|-------------|-----------|-----------|
+| Maps to 1 API method or user story | < 1 test spec | > 10 test specs |
+| 2-7 test specifications | < 1 hour to implement | > 3 days to implement |
+| Can be demoed independently | No user-visible change | Spans multiple UI screens |
+
+**Per-Capability Strategy Assignment:**
+
+Each capability gets its own strategy based on its nature:
+
+| Capability Type | Default Strategy | Examples |
+|-----------------|------------------|----------|
+| Data Provider | TDD | C# service wrapping ParatextData |
+| Business Logic | TDD | Extracted algorithms, validation |
+| Visual Component | Component-First | Grid, form, dialog (layout-heavy) |
+| Integration Glue | TDD | PAPI commands, type definitions |
+
+**Hybrid Capabilities:** When a capability genuinely needs both TDD and Component-First, split it:
+
+```
+Settings Dialog (Hybrid)
+├── settings-validation (TDD) - validation logic
+├── settings-state (TDD) - state management
+└── settings-ui (Component-First) - visual rendering
+```
+
+The strategic plan (created in Phase 3 Step 1) documents all capabilities, their strategies, dependencies, and execution order.
+
 ### Unit Tests (TDD)
 
 - **Purpose**: Drive implementation through RED→GREEN→REFACTOR cycle
@@ -846,3 +926,6 @@ Phase 4: Verification
 15. **Coverage threshold recommendations**: 70% line coverage, 60% branch coverage (documented as recommendations; actual config changes are separate).
 16. **The Revert Test**: Mandatory verification that tests fail without implementation. Tests that pass without implementation are worthless.
 17. **Audit trail hooks**: Claude Code hooks log all tool calls to `.context/audit-logs/` for verifying agent exploration coverage. Logs track file reads (full/partial), search patterns, and subagent transitions. Important trails can be committed as documentation.
+18. **Outside-In TDD for AI constraints**: Phase 3 uses Outside-In TDD (London School) where each capability has an outer acceptance test from Phase 2 specs. This constrains AI agents - the outer test acts as a "fence" preventing deviation from PT9 behavior. When the outer test passes, the capability is complete.
+19. **Capability-based work units**: Features are decomposed into fine-grained capabilities (one per API method or UI component). Each capability has its own strategy (TDD or Component-First) based on its nature. Level defaults apply (A→TDD, C→Component-First) with per-capability overrides allowed.
+20. **Component-First acceptance**: For Component-First capabilities, visual verification against golden master screenshots IS the acceptance test. No redundant programmatic tests needed. Snapshot/interaction tests are added AFTER visual matching is confirmed.
