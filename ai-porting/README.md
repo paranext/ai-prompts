@@ -11,7 +11,8 @@ This directory contains Claude Code configuration files for the Paratext and par
 ```
 ai-porting/
 ├── README.md                 # This file
-├── setup-claude.sh           # Setup script to create symlinks
+├── setup-claude.sh           # Setup script (macOS/Linux)
+├── setup-claude.ps1          # Setup script (Windows PowerShell)
 ├── .claude/                  # Claude Code configuration
 │   ├── settings.json         # Project settings
 │   ├── commands/             # Custom slash commands
@@ -35,6 +36,8 @@ ai-porting/
 
 ## Quick Start
 
+### macOS / Linux
+
 ```bash
 # Clone the repo (same level as paranext-core and/or Paratext)
 cd /path/to/your/projects
@@ -51,6 +54,25 @@ chmod +x setup-claude.sh
 ./setup-claude.sh ../../Paratext --no-claude-md
 ```
 
+### Windows (PowerShell)
+
+```powershell
+# Clone the repo (same level as paranext-core and/or Paratext)
+cd C:\path\to\your\projects
+git clone https://github.com/paranext/ai-prompts.git
+
+# Run the setup script
+cd ai-prompts\ai-porting
+
+# For paranext-core (full setup with CLAUDE.md files)
+.\setup-claude.ps1 ..\..\paranext-core
+
+# For legacy Paratext (without CLAUDE.md files)
+.\setup-claude.ps1 ..\..\Paratext -NoClaudeMd
+```
+
+> **Note:** Windows requires either **Developer Mode** enabled or running PowerShell as **Administrator** to create symlinks. See [Troubleshooting](#windows-symlink-permissions) below.
+
 The script will:
 
 1. Create symlinks for `.claude/` and `.context/` at the project root
@@ -62,23 +84,32 @@ The script will:
 
 The script remembers which projects you've configured. After pulling updates:
 
+**macOS / Linux:**
 ```bash
-# From the ai-prompts directory
 git pull
-
-# Update all previously configured targets
 cd ai-porting
 ./setup-claude.sh --update
 ```
 
+**Windows:**
+```powershell
+git pull
+cd ai-porting
+.\setup-claude.ps1 -Update
+```
+
 ### Managing Targets
 
+**macOS / Linux:**
 ```bash
-# List all saved targets
-./setup-claude.sh --list
+./setup-claude.sh --list                       # List all saved targets
+./setup-claude.sh --remove ../../paranext-core # Remove a target
+```
 
-# Remove a target from the saved list
-./setup-claude.sh --remove ../../paranext-core
+**Windows:**
+```powershell
+.\setup-claude.ps1 -List                         # List all saved targets
+.\setup-claude.ps1 -Remove ..\..\paranext-core   # Remove a target
 ```
 
 To contribute changes:
@@ -147,6 +178,32 @@ chmod +x setup-claude.sh
 ### Symlink points to wrong location
 
 If you move directories, re-run the setup script to recreate symlinks with correct paths.
+
+### Windows symlink permissions
+
+Windows requires special permissions to create symbolic links. The setup script will fail with a clear error if it cannot create symlinks.
+
+**Option 1: Enable Developer Mode (recommended)**
+
+1. Open **Settings** > **Update & Security** > **For developers**
+2. Enable **Developer Mode**
+3. Restart your terminal and re-run the script
+
+**Option 2: Run as Administrator**
+
+Right-click PowerShell and select "Run as administrator", then run the setup script.
+
+### Windows execution policy
+
+If PowerShell blocks the script, you may need to adjust the execution policy:
+
+```powershell
+# Allow scripts for current user
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+
+# Or run with bypass (one-time)
+powershell -ExecutionPolicy Bypass -File .\setup-claude.ps1 ..\..\paranext-core
+```
 
 ## Documentation
 
