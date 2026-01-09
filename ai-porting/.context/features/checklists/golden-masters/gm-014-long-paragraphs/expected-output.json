@@ -1,0 +1,31 @@
+{
+  "scenarioId": "TS-060",
+  "capturedFrom": "PT9 behavior specification",
+  "captureDate": "2025-01-04",
+  "description": "Long Paragraphs shows top 100 longest paragraphs sorted by length",
+  "structure": {
+    "columnCount": 2,
+    "columnHeaders": ["Reference", "TestProject"],
+    "maxRows": 100
+  },
+  "expectedBehavior": {
+    "paragraphDetection": "Uses non-heading paragraph markers",
+    "scoreCalculation": "Score = paragraph length in characters",
+    "sorting": "Sorted by length descending",
+    "maxResults": "HighScoresOnly = true limits to 100",
+    "cellContent": "Each paragraph gets its own cell"
+  },
+  "metadata": {
+    "totalRows": 100,
+    "hiddenRows": 0,
+    "maxRowsReached": false,
+    "windowTitle": "Long Paragraphs for TestProject GEN 1:1-50:26",
+    "sortOrder": "length descending"
+  },
+  "verificationNotes": [
+    "Paragraph defined by non-heading paragraph markers",
+    "Each paragraph is a separate row",
+    "Reference is first verse of paragraph",
+    "Results limited to 100"
+  ]
+}

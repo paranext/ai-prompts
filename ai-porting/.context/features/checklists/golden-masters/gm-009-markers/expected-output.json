@@ -1,0 +1,40 @@
+{
+  "scenarioId": "TS-051",
+  "capturedFrom": "PT9 behavior specification",
+  "captureDate": "2025-01-04",
+  "description": "Markers checklist shows paragraph markers with \\marker prefix",
+  "structure": {
+    "columnCount": 2,
+    "columnHeaders": ["Reference", "TestProject"],
+    "rowCountVariable": "One row per paragraph in the range"
+  },
+  "expectedBehavior": {
+    "markerDisplay": "Each cell shows \\marker prefix before content",
+    "paragraphExtraction": "All paragraph-style markers extracted",
+    "filterEmpty": "Empty filter shows all paragraph markers",
+    "verseMerging": "Verses within paragraph merged into single cell"
+  },
+  "sampleRows": [
+    {
+      "reference": "GEN 1:1",
+      "cells": [
+        {
+          "projectId": "TestProject",
+          "contentFormat": "\\p [paragraph content]",
+          "hasContent": true
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "hiddenRows": 0,
+    "maxRowsReached": false,
+    "windowTitle": "Markers for TestProject GEN 1:1-3:24"
+  },
+  "verificationNotes": [
+    "Each cell shows \\marker prefix (e.g., \\p, \\q1, \\m)",
+    "Empty filter includes all paragraph markers",
+    "Verses within same paragraph are merged",
+    "Reference points to first verse of paragraph"
+  ]
+}

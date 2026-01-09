@@ -1,0 +1,28 @@
+{
+  "scenarioId": "gm-019",
+  "name": "Versification Alignment",
+  "scenarioIds": ["TS-071", "TS-083"],
+  "behaviorIds": ["BHV-003"],
+  "invariantIds": ["INV-004"],
+  "createdDate": "2025-01-04",
+  "priority": "critical",
+  "riskLevel": "high",
+  "checklistType": "Verses",
+  "testCategory": "cross-versification",
+  "comparisonConfig": {
+    "strategy": "structural",
+    "ignoreFields": ["captureDate", "actualVerseContent"],
+    "normalizations": ["strip-timestamps"],
+    "tolerance": {}
+  },
+  "coverage": {
+    "behaviors": ["BHV-003 Build Rows from Data Sources with versification mapping"],
+    "invariants": ["INV-004: Versification consistency across columns"],
+    "criticalAlgorithm": "CLRowsBuilder cell alignment"
+  },
+  "pt10Notes": {
+    "paratextDataUsage": "VerseRef, ScrVers for versification mapping",
+    "algorithmComplexity": "CLRowsBuilder is the most complex algorithm",
+    "testBooks": "Use Psalms for versification differences"
+  }
+}

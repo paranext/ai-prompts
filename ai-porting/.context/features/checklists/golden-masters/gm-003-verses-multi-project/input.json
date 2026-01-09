@@ -1,0 +1,35 @@
+{
+  "scenarioId": "TS-008",
+  "checklistType": "Verses",
+  "description": "Multi-project verses comparison with aligned columns",
+  "projects": [
+    {
+      "id": "TargetProject",
+      "role": "primary",
+      "versification": "English"
+    },
+    {
+      "id": "SourceText1",
+      "role": "comparative",
+      "versification": "English"
+    },
+    {
+      "id": "SourceText2",
+      "role": "comparative",
+      "versification": "English"
+    }
+  ],
+  "verseRange": {
+    "first": "GEN 1:1",
+    "last": "GEN 1:10"
+  },
+  "settings": {
+    "showSectionHeadings": false,
+    "showFootnotes": false
+  },
+  "preconditions": [
+    "All three projects exist in ScrTextCollection",
+    "All projects have content for Genesis 1:1-10",
+    "All projects use compatible versification"
+  ]
+}

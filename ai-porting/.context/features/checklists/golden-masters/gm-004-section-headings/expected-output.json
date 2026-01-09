@@ -1,0 +1,41 @@
+{
+  "scenarioId": "TS-041",
+  "capturedFrom": "PT9 behavior specification",
+  "captureDate": "2025-01-04",
+  "description": "Section headings checklist extracts heading paragraphs with references to following verses",
+  "structure": {
+    "columnCount": 2,
+    "columnHeaders": ["Reference", "TestProject"],
+    "rowCountVariable": "Depends on number of section headings in Genesis 1-5"
+  },
+  "expectedBehavior": {
+    "markerDetection": "Only paragraph markers with scSection text type are extracted",
+    "referenceAssignment": "Reference is first verse following the heading",
+    "headingContent": "Full text content of the heading paragraph"
+  },
+  "sampleRows": [
+    {
+      "reference": "GEN 1:1",
+      "description": "Heading before Genesis 1 (e.g., 'The Beginning')",
+      "cells": [
+        {
+          "projectId": "TestProject",
+          "contentType": "sectionHeading",
+          "hasContent": true
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "hiddenRows": 0,
+    "maxRowsReached": false,
+    "windowTitle": "Section Headings for TestProject GEN 1:1-5:32"
+  },
+  "verificationNotes": [
+    "Only section heading markers (\\s, \\s1, \\s2, etc.) are extracted",
+    "Book title markers (\\mt) are NOT included",
+    "Reference points to first verse following the heading, NOT the heading itself",
+    "If heading is before chapter marker, reference uses previous verse (FB-35863)",
+    "Stanza breaks (\\b) after headings are skipped when finding reference (FB-24651)"
+  ]
+}

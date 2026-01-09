@@ -1,0 +1,28 @@
+{
+  "scenarioId": "gm-017",
+  "name": "Words/Phrases Checklist",
+  "scenarioIds": ["TS-066", "TS-067", "TS-068"],
+  "behaviorIds": ["BHV-111"],
+  "invariantIds": ["INV-001"],
+  "createdDate": "2025-01-04",
+  "priority": "high",
+  "riskLevel": "medium",
+  "checklistType": "WordsPhrases",
+  "testCategory": "type-specific",
+  "comparisonConfig": {
+    "strategy": "structural",
+    "ignoreFields": ["captureDate", "actualVerseContent"],
+    "normalizations": ["strip-timestamps", "normalize-highlight-markers"],
+    "tolerance": {}
+  },
+  "coverage": {
+    "behaviors": ["BHV-111 Words/Phrases Data Extraction"],
+    "invariants": ["INV-001"],
+    "integrations": ["BiblicalTermsForm pre-configured launch"]
+  },
+  "pt10Notes": {
+    "searchMatcher": "WordOrPhraseMatcher",
+    "morphology": "LexicalAnalyser for morphological matching",
+    "highlightMarker": "||m3tch used internally for highlighting"
+  }
+}

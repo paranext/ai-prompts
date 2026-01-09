@@ -1,0 +1,36 @@
+{
+  "scenarioId": "gm-003",
+  "name": "Verses Checklist - Multi-Project Comparison",
+  "scenarioIds": ["TS-008", "TS-015", "TS-069"],
+  "behaviorIds": ["BHV-002", "BHV-003", "BHV-006"],
+  "invariantIds": ["INV-001", "INV-004", "INV-005"],
+  "createdDate": "2025-01-04",
+  "priority": "high",
+  "riskLevel": "medium",
+  "checklistType": "Verses",
+  "testCategory": "multi-project",
+  "comparisonConfig": {
+    "strategy": "structural",
+    "ignoreFields": ["captureDate", "actualVerseContent"],
+    "normalizations": ["strip-timestamps", "normalize-whitespace"],
+    "tolerance": {
+      "rowCountVariance": 0
+    }
+  },
+  "coverage": {
+    "behaviors": [
+      "BHV-002 Display Checklist Data",
+      "BHV-003 Build Rows from Data Sources",
+      "BHV-006 Choose Comparative Texts"
+    ],
+    "invariants": [
+      "INV-001: Row cell count equals project count",
+      "INV-004: Versification consistency",
+      "INV-005: No duplicate cells per row"
+    ]
+  },
+  "pt10Notes": {
+    "columnOrder": "Primary project first, then comparative texts in selection order",
+    "cellAlignment": "CLRowsBuilder algorithm handles alignment"
+  }
+}

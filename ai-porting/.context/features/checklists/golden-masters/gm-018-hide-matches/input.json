@@ -1,0 +1,29 @@
+{
+  "scenarioId": "TS-025",
+  "checklistType": "Verses",
+  "description": "Hide Matches feature filtering out rows where all cells have identical content",
+  "projects": [
+    {
+      "id": "TargetProject",
+      "role": "primary",
+      "versification": "English"
+    },
+    {
+      "id": "SourceText",
+      "role": "comparative",
+      "versification": "English"
+    }
+  ],
+  "verseRange": {
+    "first": "GEN 1:1",
+    "last": "GEN 1:31"
+  },
+  "settings": {
+    "hideMatches": true
+  },
+  "preconditions": [
+    "Both projects exist in ScrTextCollection",
+    "Some verses have identical content across projects",
+    "At least one comparative text selected (required for Hide Matches)"
+  ]
+}

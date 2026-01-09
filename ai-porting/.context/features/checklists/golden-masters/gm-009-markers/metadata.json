@@ -1,0 +1,25 @@
+{
+  "scenarioId": "gm-009",
+  "name": "Markers Checklist",
+  "scenarioIds": ["TS-051", "TS-052"],
+  "behaviorIds": ["BHV-105"],
+  "invariantIds": ["INV-001"],
+  "createdDate": "2025-01-04",
+  "priority": "high",
+  "riskLevel": "low",
+  "checklistType": "Markers",
+  "testCategory": "type-specific",
+  "comparisonConfig": {
+    "strategy": "structural",
+    "ignoreFields": ["captureDate", "actualParagraphContent"],
+    "normalizations": ["strip-timestamps", "normalize-whitespace"],
+    "tolerance": {}
+  },
+  "coverage": {
+    "behaviors": ["BHV-105 Markers Data Extraction"]
+  },
+  "pt10Notes": {
+    "markerPrefix": "Prepend \\marker to cell content",
+    "stylesheetUsage": "Use stylesheet to identify paragraph markers"
+  }
+}

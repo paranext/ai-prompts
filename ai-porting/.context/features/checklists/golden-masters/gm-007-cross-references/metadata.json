@@ -1,0 +1,31 @@
+{
+  "scenarioId": "gm-007",
+  "name": "Cross References Checklist",
+  "scenarioIds": ["TS-047", "TS-048", "TS-049", "TS-050"],
+  "behaviorIds": ["BHV-104"],
+  "invariantIds": ["INV-001"],
+  "validations": ["VAL-002"],
+  "createdDate": "2025-01-04",
+  "priority": "high",
+  "riskLevel": "medium",
+  "checklistType": "CrossReferences",
+  "testCategory": "type-specific",
+  "comparisonConfig": {
+    "strategy": "structural",
+    "ignoreFields": ["captureDate", "actualReferenceContent"],
+    "normalizations": ["strip-timestamps", "normalize-whitespace"],
+    "tolerance": {}
+  },
+  "coverage": {
+    "behaviors": ["BHV-104 Cross References Data Extraction"],
+    "invariants": ["INV-001: Row cell count equals column count"],
+    "validations": ["VAL-002: Scripture reference settings must be reviewed"],
+    "edgeCases": ["EC-008: Invalid cross reference handling"],
+    "domainConstraints": ["DC-008: Figure references included"]
+  },
+  "pt10Notes": {
+    "settingsPrerequisite": "Must check if reference settings reviewed before display",
+    "parserUsage": "Use CrossReferenceScanner and ParallelPassageReferenceScanner",
+    "errorHandling": "Display error message for invalid references"
+  }
+}

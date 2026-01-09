@@ -1,0 +1,27 @@
+{
+  "scenarioId": "TS-054",
+  "checklistType": "RelativelyLongVerses",
+  "description": "Top 100 verses with highest relative length ratio between projects",
+  "projects": [
+    {
+      "id": "TargetProject",
+      "role": "primary",
+      "versification": "English"
+    },
+    {
+      "id": "SourceText",
+      "role": "comparative",
+      "versification": "English"
+    }
+  ],
+  "verseRange": {
+    "first": "GEN 1:1",
+    "last": "DEU 34:12"
+  },
+  "settings": {},
+  "preconditions": [
+    "Both projects exist in ScrTextCollection",
+    "Both projects have content in Genesis through Deuteronomy",
+    "At least two ScrTexts required (PRE-005)"
+  ]
+}

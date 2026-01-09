@@ -1,0 +1,26 @@
+{
+  "scenarioId": "TS-039",
+  "checklistType": "Verses",
+  "description": "Verses checklist with section headings included in output, Psalms 1-3",
+  "projects": [
+    {
+      "id": "TestProject",
+      "role": "primary",
+      "versification": "English"
+    }
+  ],
+  "verseRange": {
+    "first": "PSA 1:1",
+    "last": "PSA 3:8"
+  },
+  "settings": {
+    "showSectionHeadings": true,
+    "showFootnotes": false
+  },
+  "preconditions": [
+    "Project TestProject exists in ScrTextCollection",
+    "Project has complete content for Psalms 1-3",
+    "Project has section headings in the Psalms",
+    "Project uses English versification"
+  ]
+}

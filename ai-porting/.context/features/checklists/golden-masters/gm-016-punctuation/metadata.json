@@ -1,0 +1,26 @@
+{
+  "scenarioId": "gm-016",
+  "name": "Punctuation Checklist",
+  "scenarioIds": ["TS-064", "TS-065"],
+  "behaviorIds": ["BHV-110"],
+  "invariantIds": ["INV-001"],
+  "createdDate": "2025-01-04",
+  "priority": "high",
+  "riskLevel": "low",
+  "checklistType": "Punctuation",
+  "testCategory": "type-specific",
+  "comparisonConfig": {
+    "strategy": "structural",
+    "ignoreFields": ["captureDate", "actualVerseContent"],
+    "normalizations": ["strip-timestamps"],
+    "tolerance": {}
+  },
+  "coverage": {
+    "behaviors": ["BHV-110 Punctuation Data Extraction"],
+    "invariants": ["INV-001"]
+  },
+  "pt10Notes": {
+    "paratextDataUsage": "CharacterCategorizer.IsPunctuation",
+    "settingsDialog": "PunctuationSettingsForm for filter"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "scenarioId": "gm-013",
+  "name": "Long Sentences Checklist",
+  "scenarioIds": ["TS-058", "TS-059"],
+  "behaviorIds": ["BHV-107"],
+  "invariantIds": ["INV-001", "POST-002"],
+  "domainConstraints": ["DC-002"],
+  "createdDate": "2025-01-04",
+  "priority": "high",
+  "riskLevel": "medium",
+  "checklistType": "LongSentences",
+  "testCategory": "type-specific",
+  "comparisonConfig": {
+    "strategy": "structural",
+    "ignoreFields": ["captureDate", "actualSentenceContent"],
+    "normalizations": ["strip-timestamps"],
+    "tolerance": {}
+  },
+  "coverage": {
+    "behaviors": ["BHV-107 Long Sentences Data Extraction"],
+    "invariants": ["INV-001", "POST-002"],
+    "domainConstraints": ["DC-002: Sentence final punctuation defines sentences"]
+  },
+  "pt10Notes": {
+    "paratextDataUsage": "CharacterCategorizer.IsSentenceFinalPunctuation",
+    "languageAware": "Punctuation is language-specific"
+  }
+}

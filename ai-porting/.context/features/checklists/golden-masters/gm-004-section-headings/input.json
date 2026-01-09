@@ -1,0 +1,22 @@
+{
+  "scenarioId": "TS-041",
+  "checklistType": "SectionHeadings",
+  "description": "Section headings checklist extracting heading paragraphs with following verse references",
+  "projects": [
+    {
+      "id": "TestProject",
+      "role": "primary",
+      "versification": "English"
+    }
+  ],
+  "verseRange": {
+    "first": "GEN 1:1",
+    "last": "GEN 5:32"
+  },
+  "settings": {},
+  "preconditions": [
+    "Project TestProject exists in ScrTextCollection",
+    "Project has section headings using standard markers (\\s, \\s1, \\s2)",
+    "Project has content for Genesis 1-5"
+  ]
+}

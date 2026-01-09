@@ -1,0 +1,29 @@
+{
+  "scenarioId": "TS-066",
+  "capturedFrom": "PT9 behavior specification",
+  "captureDate": "2025-01-04",
+  "description": "Words/Phrases checklist shows verses containing matches with highlighting",
+  "structure": {
+    "columnCount": 2,
+    "columnHeaders": ["Reference", "TestProject"],
+    "rowCountVariable": "Depends on number of matches"
+  },
+  "expectedBehavior": {
+    "searchFormat": "Multiple search strings newline-separated",
+    "matching": "Uses WordOrPhraseMatcher for finding matches",
+    "highlighting": "Matched text marked with special ||m3tch marker",
+    "morphology": "Optional morphological matching via LexicalAnalyser"
+  },
+  "metadata": {
+    "hiddenRows": 0,
+    "maxRowsReached": false,
+    "windowTitle": "Words or Phrases for TestProject GEN 1:1-50:26"
+  },
+  "verificationNotes": [
+    "Multiple search strings separated by newlines",
+    "Matched text is highlighted in output",
+    "Match highlighting uses ||m3tch marker internally",
+    "Morphological matching finds word variants (e.g., 'create' matches 'created')",
+    "Can be launched from BiblicalTermsForm with pre-configured search"
+  ]
+}

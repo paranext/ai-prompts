@@ -1,0 +1,31 @@
+{
+  "scenarioId": "gm-020",
+  "name": "Verse Bridge Alignment",
+  "scenarioIds": ["TS-073"],
+  "behaviorIds": ["BHV-003"],
+  "invariantIds": ["INV-001"],
+  "domainConstraints": ["DC-005"],
+  "edgeCases": ["EC-002"],
+  "createdDate": "2025-01-04",
+  "priority": "critical",
+  "riskLevel": "critical",
+  "checklistType": "Verses",
+  "testCategory": "verse-bridge",
+  "comparisonConfig": {
+    "strategy": "structural",
+    "ignoreFields": ["captureDate", "actualVerseContent"],
+    "normalizations": ["strip-timestamps"],
+    "tolerance": {}
+  },
+  "coverage": {
+    "behaviors": ["BHV-003 Build Rows - ExpandGrabCountToAlignCells"],
+    "invariants": ["INV-001: Row cell count equals column count"],
+    "edgeCases": ["EC-002: Verse bridges with different ranges (Critical)"],
+    "domainConstraints": ["DC-005: MAX_CELLS_TO_GRAB = 3"]
+  },
+  "pt10Notes": {
+    "constant": "MAX_CELLS_TO_GRAB = 3",
+    "algorithmLocation": "CLRowsBuilder.ExpandGrabCountToAlignCells",
+    "criticalComplexity": "Most complex alignment scenario"
+  }
+}

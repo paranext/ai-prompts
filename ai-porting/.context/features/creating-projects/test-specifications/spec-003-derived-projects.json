@@ -1,0 +1,555 @@
+{
+  "id": "spec-003",
+  "name": "Derived Projects",
+  "description": "Specifications for creating derived project types (back translations, daughter translations, study Bibles). Tests base project relationships, property inheritance, and book copying.",
+  "targetApis": ["TranslationInformation", "ProjectPropertiesUtils.InitializeScrTextWithDefaultValues", "ProjectPropertiesUtils.MakeCopyOfBase"],
+  "relatedBehaviors": ["BHV-003", "BHV-011", "BHV-012", "BHV-013"],
+  "relatedInvariants": ["INV-004"],
+  "specifications": [
+    {
+      "id": "spec-003-01",
+      "name": "Initialize project from base - inherits versification",
+      "scenarioRefs": ["TS-003", "TS-052"],
+      "paratextDataApi": {
+        "class": "ProjectPropertiesUtils",
+        "method": "InitializeScrTextWithDefaultValues",
+        "signature": "void InitializeScrTextWithDefaultValues(ScrText scrText, ScrText baseScrText, string shortName, string longName)",
+        "namespace": "Paratext.ToolsMenu"
+      },
+      "preconditions": [
+        "Base project exists with versification 'Original'",
+        "Base project has language 'es'"
+      ],
+      "inputs": {
+        "baseScrText": "Existing ScrText for base project",
+        "shortName": "DRV",
+        "longName": "Derived Project"
+      },
+      "expectedBehavior": [
+        "Versification copied from base",
+        "LanguageId copied from base",
+        "LanguageName copied from base",
+        "Encoding copied from base",
+        "Copyright copied from base",
+        "NormalizationForm set to NFC",
+        "Editable set to true",
+        "MinParatextDataVersion set"
+      ],
+      "assertions": [
+        {
+          "type": "equals",
+          "target": "scrText.Settings.Versification",
+          "expected": "baseScrText.Settings.Versification",
+          "description": "Versification inherited from base"
+        },
+        {
+          "type": "equals",
+          "target": "scrText.Settings.LanguageId",
+          "expected": "baseScrText.Settings.LanguageId",
+          "description": "Language inherited from base"
+        },
+        {
+          "type": "equals",
+          "target": "scrText.Settings.Name",
+          "expected": "DRV",
+          "description": "Short name is unique"
+        },
+        {
+          "type": "equals",
+          "target": "scrText.Settings.FullName",
+          "expected": "Derived Project",
+          "description": "Full name is unique"
+        },
+        {
+          "type": "equals",
+          "target": "scrText.Settings.NormalizationForm",
+          "expected": "ProjectNormalization.NFC",
+          "description": "Normalization is NFC"
+        },
+        {
+          "type": "isTrue",
+          "target": "scrText.Editable",
+          "description": "Derived project is editable"
+        }
+      ],
+      "invariants": [],
+      "priority": "critical"
+    },
+    {
+      "id": "spec-003-02",
+      "name": "Initialize project from base - customized versification copied",
+      "scenarioRefs": ["TS-046"],
+      "paratextDataApi": {
+        "class": "ProjectSettings",
+        "method": "CopyCustomVersification",
+        "namespace": "Paratext.Data"
+      },
+      "preconditions": [
+        "Base project has customized versification"
+      ],
+      "inputs": {
+        "baseScrText": "ScrText with custom versification"
+      },
+      "expectedBehavior": [
+        "Custom versification files copied to new project",
+        "Versification matches base exactly"
+      ],
+      "assertions": [
+        {
+          "type": "equals",
+          "target": "scrText.Settings.Versification",
+          "expected": "baseScrText.Settings.Versification",
+          "description": "Custom versification matches base"
+        }
+      ],
+      "invariants": [],
+      "priority": "medium"
+    },
+    {
+      "id": "spec-003-03",
+      "name": "Create TranslationInformation - BackTranslation with base",
+      "scenarioRefs": ["TS-023"],
+      "paratextDataApi": {
+        "class": "ProjectPropertiesUtils",
+        "method": "CalculateTranslationInfo",
+        "signature": "TranslationInformation CalculateTranslationInfo(ProjectType projectType, ScrText baseScrText)",
+        "namespace": "Paratext.ToolsMenu"
+      },
+      "preconditions": [
+        "Base project 'BaseTrans' exists with valid GUID"
+      ],
+      "inputs": {
+        "projectType": "ProjectType.BackTranslation",
+        "baseScrText": "ScrText for 'BaseTrans'"
+      },
+      "expectedBehavior": [
+        "TranslationInformation created with BackTranslation type",
+        "BaseProjectName set to base project name",
+        "BaseProjectGuid set from base project",
+        "VersioningManager.EnsureHasGuid called on base"
+      ],
+      "assertions": [
+        {
+          "type": "equals",
+          "target": "translationInfo.Type",
+          "expected": "ProjectType.BackTranslation",
+          "description": "Type is BackTranslation"
+        },
+        {
+          "type": "equals",
+          "target": "translationInfo.BaseProjectName",
+          "expected": "BaseTrans",
+          "description": "Base project name set"
+        },
+        {
+          "type": "not-null",
+          "target": "translationInfo.BaseProjectGuid",
+          "description": "Base project GUID set"
+        }
+      ],
+      "invariants": ["INV-004"],
+      "priority": "high"
+    },
+    {
+      "id": "spec-003-04",
+      "name": "Create TranslationInformation - Daughter translation",
+      "scenarioRefs": ["TS-024"],
+      "paratextDataApi": {
+        "class": "ProjectPropertiesUtils",
+        "method": "CalculateTranslationInfo",
+        "namespace": "Paratext.ToolsMenu"
+      },
+      "preconditions": [
+        "Base project 'ParentTrans' exists"
+      ],
+      "inputs": {
+        "projectType": "ProjectType.Daughter",
+        "baseScrText": "ScrText for 'ParentTrans'"
+      },
+      "expectedBehavior": [
+        "TranslationInformation created with Daughter type",
+        "Base project reference established"
+      ],
+      "assertions": [
+        {
+          "type": "equals",
+          "target": "translationInfo.Type",
+          "expected": "ProjectType.Daughter",
+          "description": "Type is Daughter"
+        },
+        {
+          "type": "equals",
+          "target": "translationInfo.BaseProjectName",
+          "expected": "ParentTrans",
+          "description": "Base project name set"
+        }
+      ],
+      "invariants": ["INV-004"],
+      "priority": "high"
+    },
+    {
+      "id": "spec-003-05",
+      "name": "Create TranslationInformation - StudyBibleAdditions",
+      "scenarioRefs": ["TS-025"],
+      "paratextDataApi": {
+        "class": "ProjectPropertiesUtils",
+        "method": "CalculateTranslationInfo",
+        "namespace": "Paratext.ToolsMenu"
+      },
+      "preconditions": [
+        "Base scripture project 'BaseScr' exists"
+      ],
+      "inputs": {
+        "projectType": "ProjectType.StudyBibleAdditions",
+        "baseScrText": "ScrText for 'BaseScr'"
+      },
+      "expectedBehavior": [
+        "TranslationInformation created for Study Bible",
+        "Default stylesheet is 'usfm_sb.sty'"
+      ],
+      "assertions": [
+        {
+          "type": "equals",
+          "target": "translationInfo.Type",
+          "expected": "ProjectType.StudyBibleAdditions",
+          "description": "Type is StudyBibleAdditions"
+        },
+        {
+          "type": "equals",
+          "target": "defaultStylesheet",
+          "expected": "usfm_sb.sty",
+          "description": "Study Bible uses special stylesheet"
+        }
+      ],
+      "invariants": ["INV-004"],
+      "priority": "high"
+    },
+    {
+      "id": "spec-003-06",
+      "name": "Create TranslationInformation - ConsultantNotes",
+      "scenarioRefs": ["TS-026", "TS-051"],
+      "paratextDataApi": {
+        "class": "ProjectPropertiesUtils",
+        "method": "CalculateTranslationInfo",
+        "namespace": "Paratext.ToolsMenu"
+      },
+      "preconditions": [
+        "Base project exists for notes"
+      ],
+      "inputs": {
+        "projectType": "ProjectType.ConsultantNotes",
+        "baseScrText": "ScrText for base"
+      },
+      "expectedBehavior": [
+        "TranslationInformation created for Consultant Notes",
+        "Auto-correct file will be copied"
+      ],
+      "assertions": [
+        {
+          "type": "equals",
+          "target": "translationInfo.Type",
+          "expected": "ProjectType.ConsultantNotes",
+          "description": "Type is ConsultantNotes"
+        }
+      ],
+      "invariants": ["INV-004"],
+      "priority": "high"
+    },
+    {
+      "id": "spec-003-07",
+      "name": "Create TranslationInformation - derived type without base fails",
+      "scenarioRefs": ["TS-027", "TS-060"],
+      "paratextDataApi": {
+        "class": "TranslationInformation",
+        "method": "constructor",
+        "signature": "TranslationInformation(ProjectType type, string baseProjectName, HexId baseProjectGuid)",
+        "namespace": "Paratext.Data.ProjectSettingsAccess"
+      },
+      "preconditions": [],
+      "inputs": {
+        "projectType": "ProjectType.BackTranslation",
+        "baseProjectName": null
+      },
+      "expectedBehavior": [
+        "InvalidOperationException thrown",
+        "Derived types require base project"
+      ],
+      "assertions": [
+        {
+          "type": "throws",
+          "target": "new TranslationInformation(ProjectType.BackTranslation, null, null)",
+          "expected": "InvalidOperationException",
+          "description": "Exception thrown for derived type without base"
+        }
+      ],
+      "invariants": ["INV-004"],
+      "priority": "critical"
+    },
+    {
+      "id": "spec-003-08",
+      "name": "All derived types require base project",
+      "scenarioRefs": ["TS-060"],
+      "paratextDataApi": {
+        "class": "TranslationInformation",
+        "method": "constructor",
+        "namespace": "Paratext.Data.ProjectSettingsAccess"
+      },
+      "preconditions": [],
+      "inputs": {
+        "derivedTypes": [
+          "ProjectType.BackTranslation",
+          "ProjectType.Daughter",
+          "ProjectType.StudyBibleAdditions",
+          "ProjectType.StudyBiblePublished",
+          "ProjectType.ConsultantNotes",
+          "ProjectType.Auxiliary",
+          "ProjectType.TransliterationManual",
+          "ProjectType.TransliterationWithEncoder"
+        ],
+        "baseProjectName": null
+      },
+      "expectedBehavior": [
+        "InvalidOperationException thrown for each derived type"
+      ],
+      "assertions": [
+        {
+          "type": "throws",
+          "target": "new TranslationInformation(derivedType, null, null)",
+          "expected": "InvalidOperationException",
+          "description": "All derived types throw without base"
+        }
+      ],
+      "invariants": ["INV-004"],
+      "priority": "high"
+    },
+    {
+      "id": "spec-003-09",
+      "name": "Copy books from base project for Study Bible",
+      "scenarioRefs": ["TS-028"],
+      "paratextDataApi": {
+        "class": "ProjectPropertiesUtils",
+        "method": "MakeCopyOfBase",
+        "signature": "void MakeCopyOfBase(ScrText scrText)",
+        "namespace": "Paratext.ToolsMenu"
+      },
+      "preconditions": [
+        "Base project has books GEN, EXO, MAT",
+        "New Study Bible project created"
+      ],
+      "inputs": {
+        "scrText": "Study Bible ScrText with base configured"
+      },
+      "expectedBehavior": [
+        "All books from base project copied via PutText",
+        "DerivedTranslationStatus baseline created"
+      ],
+      "assertions": [
+        {
+          "type": "equals",
+          "target": "scrText.BookList",
+          "expected": "baseScrText.BookList",
+          "description": "New project has all base project books"
+        },
+        {
+          "type": "equals",
+          "target": "scrText.GetText(Book.GEN)",
+          "expected": "baseScrText.GetText(Book.GEN)",
+          "description": "Book content matches base"
+        }
+      ],
+      "invariants": [],
+      "priority": "high"
+    },
+    {
+      "id": "spec-003-10",
+      "name": "Copy license from base project",
+      "scenarioRefs": ["TS-029"],
+      "paratextDataApi": {
+        "class": "ProjectPropertiesUtils",
+        "method": "UpdateScrText",
+        "namespace": "Paratext.ToolsMenu"
+      },
+      "preconditions": [
+        "Base project has license.json",
+        "Project type shares license with parent (BackTranslation, Auxiliary, Transliteration)"
+      ],
+      "inputs": {
+        "projectType": "ProjectType.BackTranslation",
+        "baseScrText": "ScrText with license.json"
+      },
+      "expectedBehavior": [
+        "license.json copied from base to new project"
+      ],
+      "assertions": [
+        {
+          "type": "file-exists",
+          "target": "{newProjectDir}/license.json",
+          "description": "License file exists in new project"
+        },
+        {
+          "type": "file-content-equals",
+          "target": "{newProjectDir}/license.json",
+          "expected": "{baseProjectDir}/license.json",
+          "description": "License content matches base"
+        }
+      ],
+      "invariants": [],
+      "priority": "medium"
+    },
+    {
+      "id": "spec-003-11",
+      "name": "Base project missing after selection",
+      "scenarioRefs": ["TS-047"],
+      "paratextDataApi": {
+        "class": "TranslationInformation",
+        "method": "BaseScrText getter",
+        "namespace": "Paratext.Data.ProjectSettingsAccess"
+      },
+      "preconditions": [
+        "Base project was selected",
+        "Base project deleted/moved after selection"
+      ],
+      "inputs": {
+        "baseProjectName": "DeletedBase"
+      },
+      "expectedBehavior": [
+        "BaseScrText returns null",
+        "UI should prevent this scenario"
+      ],
+      "assertions": [
+        {
+          "type": "isNull",
+          "target": "translationInfo.BaseScrText",
+          "description": "Returns null for missing base"
+        }
+      ],
+      "invariants": [],
+      "priority": "medium"
+    },
+    {
+      "id": "spec-003-12",
+      "name": "Create TranslationInformation - TransliterationWithEncoder",
+      "scenarioRefs": ["TS-065"],
+      "paratextDataApi": {
+        "class": "ProjectPropertiesUtils",
+        "method": "CalculateTranslationInfo",
+        "namespace": "Paratext.ToolsMenu"
+      },
+      "preconditions": [
+        "Base project exists"
+      ],
+      "inputs": {
+        "projectType": "ProjectType.TransliterationWithEncoder",
+        "baseScrText": "ScrText for source project"
+      },
+      "expectedBehavior": [
+        "TranslationInformation created for transliteration",
+        "Shares license with parent (CON-004)"
+      ],
+      "assertions": [
+        {
+          "type": "equals",
+          "target": "translationInfo.Type",
+          "expected": "ProjectType.TransliterationWithEncoder",
+          "description": "Type is TransliterationWithEncoder"
+        }
+      ],
+      "invariants": ["INV-004"],
+      "priority": "low"
+    },
+    {
+      "id": "spec-003-13",
+      "name": "Versification inheritance is enforced",
+      "scenarioRefs": ["TS-052"],
+      "paratextDataApi": {
+        "class": "ProjectPropertiesUtils",
+        "method": "UpdateScrText",
+        "namespace": "Paratext.ToolsMenu"
+      },
+      "preconditions": [
+        "Creating derived project",
+        "Base has 'Original' versification"
+      ],
+      "inputs": {
+        "projectType": "ProjectType.BackTranslation",
+        "baseVersification": "Original"
+      },
+      "expectedBehavior": [
+        "Derived project inherits versification",
+        "Versification cannot be changed for derived projects"
+      ],
+      "assertions": [
+        {
+          "type": "equals",
+          "target": "scrText.Settings.Versification",
+          "expected": "baseScrText.Settings.Versification",
+          "description": "Versification matches base"
+        }
+      ],
+      "invariants": [],
+      "priority": "high"
+    }
+  ],
+  "propertyTests": [
+    {
+      "id": "prop-003-01",
+      "name": "Derived projects always have valid base reference",
+      "invariantRef": "INV-004",
+      "property": "All derived project types have non-null BaseProjectName and BaseProjectGuid",
+      "generator": {
+        "type": "derived-project-creation",
+        "constraints": {
+          "derivedTypes": [
+            "BackTranslation",
+            "Daughter",
+            "StudyBibleAdditions",
+            "ConsultantNotes",
+            "Auxiliary",
+            "TransliterationManual",
+            "TransliterationWithEncoder"
+          ],
+          "requireValidBase": true
+        }
+      },
+      "iterations": 500,
+      "assertions": [
+        "TranslationInformation.BaseProjectName is not null for derived types",
+        "TranslationInformation.BaseProjectGuid is not null for derived types"
+      ],
+      "priority": "critical"
+    },
+    {
+      "id": "prop-003-02",
+      "name": "Derived projects inherit versification from base",
+      "property": "All derived projects have same versification as their base project",
+      "generator": {
+        "type": "derived-project-pairs",
+        "constraints": {
+          "baseVersifications": ["English", "Original", "Septuagint", "Vulgate"]
+        }
+      },
+      "iterations": 200,
+      "assertions": [
+        "Derived.Versification == Base.Versification for all pairs"
+      ],
+      "priority": "high"
+    },
+    {
+      "id": "prop-003-03",
+      "name": "License sharing follows project type rules",
+      "property": "BackTranslation, Auxiliary, and Transliteration projects share license with parent",
+      "generator": {
+        "type": "derived-project-types-with-license",
+        "constraints": {
+          "licenseSharingTypes": ["BackTranslation", "Auxiliary", "TransliterationManual", "TransliterationWithEncoder"]
+        }
+      },
+      "iterations": 100,
+      "assertions": [
+        "ProjectTypeExtensions.SharesProjectLicenseWithParent returns true for sharing types",
+        "License file copied for sharing types"
+      ],
+      "priority": "medium"
+    }
+  ]
+}

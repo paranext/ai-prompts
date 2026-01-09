@@ -1,0 +1,2429 @@
+{
+  "feature": "checklists",
+  "classification": "C",
+  "generatedAt": "2025-01-04",
+  "totalScenarios": 85,
+  "scenariosByCategory": {
+    "initialization": 6,
+    "display": 8,
+    "navigation": 4,
+    "settings": 6,
+    "typeSpecific": 39,
+    "edgeCases": 14,
+    "errors": 8
+  },
+  "goldenMasterCount": 17,
+  "scenarios": [
+    {
+      "id": "TS-001",
+      "behaviorId": "BHV-001",
+      "name": "Initialize Checklist Tool with valid project",
+      "description": "Opening a checklist tool with a valid ScrText initializes the window with default settings and loads persisted memento if available.",
+      "checklistType": "Verses",
+      "priority": "high",
+      "category": "initialization",
+      "preconditions": [
+        "A valid scripture project exists in ScrTextCollection",
+        "Project has at least one book with content"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "settings": {}
+      },
+      "expectedOutputs": {
+        "result": "Window opens successfully",
+        "uiState": {
+          "windowTitle": "Contains project name and verse range",
+          "toolbarVisible": true,
+          "dataGridEmpty": false
+        }
+      },
+      "invariantsToVerify": ["INV-001", "INV-006"],
+      "goldenMasterRequired": false,
+      "notes": "Persisted settings from memento are loaded if previously saved"
+    },
+    {
+      "id": "TS-002",
+      "behaviorId": "BHV-001",
+      "name": "Initialize Checklist Tool restores comparative texts",
+      "description": "When opening a checklist, previously selected comparative texts are restored from memento if they still exist.",
+      "checklistType": "Verses",
+      "priority": "medium",
+      "category": "initialization",
+      "preconditions": [
+        "A checklist was previously opened with comparative texts selected",
+        "At least one comparative text still exists in collection"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "settings": {
+          "mementoComparativeTexts": ["CompProject1", "CompProject2"]
+        }
+      },
+      "expectedOutputs": {
+        "result": "Comparative texts are restored",
+        "uiState": {
+          "comparativeTextsCount": 2,
+          "columnsDisplayed": 3
+        }
+      },
+      "invariantsToVerify": ["INV-001"],
+      "goldenMasterRequired": false,
+      "notes": "Comparative texts that no longer exist are silently filtered out (VAL-004)"
+    },
+    {
+      "id": "TS-003",
+      "behaviorId": "BHV-001",
+      "name": "Initialize Checklist Tool filters removed comparative texts",
+      "description": "Comparative texts from memento that no longer exist in ScrTextCollection are silently removed.",
+      "checklistType": "Verses",
+      "priority": "medium",
+      "category": "initialization",
+      "preconditions": [
+        "Memento references a comparative text that has been deleted"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "settings": {
+          "mementoComparativeTexts": ["ExistingProject", "DeletedProject"]
+        }
+      },
+      "expectedOutputs": {
+        "result": "Only existing project appears as comparative text",
+        "uiState": {
+          "comparativeTextsCount": 1,
+          "columnsDisplayed": 2
+        }
+      },
+      "invariantsToVerify": ["INV-001"],
+      "goldenMasterRequired": false,
+      "notes": "No error shown for deleted projects - they are silently filtered"
+    },
+    {
+      "id": "TS-004",
+      "behaviorId": "BHV-001",
+      "name": "Initialize each checklist type shows correct settings button visibility",
+      "description": "Settings button visibility is determined by checklist type - only visible for types with configurable settings.",
+      "checklistType": "All",
+      "priority": "high",
+      "category": "initialization",
+      "preconditions": [
+        "Valid project exists"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "varies",
+        "settingsButtonExpected": {
+          "Verses": true,
+          "WordsPhrases": true,
+          "SectionHeadings": false,
+          "BookTitles": false,
+          "CrossReferences": false,
+          "Markers": true,
+          "Footnotes": false,
+          "RelativelyLongVerses": false,
+          "RelativelyShortVerses": false,
+          "LongSentences": false,
+          "LongParagraphs": false,
+          "QuotationDifferences": false,
+          "Punctuation": true
+        }
+      },
+      "expectedOutputs": {
+        "result": "Settings button visibility matches expected per type",
+        "uiState": {}
+      },
+      "invariantsToVerify": ["INV-006"],
+      "goldenMasterRequired": false,
+      "notes": "INV-006 - Settings button only visible for types that have configurable settings"
+    },
+    {
+      "id": "TS-005",
+      "behaviorId": "BHV-001",
+      "name": "Initialize registers with DialogRestorer",
+      "description": "The checklist tool registers itself with DialogRestorer for session persistence.",
+      "checklistType": "Verses",
+      "priority": "low",
+      "category": "initialization",
+      "preconditions": [
+        "Valid project exists"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "settings": {}
+      },
+      "expectedOutputs": {
+        "result": "Dialog can be restored in next session",
+        "uiState": {}
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "Enables session persistence across application restarts"
+    },
+    {
+      "id": "TS-006",
+      "behaviorId": "BHV-001",
+      "name": "Initialize subscribes to WriteLockManager changes",
+      "description": "The checklist tool subscribes to WriteLockManager to detect project text changes.",
+      "checklistType": "Verses",
+      "priority": "medium",
+      "category": "initialization",
+      "preconditions": [
+        "Valid project exists"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "settings": {}
+      },
+      "expectedOutputs": {
+        "result": "Change listener registered",
+        "uiState": {}
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "Enables automatic refresh when project content changes"
+    },
+    {
+      "id": "TS-007",
+      "behaviorId": "BHV-002",
+      "name": "Display Checklist Data with single project",
+      "description": "Displaying checklist data for a single project shows a single-column table with references and content.",
+      "checklistType": "Verses",
+      "priority": "high",
+      "category": "display",
+      "preconditions": [
+        "Valid scripture project with content in selected verse range"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "verseRange": {
+          "first": "GEN 1:1",
+          "last": "GEN 1:31"
+        },
+        "comparativeTexts": [],
+        "settings": {}
+      },
+      "expectedOutputs": {
+        "result": "Table displays with reference column and one data column",
+        "uiState": {
+          "columnCount": 2,
+          "rowCount": 31,
+          "titleContains": "GEN 1:1-31"
+        }
+      },
+      "invariantsToVerify": ["INV-001", "INV-002", "INV-003"],
+      "goldenMasterRequired": true,
+      "notes": "Basic single-project display scenario"
+    },
+    {
+      "id": "TS-008",
+      "behaviorId": "BHV-002",
+      "name": "Display Checklist Data with multiple comparative projects",
+      "description": "Displaying checklist data with comparative texts shows multiple columns aligned by verse reference.",
+      "checklistType": "Verses",
+      "priority": "high",
+      "category": "display",
+      "preconditions": [
+        "Primary project and two comparative projects exist",
+        "All projects have content in selected verse range"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "verseRange": {
+          "first": "GEN 1:1",
+          "last": "GEN 1:10"
+        },
+        "comparativeTexts": ["SourceText1", "SourceText2"],
+        "settings": {}
+      },
+      "expectedOutputs": {
+        "result": "Table displays with reference column and three data columns",
+        "uiState": {
+          "columnCount": 4,
+          "rowCountApprox": 10
+        }
+      },
+      "invariantsToVerify": ["INV-001", "INV-004"],
+      "goldenMasterRequired": true,
+      "notes": "Multi-project comparison with versification alignment"
+    },
+    {
+      "id": "TS-009",
+      "behaviorId": "BHV-002",
+      "name": "Display Checklist Data respects max rows limit",
+      "description": "When results exceed 5000 rows, display is truncated with a warning.",
+      "checklistType": "Verses",
+      "priority": "high",
+      "category": "display",
+      "preconditions": [
+        "Project has content that would generate more than 5000 rows"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "verseRange": {
+          "first": "GEN 1:1",
+          "last": "REV 22:21"
+        },
+        "comparativeTexts": [],
+        "settings": {}
+      },
+      "expectedOutputs": {
+        "result": "Rows capped at 5000 with warning shown",
+        "uiState": {
+          "rowCount": 5000,
+          "warningDisplayed": true
+        }
+      },
+      "invariantsToVerify": ["INV-002"],
+      "goldenMasterRequired": false,
+      "notes": "INV-002 - Max rows limit of 5000 must be enforced"
+    },
+    {
+      "id": "TS-010",
+      "behaviorId": "BHV-002",
+      "name": "Display Checklist Data shows progress during generation",
+      "description": "Progress dialog displays during checklist generation for long operations.",
+      "checklistType": "Verses",
+      "priority": "medium",
+      "category": "display",
+      "preconditions": [
+        "Large verse range selected"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "verseRange": {
+          "first": "GEN 1:1",
+          "last": "DEU 34:12"
+        },
+        "comparativeTexts": [],
+        "settings": {}
+      },
+      "expectedOutputs": {
+        "result": "Progress dialog shown during generation",
+        "uiState": {
+          "progressDialogTitle": "Building Checklist"
+        }
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "User can cancel via progress dialog"
+    },
+    {
+      "id": "TS-011",
+      "behaviorId": "BHV-002",
+      "name": "Display Checklist Data handles cancellation",
+      "description": "When user cancels progress dialog, checklist display is aborted gracefully.",
+      "checklistType": "Verses",
+      "priority": "medium",
+      "category": "display",
+      "preconditions": [
+        "Progress dialog visible during long operation"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "verseRange": {
+          "first": "GEN 1:1",
+          "last": "REV 22:21"
+        },
+        "userAction": "cancel"
+      },
+      "expectedOutputs": {
+        "result": "ProgressCancelledException caught, display aborted",
+        "uiState": {
+          "dataGridEmpty": true,
+          "noErrorShown": true
+        }
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "Clean cancellation without error messages"
+    },
+    {
+      "id": "TS-012",
+      "behaviorId": "BHV-002",
+      "name": "Display updates match count label",
+      "description": "After display, match count label shows number of rows displayed.",
+      "checklistType": "Verses",
+      "priority": "low",
+      "category": "display",
+      "preconditions": [
+        "Valid verse range with content"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "verseRange": {
+          "first": "GEN 1:1",
+          "last": "GEN 1:31"
+        },
+        "comparativeTexts": [],
+        "settings": {}
+      },
+      "expectedOutputs": {
+        "result": "Match count label shows row count",
+        "uiState": {
+          "matchCountLabelValue": 31
+        }
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "Provides user feedback on result size"
+    },
+    {
+      "id": "TS-013",
+      "behaviorId": "BHV-002",
+      "name": "Display scrolls to previous position",
+      "description": "After settings change and refresh, scroll position is restored if possible.",
+      "checklistType": "Verses",
+      "priority": "low",
+      "category": "display",
+      "preconditions": [
+        "Checklist already displayed",
+        "User has scrolled to a specific position"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "previousScrollPosition": 500,
+        "triggerRefresh": true
+      },
+      "expectedOutputs": {
+        "result": "Scroll position restored after refresh",
+        "uiState": {
+          "scrollPositionApprox": 500
+        }
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "Improves UX during settings changes"
+    },
+    {
+      "id": "TS-014",
+      "behaviorId": "BHV-002",
+      "name": "Display updates window title with verse range",
+      "description": "Window title includes project name and current verse range.",
+      "checklistType": "Verses",
+      "priority": "medium",
+      "category": "display",
+      "preconditions": [
+        "Valid project and verse range"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "verseRange": {
+          "first": "GEN 1:1",
+          "last": "GEN 3:24"
+        },
+        "comparativeTexts": [],
+        "settings": {}
+      },
+      "expectedOutputs": {
+        "result": "Title shows project and range",
+        "uiState": {
+          "titleContains": ["TestProject", "GEN 1:1-3:24"]
+        }
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "Helps user identify context of display"
+    },
+    {
+      "id": "TS-015",
+      "behaviorId": "BHV-003",
+      "name": "Build Rows creates cell for each project column",
+      "description": "BuildRows creates exactly N cells per row where N is number of projects.",
+      "checklistType": "Verses",
+      "priority": "high",
+      "category": "display",
+      "preconditions": [
+        "Primary and two comparative projects"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "verseRange": {
+          "first": "GEN 1:1",
+          "last": "GEN 1:5"
+        },
+        "comparativeTexts": ["Source1", "Source2"],
+        "settings": {}
+      },
+      "expectedOutputs": {
+        "result": "Each row has exactly 3 cells",
+        "dataStructure": {
+          "rowsHaveCellCount": 3
+        }
+      },
+      "invariantsToVerify": ["INV-001", "INV-005"],
+      "goldenMasterRequired": false,
+      "notes": "INV-001 - Row count equals columns invariant"
+    },
+    {
+      "id": "TS-016",
+      "behaviorId": "BHV-004",
+      "name": "Navigate to verse reference on click",
+      "description": "Clicking a reference link navigates the main window to that verse.",
+      "checklistType": "Verses",
+      "priority": "high",
+      "category": "navigation",
+      "preconditions": [
+        "Checklist displayed with reference links"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "clickTarget": "goto:GEN 1:5"
+      },
+      "expectedOutputs": {
+        "result": "MainForm.GotoReference called",
+        "navigation": {
+          "targetVerse": "GEN 1:5"
+        }
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "Primary navigation use case"
+    },
+    {
+      "id": "TS-017",
+      "behaviorId": "BHV-004",
+      "name": "Navigate handles URL-encoded spaces",
+      "description": "Reference links with URL-encoded spaces (%20) are correctly parsed.",
+      "checklistType": "Verses",
+      "priority": "medium",
+      "category": "navigation",
+      "preconditions": [
+        "Checklist displayed"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "clickTarget": "goto:1%20COR%201:5"
+      },
+      "expectedOutputs": {
+        "result": "Spaces decoded correctly",
+        "navigation": {
+          "targetVerse": "1 COR 1:5"
+        }
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "EC-007 - URL encoded spaces handling"
+    },
+    {
+      "id": "TS-018",
+      "behaviorId": "BHV-004",
+      "name": "Navigate section heading to following verse",
+      "description": "Section headings navigate to the first verse following the heading.",
+      "checklistType": "SectionHeadings",
+      "priority": "high",
+      "category": "navigation",
+      "preconditions": [
+        "Section headings checklist displayed"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "SectionHeadings",
+        "clickTarget": "goto:GEN 1:1"
+      },
+      "expectedOutputs": {
+        "result": "Navigates to verse following heading",
+        "navigation": {
+          "targetVerse": "GEN 1:1"
+        }
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "Section headings reference first following verse"
+    },
+    {
+      "id": "TS-019",
+      "behaviorId": "BHV-005",
+      "name": "Edit scripture opens EditScrTextForm modal",
+      "description": "Clicking edit link opens EditScrTextForm for the specified verse.",
+      "checklistType": "Verses",
+      "priority": "high",
+      "category": "navigation",
+      "preconditions": [
+        "User has edit permissions for the chapter",
+        "Checklist displayed with edit links visible"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "clickTarget": "edit:GEN 1:5"
+      },
+      "expectedOutputs": {
+        "result": "EditScrTextForm opens in modal",
+        "uiState": {
+          "modalDialogOpen": true,
+          "dialogType": "EditScrTextForm"
+        }
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "VAL-005 - Edit only shown with proper permissions"
+    },
+    {
+      "id": "TS-020",
+      "behaviorId": "BHV-006",
+      "name": "Choose Comparative Texts shows selection dialog",
+      "description": "Clicking Comparative Texts button opens project selection dialog.",
+      "checklistType": "Verses",
+      "priority": "high",
+      "category": "settings",
+      "preconditions": [
+        "Multiple projects exist in ScrTextCollection"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "currentComparativeTexts": []
+      },
+      "expectedOutputs": {
+        "result": "Selection dialog opens",
+        "uiState": {
+          "dialogShown": true,
+          "availableProjects": "All except current project"
+        }
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "Current project excluded from selection"
+    },
+    {
+      "id": "TS-021",
+      "behaviorId": "BHV-006",
+      "name": "Choose Comparative Texts normalizes special names",
+      "description": "Special project names like LXX/GRK are normalized to LXX.",
+      "checklistType": "Verses",
+      "priority": "medium",
+      "category": "settings",
+      "preconditions": [
+        "LXX/GRK special project exists"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "selectedInDialog": ["LXX/GRK"]
+      },
+      "expectedOutputs": {
+        "result": "Project name normalized",
+        "uiState": {
+          "comparativeTextsContains": "LXX"
+        }
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "EC-012 - LXX/HEB special name handling"
+    },
+    {
+      "id": "TS-022",
+      "behaviorId": "BHV-006",
+      "name": "Choose Comparative Texts resets hide matches",
+      "description": "When comparative texts change, hideMatches is reset to false.",
+      "checklistType": "Verses",
+      "priority": "medium",
+      "category": "settings",
+      "preconditions": [
+        "Checklist displayed with hideMatches enabled"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "currentHideMatches": true,
+        "newComparativeTexts": ["NewProject"]
+      },
+      "expectedOutputs": {
+        "result": "hideMatches reset to false",
+        "uiState": {
+          "hideMatchesEnabled": false
+        }
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "Prevents stale match filtering after comparative text change"
+    },
+    {
+      "id": "TS-023",
+      "behaviorId": "BHV-007",
+      "name": "Choose Verse Range updates display",
+      "description": "Selecting new verse range updates checklist display.",
+      "checklistType": "Verses",
+      "priority": "high",
+      "category": "settings",
+      "preconditions": [
+        "Checklist displayed"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "newVerseRange": {
+          "first": "EXO 1:1",
+          "last": "EXO 5:23"
+        }
+      },
+      "expectedOutputs": {
+        "result": "Display refreshes with new range",
+        "uiState": {
+          "titleContains": "EXO 1:1-5:23",
+          "dataChanged": true
+        }
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "Standard verse range selection"
+    },
+    {
+      "id": "TS-024",
+      "behaviorId": "BHV-007",
+      "name": "Choose All Verses resets to default range",
+      "description": "Selecting 'All verses' clears the verse range restriction.",
+      "checklistType": "Verses",
+      "priority": "medium",
+      "category": "settings",
+      "preconditions": [
+        "Checklist displayed with restricted range"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "selectAllVerses": true
+      },
+      "expectedOutputs": {
+        "result": "Range reset to all books",
+        "uiState": {
+          "verseRangeIsDefault": true
+        }
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "All verses option"
+    },
+    {
+      "id": "TS-025",
+      "behaviorId": "BHV-008",
+      "name": "Toggle Hide Matches filters matching rows",
+      "description": "Enabling hideMatches removes rows where all cells have identical content.",
+      "checklistType": "Verses",
+      "priority": "high",
+      "category": "settings",
+      "preconditions": [
+        "Checklist displayed with comparative texts",
+        "Some rows have matching content across all columns"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "comparativeTexts": ["SourceText"],
+        "toggleHideMatches": true
+      },
+      "expectedOutputs": {
+        "result": "Matching rows filtered out",
+        "uiState": {
+          "rowCountReduced": true,
+          "excludedCountShown": true
+        }
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": true,
+      "notes": "Core feature for comparative analysis"
+    },
+    {
+      "id": "TS-026",
+      "behaviorId": "BHV-008",
+      "name": "Hide Matches only visible with comparative texts",
+      "description": "Hide Matches button only visible when at least one comparative text is selected.",
+      "checklistType": "Verses",
+      "priority": "medium",
+      "category": "settings",
+      "preconditions": [
+        "No comparative texts selected"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "comparativeTexts": []
+      },
+      "expectedOutputs": {
+        "result": "Hide Matches button not visible",
+        "uiState": {
+          "hideMatchesButtonVisible": false
+        }
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "Button only meaningful with comparisons"
+    },
+    {
+      "id": "TS-027",
+      "behaviorId": "BHV-009",
+      "name": "Toggle Show Verse Text for Cross References",
+      "description": "Enabling show verse text includes referenced verse content in cross-reference display.",
+      "checklistType": "CrossReferences",
+      "priority": "high",
+      "category": "settings",
+      "preconditions": [
+        "Cross References checklist displayed"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "CrossReferences",
+        "toggleShowVerseText": true
+      },
+      "expectedOutputs": {
+        "result": "Referenced verse text shown in cells",
+        "uiState": {
+          "cellsContainVerseText": true
+        }
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": true,
+      "notes": "Only visible for CrossReferences and Markers types"
+    },
+    {
+      "id": "TS-028",
+      "behaviorId": "BHV-010",
+      "name": "Print Checklist opens print preview",
+      "description": "Clicking Print button opens print preview dialog.",
+      "checklistType": "Verses",
+      "priority": "medium",
+      "category": "display",
+      "preconditions": [
+        "Checklist data is not null (PRE-003)"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "verseRange": {
+          "first": "GEN 1:1",
+          "last": "GEN 1:31"
+        }
+      },
+      "expectedOutputs": {
+        "result": "Print preview dialog opens",
+        "uiState": {
+          "printPreviewShown": true
+        }
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "Header temporarily added to data for printing"
+    },
+    {
+      "id": "TS-029",
+      "behaviorId": "BHV-011",
+      "name": "Save Checklist as HTML file",
+      "description": "Clicking Save button saves checklist as UTF-8 encoded HTML file.",
+      "checklistType": "Verses",
+      "priority": "medium",
+      "category": "display",
+      "preconditions": [
+        "Checklist data is not null",
+        "User selects valid file path"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "savePath": "/path/to/checklist.html"
+      },
+      "expectedOutputs": {
+        "result": "HTML file created with UTF-8 encoding",
+        "fileOutput": {
+          "encoding": "UTF-8",
+          "format": "HTML"
+        }
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "File saved with UTF-8 encoding"
+    },
+    {
+      "id": "TS-030",
+      "behaviorId": "BHV-012",
+      "name": "Copy selection to clipboard",
+      "description": "Clicking Copy button copies selected text to clipboard.",
+      "checklistType": "Verses",
+      "priority": "low",
+      "category": "display",
+      "preconditions": [
+        "Text is selected in checklist display"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "selectedText": "GEN 1:1 In the beginning..."
+      },
+      "expectedOutputs": {
+        "result": "Text copied to clipboard",
+        "clipboard": {
+          "containsText": true,
+          "formattingStripped": true
+        }
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "Only text content copied, not formatting"
+    },
+    {
+      "id": "TS-031",
+      "behaviorId": "BHV-013",
+      "name": "Verses Settings dialog shows section heading option",
+      "description": "Verses checklist settings allow showing section headings in output.",
+      "checklistType": "Verses",
+      "priority": "high",
+      "category": "typeSpecific",
+      "preconditions": [
+        "Verses checklist displayed"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "openSettings": true
+      },
+      "expectedOutputs": {
+        "result": "Settings dialog shows section heading checkbox",
+        "uiState": {
+          "dialogType": "VerseSettingsForm",
+          "optionAvailable": "showSectionHeadings"
+        }
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "Verses type has settings for section headings and footnotes"
+    },
+    {
+      "id": "TS-032",
+      "behaviorId": "BHV-013",
+      "name": "Markers Settings dialog shows equivalent markers",
+      "description": "Markers checklist settings allow defining equivalent marker mappings.",
+      "checklistType": "Markers",
+      "priority": "high",
+      "category": "typeSpecific",
+      "preconditions": [
+        "Markers checklist displayed"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Markers",
+        "openSettings": true
+      },
+      "expectedOutputs": {
+        "result": "Settings dialog shows equivalent markers option",
+        "uiState": {
+          "dialogType": "MarkerSettingsForm",
+          "optionAvailable": "equivalentMarkers"
+        }
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "DC-007 - Equivalent markers for matching"
+    },
+    {
+      "id": "TS-033",
+      "behaviorId": "BHV-013",
+      "name": "Words/Phrases Settings dialog shows search strings",
+      "description": "Words/Phrases checklist settings allow entering search strings and morphology option.",
+      "checklistType": "WordsPhrases",
+      "priority": "high",
+      "category": "typeSpecific",
+      "preconditions": [
+        "Words/Phrases checklist displayed"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "WordsPhrases",
+        "openSettings": true
+      },
+      "expectedOutputs": {
+        "result": "Settings dialog shows search strings and morphology option",
+        "uiState": {
+          "dialogType": "WordOrPhraseSettingsForm",
+          "optionsAvailable": ["searchStrings", "morphologyMatching"]
+        }
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "Multiple search strings per project, newline-separated"
+    },
+    {
+      "id": "TS-034",
+      "behaviorId": "BHV-013",
+      "name": "Punctuation Settings dialog shows filter characters",
+      "description": "Punctuation checklist settings allow filtering to specific punctuation characters.",
+      "checklistType": "Punctuation",
+      "priority": "high",
+      "category": "typeSpecific",
+      "preconditions": [
+        "Punctuation checklist displayed"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Punctuation",
+        "openSettings": true
+      },
+      "expectedOutputs": {
+        "result": "Settings dialog shows punctuation filter",
+        "uiState": {
+          "dialogType": "PunctuationSettingsForm",
+          "optionAvailable": "punctuationFilter"
+        }
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "Empty filter includes all punctuation"
+    },
+    {
+      "id": "TS-035",
+      "behaviorId": "BHV-014",
+      "name": "Project text change triggers refresh",
+      "description": "When WriteLockManager fires change event for relevant book, checklist refreshes.",
+      "checklistType": "Verses",
+      "priority": "high",
+      "category": "display",
+      "preconditions": [
+        "Checklist displayed",
+        "User edits scripture in another window"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "changeEvent": {
+          "project": "TestProject",
+          "book": "GEN"
+        }
+      },
+      "expectedOutputs": {
+        "result": "Checklist display refreshes automatically",
+        "uiState": {
+          "displayRefreshed": true
+        }
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "Automatic refresh on project text changes"
+    },
+    {
+      "id": "TS-036",
+      "behaviorId": "BHV-014",
+      "name": "Primary project removed closes window",
+      "description": "When primary project is removed from collection, checklist window closes.",
+      "checklistType": "Verses",
+      "priority": "high",
+      "category": "display",
+      "preconditions": [
+        "Checklist displayed",
+        "Primary project exists"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "changeEvent": {
+          "projectRemoved": "TestProject"
+        }
+      },
+      "expectedOutputs": {
+        "result": "Checklist window closes",
+        "uiState": {
+          "windowClosed": true
+        }
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "EC-010 - Primary project removed handling"
+    },
+    {
+      "id": "TS-037",
+      "behaviorId": "BHV-014",
+      "name": "Comparative project removed updates list",
+      "description": "When comparative project is removed, it's removed from list and display refreshes.",
+      "checklistType": "Verses",
+      "priority": "medium",
+      "category": "display",
+      "preconditions": [
+        "Checklist displayed with comparative texts",
+        "Comparative project deleted"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "comparativeTexts": ["CompProject"],
+        "changeEvent": {
+          "projectRemoved": "CompProject"
+        }
+      },
+      "expectedOutputs": {
+        "result": "Comparative project removed, display refreshes",
+        "uiState": {
+          "comparativeTextsCount": 0,
+          "columnsDisplayed": 2
+        }
+      },
+      "invariantsToVerify": ["INV-001"],
+      "goldenMasterRequired": false,
+      "notes": "EC-009 - Comparative project removed handling"
+    },
+    {
+      "id": "TS-038",
+      "behaviorId": "BHV-100",
+      "name": "Verses Checklist golden master - single project",
+      "description": "Standard verses checklist output for a single project.",
+      "checklistType": "Verses",
+      "priority": "high",
+      "category": "typeSpecific",
+      "preconditions": [
+        "Test project with known content in Genesis 1"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "verseRange": {
+          "first": "GEN 1:1",
+          "last": "GEN 1:31"
+        },
+        "comparativeTexts": [],
+        "settings": {
+          "showSectionHeadings": false,
+          "showFootnotes": false
+        }
+      },
+      "expectedOutputs": {
+        "result": "31 rows of verse content",
+        "goldenMaster": "verses-genesis1-single.json"
+      },
+      "invariantsToVerify": ["INV-001", "INV-003", "POST-003"],
+      "goldenMasterRequired": true,
+      "notes": "Golden master for verses checklist type"
+    },
+    {
+      "id": "TS-039",
+      "behaviorId": "BHV-100",
+      "name": "Verses Checklist with section headings enabled",
+      "description": "Verses checklist with section headings included in output.",
+      "checklistType": "Verses",
+      "priority": "high",
+      "category": "typeSpecific",
+      "preconditions": [
+        "Test project with section headings in Psalms"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "verseRange": {
+          "first": "PSA 1:1",
+          "last": "PSA 3:8"
+        },
+        "comparativeTexts": [],
+        "settings": {
+          "showSectionHeadings": true,
+          "showFootnotes": false
+        }
+      },
+      "expectedOutputs": {
+        "result": "Verses include section heading content",
+        "goldenMaster": "verses-psalms-with-headings.json"
+      },
+      "invariantsToVerify": ["INV-001"],
+      "goldenMasterRequired": true,
+      "notes": "Section headings visible in verse content"
+    },
+    {
+      "id": "TS-040",
+      "behaviorId": "BHV-100",
+      "name": "Verses Checklist excludes verse 0",
+      "description": "Verse 0 (introduction) is excluded from verses checklist.",
+      "checklistType": "Verses",
+      "priority": "high",
+      "category": "typeSpecific",
+      "preconditions": [
+        "Project with content in verse 0 (introduction)"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "verseRange": {
+          "first": "MAT 1:0",
+          "last": "MAT 1:25"
+        },
+        "comparativeTexts": [],
+        "settings": {}
+      },
+      "expectedOutputs": {
+        "result": "Verse 0 not included in results",
+        "rowsStartAt": "MAT 1:1"
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "DC-003 - Verse 0 excluded (FB-29600)"
+    },
+    {
+      "id": "TS-041",
+      "behaviorId": "BHV-101",
+      "name": "Section Headings Checklist golden master",
+      "description": "Standard section headings checklist output.",
+      "checklistType": "SectionHeadings",
+      "priority": "high",
+      "category": "typeSpecific",
+      "preconditions": [
+        "Test project with section headings in Genesis"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "SectionHeadings",
+        "verseRange": {
+          "first": "GEN 1:1",
+          "last": "GEN 5:32"
+        },
+        "comparativeTexts": [],
+        "settings": {}
+      },
+      "expectedOutputs": {
+        "result": "Section headings extracted with following verse references",
+        "goldenMaster": "section-headings-genesis.json"
+      },
+      "invariantsToVerify": ["INV-001", "INV-003"],
+      "goldenMasterRequired": true,
+      "notes": "DC-001 - Only paragraph styles extracted"
+    },
+    {
+      "id": "TS-042",
+      "behaviorId": "BHV-101",
+      "name": "Section Heading before chapter marker uses previous verse",
+      "description": "When section heading incorrectly placed before chapter marker, uses previous verse reference.",
+      "checklistType": "SectionHeadings",
+      "priority": "high",
+      "category": "edgeCases",
+      "preconditions": [
+        "Project with section heading placed before chapter marker"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "SectionHeadings",
+        "verseRange": {
+          "first": "GEN 1:1",
+          "last": "GEN 3:24"
+        },
+        "testCase": "heading-before-chapter-marker"
+      },
+      "expectedOutputs": {
+        "result": "Heading uses previous verse reference, not beyond chapter",
+        "referenceHandling": "Use previous verse"
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "EC-003 - FB-35863 handling"
+    },
+    {
+      "id": "TS-043",
+      "behaviorId": "BHV-101",
+      "name": "Section Heading with stanza break after",
+      "description": "Stanza break (\\b) after section heading is correctly skipped.",
+      "checklistType": "SectionHeadings",
+      "priority": "medium",
+      "category": "edgeCases",
+      "preconditions": [
+        "Poetry book with stanza breaks after headings"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "SectionHeadings",
+        "verseRange": {
+          "first": "PSA 1:1",
+          "last": "PSA 10:18"
+        },
+        "testCase": "stanza-break-after-heading"
+      },
+      "expectedOutputs": {
+        "result": "\\b and \\i* markers skipped when finding next verse",
+        "referenceHandling": "Skip blank line markers"
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "EC-011 - FB-24651 handling"
+    },
+    {
+      "id": "TS-044",
+      "behaviorId": "BHV-102",
+      "name": "Book Titles Checklist golden master",
+      "description": "Standard book titles checklist output.",
+      "checklistType": "BookTitles",
+      "priority": "high",
+      "category": "typeSpecific",
+      "preconditions": [
+        "Test project with book titles"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "BookTitles",
+        "verseRange": {
+          "first": "GEN 1:1",
+          "last": "EXO 40:38"
+        },
+        "comparativeTexts": [],
+        "settings": {}
+      },
+      "expectedOutputs": {
+        "result": "Book titles for Genesis and Exodus",
+        "goldenMaster": "book-titles-gen-exo.json"
+      },
+      "invariantsToVerify": ["INV-001"],
+      "goldenMasterRequired": true,
+      "notes": "DC-004 - Always starts at book beginning"
+    },
+    {
+      "id": "TS-045",
+      "behaviorId": "BHV-102",
+      "name": "Book Titles handles missing title",
+      "description": "Book without title markers shows explicit warning message.",
+      "checklistType": "BookTitles",
+      "priority": "high",
+      "category": "edgeCases",
+      "preconditions": [
+        "Project with book missing title markers"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "BookTitles",
+        "verseRange": {
+          "first": "3JN 1:1",
+          "last": "3JN 1:14"
+        },
+        "testCase": "missing-book-title"
+      },
+      "expectedOutputs": {
+        "result": "Cell shows 'No Book Title Present'",
+        "warningMessage": "No Book Title Present"
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "EC-004 - Missing book title handling"
+    },
+    {
+      "id": "TS-046",
+      "behaviorId": "BHV-103",
+      "name": "Footnotes Checklist golden master",
+      "description": "Standard footnotes checklist output.",
+      "checklistType": "Footnotes",
+      "priority": "high",
+      "category": "typeSpecific",
+      "preconditions": [
+        "Test project with footnotes"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Footnotes",
+        "verseRange": {
+          "first": "MAT 1:1",
+          "last": "MAT 5:48"
+        },
+        "comparativeTexts": [],
+        "settings": {}
+      },
+      "expectedOutputs": {
+        "result": "Footnotes extracted by verse",
+        "goldenMaster": "footnotes-matthew.json"
+      },
+      "invariantsToVerify": ["INV-001"],
+      "goldenMasterRequired": true,
+      "notes": "Only \\f markers, not \\x cross-references"
+    },
+    {
+      "id": "TS-047",
+      "behaviorId": "BHV-104",
+      "name": "Cross References Checklist golden master",
+      "description": "Standard cross references checklist output.",
+      "checklistType": "CrossReferences",
+      "priority": "high",
+      "category": "typeSpecific",
+      "preconditions": [
+        "Test project with cross-references",
+        "Reference settings have been reviewed (VAL-002)"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "CrossReferences",
+        "verseRange": {
+          "first": "MAT 1:1",
+          "last": "MAT 5:48"
+        },
+        "comparativeTexts": [],
+        "settings": {
+          "showReferencedVerseText": false
+        }
+      },
+      "expectedOutputs": {
+        "result": "Cross references extracted",
+        "goldenMaster": "cross-references-matthew.json"
+      },
+      "invariantsToVerify": ["INV-001"],
+      "goldenMasterRequired": true,
+      "notes": "Includes \\x, \\xt, \\r, \\mr, \\sr, \\ior, \\rq, \\fig references"
+    },
+    {
+      "id": "TS-048",
+      "behaviorId": "BHV-104",
+      "name": "Cross References requires settings review",
+      "description": "Cross references checklist requires reference settings to be reviewed.",
+      "checklistType": "CrossReferences",
+      "priority": "high",
+      "category": "errors",
+      "preconditions": [
+        "Reference settings NOT reviewed for project"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "CrossReferences",
+        "verseRange": {
+          "first": "MAT 1:1",
+          "last": "MAT 1:25"
+        }
+      },
+      "expectedOutputs": {
+        "result": "SettingsHaveNotBeenReviewedException shown",
+        "errorMessage": "In order to check cross references for the {0} project, you must first enter or verify the punctuation, abbreviations, and short names..."
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "VAL-002 - Scripture reference settings required"
+    },
+    {
+      "id": "TS-049",
+      "behaviorId": "BHV-104",
+      "name": "Cross References handles invalid reference",
+      "description": "Invalid cross-reference text shows error message in cell.",
+      "checklistType": "CrossReferences",
+      "priority": "high",
+      "category": "edgeCases",
+      "preconditions": [
+        "Project with malformed cross-reference"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "CrossReferences",
+        "testCase": "invalid-reference"
+      },
+      "expectedOutputs": {
+        "result": "Error message shown in cell",
+        "errorText": "There is an error in the reference"
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "EC-008 - Invalid cross reference handling"
+    },
+    {
+      "id": "TS-050",
+      "behaviorId": "BHV-104",
+      "name": "Cross References includes figure references",
+      "description": "Figure marker ref attributes are included in cross references.",
+      "checklistType": "CrossReferences",
+      "priority": "medium",
+      "category": "typeSpecific",
+      "preconditions": [
+        "Project with \\fig markers containing ref attributes"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "CrossReferences",
+        "testCase": "figure-references"
+      },
+      "expectedOutputs": {
+        "result": "Figure references appear in cross-reference list",
+        "includesFigureRefs": true
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "DC-008 - Figure references included"
+    },
+    {
+      "id": "TS-051",
+      "behaviorId": "BHV-105",
+      "name": "Markers Checklist golden master",
+      "description": "Standard markers checklist output.",
+      "checklistType": "Markers",
+      "priority": "high",
+      "category": "typeSpecific",
+      "preconditions": [
+        "Test project with various markers"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Markers",
+        "verseRange": {
+          "first": "GEN 1:1",
+          "last": "GEN 3:24"
+        },
+        "comparativeTexts": [],
+        "settings": {
+          "markerFilter": "",
+          "equivalentMarkers": ""
+        }
+      },
+      "expectedOutputs": {
+        "result": "Paragraph markers extracted with \\marker prefix",
+        "goldenMaster": "markers-genesis.json"
+      },
+      "invariantsToVerify": ["INV-001"],
+      "goldenMasterRequired": true,
+      "notes": "Shows \\marker prefix for each paragraph"
+    },
+    {
+      "id": "TS-052",
+      "behaviorId": "BHV-105",
+      "name": "Markers Checklist with filter",
+      "description": "Markers checklist filtered to specific markers.",
+      "checklistType": "Markers",
+      "priority": "high",
+      "category": "typeSpecific",
+      "preconditions": [
+        "Test project with various markers"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Markers",
+        "verseRange": {
+          "first": "GEN 1:1",
+          "last": "GEN 50:26"
+        },
+        "comparativeTexts": [],
+        "settings": {
+          "markerFilter": "p,m,q1,q2",
+          "equivalentMarkers": ""
+        }
+      },
+      "expectedOutputs": {
+        "result": "Only p, m, q1, q2 markers shown",
+        "filteredMarkers": ["p", "m", "q1", "q2"]
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "Filter restricts to specific marker types"
+    },
+    {
+      "id": "TS-053",
+      "behaviorId": "BHV-105",
+      "name": "Markers Checklist with equivalent markers",
+      "description": "Equivalent markers (e.g., p/m) are considered matching.",
+      "checklistType": "Markers",
+      "priority": "high",
+      "category": "typeSpecific",
+      "preconditions": [
+        "Two projects with different but equivalent markers"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Markers",
+        "verseRange": {
+          "first": "GEN 1:1",
+          "last": "GEN 3:24"
+        },
+        "comparativeTexts": ["SourceText"],
+        "settings": {
+          "markerFilter": "",
+          "equivalentMarkers": "p/m,s/s1"
+        }
+      },
+      "expectedOutputs": {
+        "result": "p and m treated as equivalent, s and s1 treated as equivalent",
+        "matchingBehavior": "Equivalent markers match"
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": true,
+      "notes": "DC-007 - Equivalent markers for matching"
+    },
+    {
+      "id": "TS-054",
+      "behaviorId": "BHV-106",
+      "name": "Relatively Long Verses Checklist golden master",
+      "description": "Top 100 verses with highest relative length difference.",
+      "checklistType": "RelativelyLongVerses",
+      "priority": "high",
+      "category": "typeSpecific",
+      "preconditions": [
+        "Two projects for comparison (PRE-005)"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "RelativelyLongVerses",
+        "verseRange": {
+          "first": "GEN 1:1",
+          "last": "DEU 34:12"
+        },
+        "comparativeTexts": ["SourceText"],
+        "settings": {}
+      },
+      "expectedOutputs": {
+        "result": "Top 100 verses sorted by length ratio",
+        "goldenMaster": "relatively-long-verses.json",
+        "maxRows": 100,
+        "sortedBy": "score descending"
+      },
+      "invariantsToVerify": ["INV-001", "POST-002"],
+      "goldenMasterRequired": true,
+      "notes": "HighScoresOnly limits to 100 results"
+    },
+    {
+      "id": "TS-055",
+      "behaviorId": "BHV-106",
+      "name": "Relatively Long Verses requires second text",
+      "description": "Relative verse length comparison requires at least two texts.",
+      "checklistType": "RelativelyLongVerses",
+      "priority": "high",
+      "category": "errors",
+      "preconditions": [
+        "No comparative text selected"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "RelativelyLongVerses",
+        "comparativeTexts": []
+      },
+      "expectedOutputs": {
+        "result": "Warning shown to user",
+        "warningMessage": "Second text required for comparison"
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "PRE-005 - At least two ScrTexts required"
+    },
+    {
+      "id": "TS-056",
+      "behaviorId": "BHV-106",
+      "name": "Relatively Long Verses missing verse gets infinity score",
+      "description": "Verse missing in one project gets maximum score (appears first).",
+      "checklistType": "RelativelyLongVerses",
+      "priority": "high",
+      "category": "edgeCases",
+      "preconditions": [
+        "Verse exists in one project but not other"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "RelativelyLongVerses",
+        "comparativeTexts": ["SourceText"],
+        "testCase": "missing-verse"
+      },
+      "expectedOutputs": {
+        "result": "Missing verse appears at top of list",
+        "score": 1000000
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "EC-005 - Empty verse gets infinity score"
+    },
+    {
+      "id": "TS-057",
+      "behaviorId": "BHV-106",
+      "name": "Relatively Short Verses Checklist golden master",
+      "description": "Top 100 verses with lowest relative length ratio.",
+      "checklistType": "RelativelyShortVerses",
+      "priority": "high",
+      "category": "typeSpecific",
+      "preconditions": [
+        "Two projects for comparison"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "RelativelyShortVerses",
+        "verseRange": {
+          "first": "GEN 1:1",
+          "last": "DEU 34:12"
+        },
+        "comparativeTexts": ["SourceText"],
+        "settings": {}
+      },
+      "expectedOutputs": {
+        "result": "Top 100 verses sorted by inverse length ratio",
+        "goldenMaster": "relatively-short-verses.json",
+        "maxRows": 100,
+        "sortedBy": "score descending"
+      },
+      "invariantsToVerify": ["INV-001", "POST-002"],
+      "goldenMasterRequired": true,
+      "notes": "HighScoresOnly limits to 100 results"
+    },
+    {
+      "id": "TS-058",
+      "behaviorId": "BHV-107",
+      "name": "Long Sentences Checklist golden master",
+      "description": "Top 100 longest sentences sorted by length.",
+      "checklistType": "LongSentences",
+      "priority": "high",
+      "category": "typeSpecific",
+      "preconditions": [
+        "Test project with varied sentence lengths"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "LongSentences",
+        "verseRange": {
+          "first": "GEN 1:1",
+          "last": "GEN 50:26"
+        },
+        "comparativeTexts": [],
+        "settings": {}
+      },
+      "expectedOutputs": {
+        "result": "Top 100 sentences sorted by length",
+        "goldenMaster": "long-sentences-genesis.json",
+        "maxRows": 100,
+        "sortedBy": "score descending"
+      },
+      "invariantsToVerify": ["INV-001", "POST-002"],
+      "goldenMasterRequired": true,
+      "notes": "Each sentence gets its own cell"
+    },
+    {
+      "id": "TS-059",
+      "behaviorId": "BHV-107",
+      "name": "Long Sentences uses CharacterCategorizer for boundaries",
+      "description": "Sentence boundaries determined by CharacterCategorizer.IsSentenceFinalPunctuation.",
+      "checklistType": "LongSentences",
+      "priority": "medium",
+      "category": "typeSpecific",
+      "preconditions": [
+        "Project with language-specific sentence-final punctuation"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "LongSentences",
+        "testCase": "sentence-boundary-detection"
+      },
+      "expectedOutputs": {
+        "result": "Sentences split on language-appropriate punctuation",
+        "usesCharacterCategorizer": true
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "DC-002 - Sentence final punctuation defines sentences"
+    },
+    {
+      "id": "TS-060",
+      "behaviorId": "BHV-108",
+      "name": "Long Paragraphs Checklist golden master",
+      "description": "Top 100 longest paragraphs sorted by length.",
+      "checklistType": "LongParagraphs",
+      "priority": "high",
+      "category": "typeSpecific",
+      "preconditions": [
+        "Test project with varied paragraph lengths"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "LongParagraphs",
+        "verseRange": {
+          "first": "GEN 1:1",
+          "last": "GEN 50:26"
+        },
+        "comparativeTexts": [],
+        "settings": {}
+      },
+      "expectedOutputs": {
+        "result": "Top 100 paragraphs sorted by length",
+        "goldenMaster": "long-paragraphs-genesis.json",
+        "maxRows": 100,
+        "sortedBy": "score descending"
+      },
+      "invariantsToVerify": ["INV-001", "POST-002"],
+      "goldenMasterRequired": true,
+      "notes": "Uses non-heading paragraph markers"
+    },
+    {
+      "id": "TS-061",
+      "behaviorId": "BHV-109",
+      "name": "Quotation Marks Checklist golden master",
+      "description": "Verses with different quotation mark counts between projects.",
+      "checklistType": "QuotationDifferences",
+      "priority": "high",
+      "category": "typeSpecific",
+      "preconditions": [
+        "Two projects with quote settings reviewed (VAL-003)",
+        "Projects have different quote mark usage"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "QuotationDifferences",
+        "verseRange": {
+          "first": "GEN 1:1",
+          "last": "GEN 50:26"
+        },
+        "comparativeTexts": ["SourceText"],
+        "settings": {}
+      },
+      "expectedOutputs": {
+        "result": "Verses with different quote counts",
+        "goldenMaster": "quotation-marks-genesis.json"
+      },
+      "invariantsToVerify": ["INV-001"],
+      "goldenMasterRequired": true,
+      "notes": "DC-006 - Comparison by quote count, not text"
+    },
+    {
+      "id": "TS-062",
+      "behaviorId": "BHV-109",
+      "name": "Quotation Marks requires settings review",
+      "description": "Quotation marks checklist requires quote settings to be complete.",
+      "checklistType": "QuotationDifferences",
+      "priority": "high",
+      "category": "errors",
+      "preconditions": [
+        "Quote settings NOT complete for project"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "QuotationDifferences"
+      },
+      "expectedOutputs": {
+        "result": "Setup warning shown",
+        "errorMessage": "In order to run this check, go to {setup command}..."
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "VAL-003 - Quote settings required"
+    },
+    {
+      "id": "TS-063",
+      "behaviorId": "BHV-109",
+      "name": "Quotation Marks hides verses without quotes",
+      "description": "Verses with no quotation marks in any column are excluded.",
+      "checklistType": "QuotationDifferences",
+      "priority": "medium",
+      "category": "edgeCases",
+      "preconditions": [
+        "Verse with no quotes in any project"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "QuotationDifferences",
+        "comparativeTexts": ["SourceText"],
+        "testCase": "verse-without-quotes"
+      },
+      "expectedOutputs": {
+        "result": "Verse excluded from results",
+        "rowExcluded": true
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "EC-006 - No quotes in verse handling"
+    },
+    {
+      "id": "TS-064",
+      "behaviorId": "BHV-110",
+      "name": "Punctuation Checklist golden master",
+      "description": "Verses containing punctuation with comparison across projects.",
+      "checklistType": "Punctuation",
+      "priority": "high",
+      "category": "typeSpecific",
+      "preconditions": [
+        "Test projects with varied punctuation"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Punctuation",
+        "verseRange": {
+          "first": "GEN 1:1",
+          "last": "GEN 5:32"
+        },
+        "comparativeTexts": ["SourceText"],
+        "settings": {
+          "punctuationFilter": ""
+        }
+      },
+      "expectedOutputs": {
+        "result": "Verses with punctuation sequences compared",
+        "goldenMaster": "punctuation-genesis.json"
+      },
+      "invariantsToVerify": ["INV-001"],
+      "goldenMasterRequired": true,
+      "notes": "Empty filter includes all punctuation"
+    },
+    {
+      "id": "TS-065",
+      "behaviorId": "BHV-110",
+      "name": "Punctuation Checklist with filter",
+      "description": "Punctuation checklist filtered to specific characters.",
+      "checklistType": "Punctuation",
+      "priority": "medium",
+      "category": "typeSpecific",
+      "preconditions": [
+        "Test project with varied punctuation"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Punctuation",
+        "verseRange": {
+          "first": "GEN 1:1",
+          "last": "GEN 50:26"
+        },
+        "comparativeTexts": [],
+        "settings": {
+          "punctuationFilter": ".?!"
+        }
+      },
+      "expectedOutputs": {
+        "result": "Only verses with . ? or ! punctuation shown",
+        "filteredPunctuation": [".", "?", "!"]
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "Spaces removed from filter"
+    },
+    {
+      "id": "TS-066",
+      "behaviorId": "BHV-111",
+      "name": "Words/Phrases Checklist golden master",
+      "description": "Verses containing matched words/phrases with highlighting.",
+      "checklistType": "WordsPhrases",
+      "priority": "high",
+      "category": "typeSpecific",
+      "preconditions": [
+        "Test project with searchable content"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "WordsPhrases",
+        "verseRange": {
+          "first": "GEN 1:1",
+          "last": "GEN 50:26"
+        },
+        "comparativeTexts": [],
+        "settings": {
+          "searchStrings": "God\nLord",
+          "morphologyMatching": false
+        }
+      },
+      "expectedOutputs": {
+        "result": "Verses containing God or Lord with highlighting",
+        "goldenMaster": "words-phrases-genesis.json",
+        "matchHighlighted": true
+      },
+      "invariantsToVerify": ["INV-001"],
+      "goldenMasterRequired": true,
+      "notes": "Multiple search strings newline-separated"
+    },
+    {
+      "id": "TS-067",
+      "behaviorId": "BHV-111",
+      "name": "Words/Phrases with morphology matching",
+      "description": "Words/phrases search with morphological matching enabled.",
+      "checklistType": "WordsPhrases",
+      "priority": "high",
+      "category": "typeSpecific",
+      "preconditions": [
+        "Project with LexicalAnalyser support"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "WordsPhrases",
+        "verseRange": {
+          "first": "GEN 1:1",
+          "last": "GEN 10:32"
+        },
+        "comparativeTexts": [],
+        "settings": {
+          "searchStrings": "create",
+          "morphologyMatching": true
+        }
+      },
+      "expectedOutputs": {
+        "result": "Matches include morphological variants (created, creating, etc.)",
+        "morphologicalMatching": true
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "Uses LexicalAnalyser for morphological matching"
+    },
+    {
+      "id": "TS-068",
+      "behaviorId": "BHV-111",
+      "name": "Words/Phrases launched from Biblical Terms",
+      "description": "Words/Phrases checklist can be launched from BiblicalTermsForm with pre-configured search.",
+      "checklistType": "WordsPhrases",
+      "priority": "medium",
+      "category": "typeSpecific",
+      "preconditions": [
+        "Biblical Terms form open with term selected"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "WordsPhrases",
+        "launchedFrom": "BiblicalTermsForm",
+        "preConfiguredSearch": "grace"
+      },
+      "expectedOutputs": {
+        "result": "Checklist opens with search pre-populated",
+        "searchStrings": "grace"
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "Integration with Biblical Terms feature"
+    },
+    {
+      "id": "TS-069",
+      "behaviorId": "INV-001",
+      "name": "Row cell count equals project count - 2 projects",
+      "description": "Every row has exactly N cells where N is number of projects.",
+      "checklistType": "Verses",
+      "priority": "high",
+      "category": "edgeCases",
+      "preconditions": [
+        "Primary and one comparative project"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "verseRange": {
+          "first": "GEN 1:1",
+          "last": "GEN 1:31"
+        },
+        "comparativeTexts": ["SourceText"]
+      },
+      "expectedOutputs": {
+        "result": "All rows have exactly 2 cells",
+        "validation": {
+          "allRowsHaveCellCount": 2
+        }
+      },
+      "invariantsToVerify": ["INV-001"],
+      "goldenMasterRequired": false,
+      "notes": "Invariant verification - row count equals columns"
+    },
+    {
+      "id": "TS-070",
+      "behaviorId": "INV-001",
+      "name": "Row cell count equals project count - 4 projects",
+      "description": "Every row has exactly N cells where N is number of projects.",
+      "checklistType": "Verses",
+      "priority": "high",
+      "category": "edgeCases",
+      "preconditions": [
+        "Primary and three comparative projects"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "verseRange": {
+          "first": "GEN 1:1",
+          "last": "GEN 1:10"
+        },
+        "comparativeTexts": ["Source1", "Source2", "Source3"]
+      },
+      "expectedOutputs": {
+        "result": "All rows have exactly 4 cells",
+        "validation": {
+          "allRowsHaveCellCount": 4
+        }
+      },
+      "invariantsToVerify": ["INV-001"],
+      "goldenMasterRequired": false,
+      "notes": "Invariant verification - row count equals columns with multiple comparatives"
+    },
+    {
+      "id": "TS-071",
+      "behaviorId": "INV-004",
+      "name": "Versification consistency across different versifications",
+      "description": "Verse references normalized to primary project's versification.",
+      "checklistType": "Verses",
+      "priority": "high",
+      "category": "edgeCases",
+      "preconditions": [
+        "Primary project with Protestant versification",
+        "Comparative project with different versification"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "verseRange": {
+          "first": "PSA 1:1",
+          "last": "PSA 10:18"
+        },
+        "comparativeTexts": ["DifferentVersificationProject"]
+      },
+      "expectedOutputs": {
+        "result": "References aligned to primary versification",
+        "versificationHandling": "Normalized to primary"
+      },
+      "invariantsToVerify": ["INV-004"],
+      "goldenMasterRequired": true,
+      "notes": "Critical cross-versification alignment test"
+    },
+    {
+      "id": "TS-072",
+      "behaviorId": "EC-001",
+      "name": "Missing verse in comparative text shows empty cell",
+      "description": "When verse exists in primary but not comparative, empty cell is shown.",
+      "checklistType": "Verses",
+      "priority": "high",
+      "category": "edgeCases",
+      "preconditions": [
+        "Primary project has verse that comparative lacks"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "comparativeTexts": ["IncompleteProject"],
+        "testCase": "missing-verse-in-comparative"
+      },
+      "expectedOutputs": {
+        "result": "Empty cell in comparative column",
+        "cellState": "Empty CLCell"
+      },
+      "invariantsToVerify": ["INV-001"],
+      "goldenMasterRequired": false,
+      "notes": "EC-001 - Missing verse handling"
+    },
+    {
+      "id": "TS-073",
+      "behaviorId": "EC-002",
+      "name": "Verse bridge alignment with different ranges",
+      "description": "Cells merged for verse bridges to align references.",
+      "checklistType": "Verses",
+      "priority": "high",
+      "category": "edgeCases",
+      "preconditions": [
+        "Primary has v.1-2 bridge, comparative has v.1 and v.2 separately"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "comparativeTexts": ["NonBridgedProject"],
+        "testCase": "verse-bridge-alignment"
+      },
+      "expectedOutputs": {
+        "result": "Cells merged up to MAX_CELLS_TO_GRAB (3)",
+        "mergedCellCount": "Up to 3"
+      },
+      "invariantsToVerify": ["INV-001"],
+      "goldenMasterRequired": true,
+      "notes": "EC-002, DC-005 - Verse bridge cell merging"
+    },
+    {
+      "id": "TS-074",
+      "behaviorId": "INV-005",
+      "name": "No duplicate cells per row",
+      "description": "Each column (project) appears exactly once per row.",
+      "checklistType": "Verses",
+      "priority": "high",
+      "category": "edgeCases",
+      "preconditions": [
+        "Multiple comparative projects"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "comparativeTexts": ["Source1", "Source2"],
+        "verseRange": {
+          "first": "GEN 1:1",
+          "last": "GEN 1:31"
+        }
+      },
+      "expectedOutputs": {
+        "result": "No duplicate cells for any project in any row",
+        "validation": {
+          "noDuplicateCellsPerRow": true
+        }
+      },
+      "invariantsToVerify": ["INV-005"],
+      "goldenMasterRequired": false,
+      "notes": "INV-005 - No duplicate cells per row invariant"
+    },
+    {
+      "id": "TS-075",
+      "behaviorId": "POST-003",
+      "name": "Rows ordered by reference",
+      "description": "Rows are ordered by first verse reference within primary column.",
+      "checklistType": "Verses",
+      "priority": "high",
+      "category": "edgeCases",
+      "preconditions": [
+        "Checklist with multiple rows"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "verseRange": {
+          "first": "GEN 1:1",
+          "last": "GEN 3:24"
+        },
+        "comparativeTexts": []
+      },
+      "expectedOutputs": {
+        "result": "Rows in verse order",
+        "validation": {
+          "rowsInReferenceOrder": true
+        }
+      },
+      "invariantsToVerify": ["POST-003"],
+      "goldenMasterRequired": false,
+      "notes": "POST-003 - Rows ordered by reference postcondition"
+    },
+    {
+      "id": "TS-076",
+      "behaviorId": "VAL-001",
+      "name": "Display fails silently with null ScrText",
+      "description": "If primary ScrText is null, display returns false without error.",
+      "checklistType": "Verses",
+      "priority": "medium",
+      "category": "errors",
+      "preconditions": [
+        "ScrText becomes null (e.g., project deleted)"
+      ],
+      "inputs": {
+        "projectId": null,
+        "checklistType": "Verses"
+      },
+      "expectedOutputs": {
+        "result": "Returns false, no display",
+        "errorShown": false
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "VAL-001 - Primary ScrText required validation"
+    },
+    {
+      "id": "TS-077",
+      "behaviorId": "PRE-001",
+      "name": "Display precondition - valid ScrText",
+      "description": "DisplayChecklists requires non-null ScrText.",
+      "checklistType": "Verses",
+      "priority": "medium",
+      "category": "errors",
+      "preconditions": [
+        "ScrText is null"
+      ],
+      "inputs": {
+        "projectId": null,
+        "checklistType": "Verses"
+      },
+      "expectedOutputs": {
+        "result": "Returns false without display",
+        "failureBehavior": "Silent failure"
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "PRE-001 - Display precondition"
+    },
+    {
+      "id": "TS-078",
+      "behaviorId": "PRE-002",
+      "name": "Build rows precondition - at least one ScrText",
+      "description": "BuildRows requires at least one ScrText in checklist.",
+      "checklistType": "Verses",
+      "priority": "medium",
+      "category": "errors",
+      "preconditions": [
+        "No ScrTexts in checklist"
+      ],
+      "inputs": {
+        "checklistType": "Verses",
+        "scrTextCount": 0
+      },
+      "expectedOutputs": {
+        "result": "Returns empty rows",
+        "rowCount": 0
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "PRE-002 - Build rows precondition"
+    },
+    {
+      "id": "TS-079",
+      "behaviorId": "PRE-003",
+      "name": "Print precondition - checklistData not null",
+      "description": "Print requires checklistData to be non-null.",
+      "checklistType": "Verses",
+      "priority": "low",
+      "category": "errors",
+      "preconditions": [
+        "No checklist data generated yet"
+      ],
+      "inputs": {
+        "checklistType": "Verses",
+        "checklistData": null,
+        "action": "print"
+      },
+      "expectedOutputs": {
+        "result": "Early return, no print dialog",
+        "printDialogShown": false
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "PRE-003 - Print precondition"
+    },
+    {
+      "id": "TS-080",
+      "behaviorId": "PRE-004",
+      "name": "Navigate precondition - valid URL format",
+      "description": "Navigation requires URL starting with 'goto:' or 'edit:'.",
+      "checklistType": "Verses",
+      "priority": "low",
+      "category": "errors",
+      "preconditions": [
+        "Invalid URL clicked"
+      ],
+      "inputs": {
+        "checklistType": "Verses",
+        "clickTarget": "invalid:format"
+      },
+      "expectedOutputs": {
+        "result": "Navigation cancelled, no error",
+        "navigationOccurred": false,
+        "errorShown": false
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "PRE-004 - Navigate precondition"
+    },
+    {
+      "id": "TS-081",
+      "behaviorId": "POST-004",
+      "name": "Settings persisted on form close",
+      "description": "Settings are persisted to memento when checklist window closes.",
+      "checklistType": "Verses",
+      "priority": "medium",
+      "category": "settings",
+      "preconditions": [
+        "Checklist displayed with custom settings"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "comparativeTexts": ["SourceText"],
+        "verseRange": {
+          "first": "EXO 1:1",
+          "last": "EXO 10:29"
+        },
+        "hideMatches": true,
+        "action": "closeWindow"
+      },
+      "expectedOutputs": {
+        "result": "Settings saved to memento",
+        "persistedSettings": {
+          "comparativeTexts": ["SourceText"],
+          "verseRange": "EXO 1:1-10:29",
+          "hideMatches": true
+        }
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "POST-004 - Settings persisted postcondition"
+    },
+    {
+      "id": "TS-082",
+      "behaviorId": "VAL-005",
+      "name": "Edit link only shown with edit permission",
+      "description": "Edit link only visible if user can edit the specific book and chapter.",
+      "checklistType": "Verses",
+      "priority": "high",
+      "category": "navigation",
+      "preconditions": [
+        "User lacks edit permission for chapter"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "userHasEditPermission": false
+      },
+      "expectedOutputs": {
+        "result": "Edit link not shown in cells",
+        "editLinkVisible": false
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "VAL-005 - Edit permission required"
+    },
+    {
+      "id": "TS-083",
+      "behaviorId": "BHV-003",
+      "name": "Build rows with different versifications creates proper mappings",
+      "description": "CLRowsBuilder builds reference mappings for versification alignment.",
+      "checklistType": "Verses",
+      "priority": "high",
+      "category": "typeSpecific",
+      "preconditions": [
+        "Projects with different versifications"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "comparativeTexts": ["DifferentVersificationProject"],
+        "verseRange": {
+          "first": "PSA 1:1",
+          "last": "PSA 5:12"
+        }
+      },
+      "expectedOutputs": {
+        "result": "Reference mappings created for alignment",
+        "versificationMapped": true
+      },
+      "invariantsToVerify": ["INV-004"],
+      "goldenMasterRequired": true,
+      "notes": "Core algorithm for cross-versification comparison"
+    },
+    {
+      "id": "TS-084",
+      "behaviorId": "INV-003",
+      "name": "First cell reference required in row",
+      "description": "First cell in row must have valid verse reference (except errors).",
+      "checklistType": "Verses",
+      "priority": "high",
+      "category": "edgeCases",
+      "preconditions": [
+        "Valid checklist data"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "verseRange": {
+          "first": "GEN 1:1",
+          "last": "GEN 1:31"
+        }
+      },
+      "expectedOutputs": {
+        "result": "All rows have valid first cell reference",
+        "validation": {
+          "allRowsHaveFirstCellReference": true
+        }
+      },
+      "invariantsToVerify": ["INV-003"],
+      "goldenMasterRequired": false,
+      "notes": "INV-003 - First cell reference required invariant"
+    },
+    {
+      "id": "TS-085",
+      "behaviorId": "BHV-005",
+      "name": "Edit scripture refreshes checklist on OK",
+      "description": "After editing scripture via EditScrTextForm, checklist refreshes if OK clicked.",
+      "checklistType": "Verses",
+      "priority": "medium",
+      "category": "navigation",
+      "preconditions": [
+        "User has edit permission",
+        "Edit dialog opened from checklist"
+      ],
+      "inputs": {
+        "projectId": "TestProject",
+        "checklistType": "Verses",
+        "clickTarget": "edit:GEN 1:5",
+        "editDialogResult": "OK"
+      },
+      "expectedOutputs": {
+        "result": "Checklist refreshes after edit",
+        "displayRefreshed": true
+      },
+      "invariantsToVerify": [],
+      "goldenMasterRequired": false,
+      "notes": "Refresh behavior after successful edit"
+    }
+  ]
+}

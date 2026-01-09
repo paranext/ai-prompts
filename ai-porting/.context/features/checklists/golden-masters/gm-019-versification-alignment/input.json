@@ -1,0 +1,27 @@
+{
+  "scenarioId": "TS-071",
+  "checklistType": "Verses",
+  "description": "Cross-versification alignment between projects with different versification systems",
+  "projects": [
+    {
+      "id": "TargetProject",
+      "role": "primary",
+      "versification": "English"
+    },
+    {
+      "id": "SourceText",
+      "role": "comparative",
+      "versification": "Septuagint"
+    }
+  ],
+  "verseRange": {
+    "first": "PSA 1:1",
+    "last": "PSA 10:18"
+  },
+  "settings": {},
+  "preconditions": [
+    "Primary project uses English versification",
+    "Comparative project uses different versification (e.g., Septuagint)",
+    "Both projects have content for Psalms 1-10"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "scenarioId": "gm-012",
+  "name": "Relatively Short Verses Checklist",
+  "scenarioIds": ["TS-057"],
+  "behaviorIds": ["BHV-106"],
+  "invariantIds": ["INV-001", "POST-002"],
+  "createdDate": "2025-01-04",
+  "priority": "high",
+  "riskLevel": "medium",
+  "checklistType": "RelativelyShortVerses",
+  "testCategory": "type-specific",
+  "comparisonConfig": {
+    "strategy": "structural",
+    "ignoreFields": ["captureDate", "actualVerseContent", "exactScore"],
+    "normalizations": ["strip-timestamps"],
+    "tolerance": {
+      "scoreVariance": 0.01
+    }
+  },
+  "coverage": {
+    "behaviors": ["BHV-106 Relatively Long/Short Verses Data Extraction"],
+    "invariants": ["INV-001", "POST-002"]
+  },
+  "pt10Notes": {
+    "scoreAlgorithm": "source.length / target.length (inverse of Long Verses)",
+    "sharedLogic": "Same algorithm as Long Verses, different ratio direction"
+  }
+}

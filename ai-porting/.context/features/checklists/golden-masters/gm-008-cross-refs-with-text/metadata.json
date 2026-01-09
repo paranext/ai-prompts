@@ -1,0 +1,29 @@
+{
+  "scenarioId": "gm-008",
+  "name": "Cross References Checklist - With Verse Text",
+  "scenarioIds": ["TS-027"],
+  "behaviorIds": ["BHV-104", "BHV-009"],
+  "invariantIds": ["INV-001"],
+  "createdDate": "2025-01-04",
+  "priority": "high",
+  "riskLevel": "medium",
+  "checklistType": "CrossReferences",
+  "testCategory": "settings-variation",
+  "comparisonConfig": {
+    "strategy": "structural",
+    "ignoreFields": ["captureDate", "actualVerseContent"],
+    "normalizations": ["strip-timestamps", "normalize-whitespace"],
+    "tolerance": {}
+  },
+  "coverage": {
+    "behaviors": [
+      "BHV-104 Cross References Data Extraction",
+      "BHV-009 Toggle Show Verse Text"
+    ],
+    "settings": ["showReferencedVerseText=true"]
+  },
+  "pt10Notes": {
+    "settingToggle": "Show Verse Text button toggles this setting",
+    "verseFetching": "Must fetch verse content for each referenced verse"
+  }
+}

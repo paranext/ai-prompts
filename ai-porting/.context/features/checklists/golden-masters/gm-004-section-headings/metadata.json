@@ -1,0 +1,35 @@
+{
+  "scenarioId": "gm-004",
+  "name": "Section Headings Checklist",
+  "scenarioIds": ["TS-041", "TS-042", "TS-043"],
+  "behaviorIds": ["BHV-101"],
+  "invariantIds": ["INV-001", "INV-003"],
+  "domainConstraints": ["DC-001"],
+  "createdDate": "2025-01-04",
+  "priority": "high",
+  "riskLevel": "medium",
+  "checklistType": "SectionHeadings",
+  "testCategory": "type-specific",
+  "comparisonConfig": {
+    "strategy": "structural",
+    "ignoreFields": ["captureDate", "actualHeadingContent"],
+    "normalizations": ["strip-timestamps", "normalize-whitespace"],
+    "tolerance": {}
+  },
+  "coverage": {
+    "behaviors": ["BHV-101 Section Headings Data Extraction"],
+    "invariants": [
+      "INV-001: Row cell count equals column count",
+      "INV-003: First cell reference required"
+    ],
+    "edgeCases": [
+      "EC-003: Section heading before chapter marker",
+      "EC-011: Stanza break after section heading"
+    ],
+    "bugFixes": ["FB-35863", "FB-24651"]
+  },
+  "pt10Notes": {
+    "stylesheetUsage": "Use ScrStylesheet to identify scSection text type markers",
+    "referenceLogic": "FindVerseRefForParagraph logic needs careful reimplementation"
+  }
+}

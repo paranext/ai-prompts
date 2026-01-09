@@ -1,0 +1,516 @@
+{
+  "id": "spec-006",
+  "name": "Settings Persistence",
+  "description": "Specifications for project settings persistence to Settings.xml. Tests default values, required settings, file naming patterns, and XML format.",
+  "targetApis": ["ScrText", "ProjectSettings", "Setting"],
+  "relatedBehaviors": ["BHV-002", "BHV-016", "BHV-017", "BHV-018"],
+  "relatedInvariants": ["INV-006"],
+  "specifications": [
+    {
+      "id": "spec-006-01",
+      "name": "Settings.xml created after save",
+      "scenarioRefs": ["TS-058"],
+      "paratextDataApi": {
+        "class": "ScrText",
+        "method": "Save",
+        "signature": "void Save()",
+        "namespace": "Paratext.Data"
+      },
+      "preconditions": [
+        "Project directory created",
+        "All required settings configured"
+      ],
+      "inputs": {
+        "scrText": "Configured ScrText"
+      },
+      "expectedBehavior": [
+        "Settings.xml written to project directory",
+        "XML is valid and well-formed",
+        "All configured settings persisted"
+      ],
+      "assertions": [
+        {
+          "type": "file-exists",
+          "target": "{projectDir}/Settings.xml",
+          "description": "Settings.xml exists"
+        },
+        {
+          "type": "valid-xml",
+          "target": "{projectDir}/Settings.xml",
+          "description": "Valid XML format"
+        }
+      ],
+      "invariants": ["INV-006"],
+      "priority": "critical"
+    },
+    {
+      "id": "spec-006-02",
+      "name": "Default file naming pattern",
+      "scenarioRefs": ["TS-034"],
+      "paratextDataApi": {
+        "class": "ProjectPropertiesUtils",
+        "method": "CalcFileNamePostPart",
+        "signature": "string CalcFileNamePostPart(string shortName)",
+        "namespace": "Paratext.ToolsMenu"
+      },
+      "preconditions": [],
+      "inputs": {
+        "shortName": "NewPrj",
+        "fileNameForm": "41MAT",
+        "fileNamePrePart": ""
+      },
+      "expectedBehavior": [
+        "FileNamePostPart calculated as '{shortName}.SFM'",
+        "Book files named like '41MATNewPrj.SFM'"
+      ],
+      "assertions": [
+        {
+          "type": "equals",
+          "target": "CalcFileNamePostPart('NewPrj')",
+          "expected": "NewPrj.SFM",
+          "description": "Default extension is .SFM"
+        },
+        {
+          "type": "contains",
+          "target": "scrText.Settings.FileNamePostPart",
+          "expected": "NewPrj",
+          "description": "Contains short name"
+        }
+      ],
+      "invariants": [],
+      "priority": "medium"
+    },
+    {
+      "id": "spec-006-03",
+      "name": "Language settings saved",
+      "scenarioRefs": ["TS-033"],
+      "paratextDataApi": {
+        "class": "ProjectSettings",
+        "method": "LanguageIsoCode and Language setters",
+        "namespace": "Paratext.Data"
+      },
+      "preconditions": [],
+      "inputs": {
+        "languageId": "es",
+        "languageName": "Spanish"
+      },
+      "expectedBehavior": [
+        "LanguageIsoCode stored in Settings.xml",
+        "Language (display name) stored in Settings.xml",
+        "LDML file created if custom settings used"
+      ],
+      "assertions": [
+        {
+          "type": "equals",
+          "target": "scrText.Settings.LanguageId.Code",
+          "expected": "es",
+          "description": "Language ISO code saved"
+        },
+        {
+          "type": "equals",
+          "target": "scrText.Settings.LanguageName",
+          "expected": "Spanish",
+          "description": "Language name saved"
+        }
+      ],
+      "invariants": [],
+      "priority": "medium"
+    },
+    {
+      "id": "spec-006-04",
+      "name": "Planned books saved to progress",
+      "scenarioRefs": ["TS-035"],
+      "paratextDataApi": {
+        "class": "ProjectSettings",
+        "method": "Progress setters",
+        "namespace": "Paratext.Data"
+      },
+      "preconditions": [
+        "Project created successfully"
+      ],
+      "inputs": {
+        "plannedBooks": ["GEN", "EXO", "LEV", "MAT", "MRK", "LUK", "JHN"]
+      },
+      "expectedBehavior": [
+        "Planned books saved to project progress",
+        "Parallel passages books intersection updated"
+      ],
+      "assertions": [
+        {
+          "type": "contains",
+          "target": "scrText.Progress.PlannedBooks",
+          "expected": ["GEN", "MAT"],
+          "description": "Planned books persisted"
+        }
+      ],
+      "invariants": [],
+      "priority": "low"
+    },
+    {
+      "id": "spec-006-05",
+      "name": "MinParatextDataVersion set",
+      "scenarioRefs": ["TS-053"],
+      "paratextDataApi": {
+        "class": "ProjectSettings",
+        "method": "MinParatextDataVersion setter",
+        "namespace": "Paratext.Data"
+      },
+      "preconditions": [],
+      "inputs": {},
+      "expectedBehavior": [
+        "MinParatextDataVersion set to MinSupportedParatextDataVersion",
+        "Prevents older Paratext versions from corrupting data"
+      ],
+      "assertions": [
+        {
+          "type": "not-null",
+          "target": "scrText.Settings.MinParatextDataVersion",
+          "description": "MinParatextDataVersion is set"
+        }
+      ],
+      "invariants": [],
+      "priority": "medium"
+    },
+    {
+      "id": "spec-006-06",
+      "name": "Encoding setting persisted",
+      "scenarioRefs": ["TS-002"],
+      "paratextDataApi": {
+        "class": "ProjectSettings",
+        "method": "Encoding setter",
+        "namespace": "Paratext.Data"
+      },
+      "preconditions": [],
+      "inputs": {
+        "encoding": "65001"
+      },
+      "expectedBehavior": [
+        "Encoding value persisted to Settings.xml",
+        "Default is 65001 (UTF-8)"
+      ],
+      "assertions": [
+        {
+          "type": "equals",
+          "target": "scrText.Settings.Encoding",
+          "expected": "65001",
+          "description": "UTF-8 encoding code persisted"
+        }
+      ],
+      "invariants": [],
+      "priority": "high"
+    },
+    {
+      "id": "spec-006-07",
+      "name": "Versification setting persisted",
+      "scenarioRefs": ["TS-002", "TS-052"],
+      "paratextDataApi": {
+        "class": "ProjectSettings",
+        "method": "Versification setter",
+        "namespace": "Paratext.Data"
+      },
+      "preconditions": [],
+      "inputs": {
+        "versification": "English"
+      },
+      "expectedBehavior": [
+        "Versification type persisted to Settings.xml"
+      ],
+      "assertions": [
+        {
+          "type": "equals",
+          "target": "scrText.Settings.Versification",
+          "expected": "ScrVers.English",
+          "description": "Versification persisted"
+        }
+      ],
+      "invariants": [],
+      "priority": "high"
+    },
+    {
+      "id": "spec-006-08",
+      "name": "Normalization setting persisted",
+      "scenarioRefs": ["TS-002"],
+      "paratextDataApi": {
+        "class": "ProjectSettings",
+        "method": "NormalizationForm setter",
+        "namespace": "Paratext.Data"
+      },
+      "preconditions": [],
+      "inputs": {
+        "normalizationForm": "NFC"
+      },
+      "expectedBehavior": [
+        "NormalizationForm persisted to Settings.xml",
+        "Default is NFC"
+      ],
+      "assertions": [
+        {
+          "type": "equals",
+          "target": "scrText.Settings.NormalizationForm",
+          "expected": "ProjectNormalization.NFC",
+          "description": "NFC normalization persisted"
+        }
+      ],
+      "invariants": [],
+      "priority": "medium"
+    },
+    {
+      "id": "spec-006-09",
+      "name": "USFM version setting persisted",
+      "scenarioRefs": ["TS-002"],
+      "paratextDataApi": {
+        "class": "ProjectSettings",
+        "method": "UsfmVersion setter",
+        "namespace": "Paratext.Data"
+      },
+      "preconditions": [],
+      "inputs": {
+        "usfmVersion": "Version3"
+      },
+      "expectedBehavior": [
+        "UsfmVersion persisted to Settings.xml",
+        "Default is Version3"
+      ],
+      "assertions": [
+        {
+          "type": "equals",
+          "target": "scrText.Settings.UsfmVersion",
+          "expected": "UsfmVersionOption.Version3",
+          "description": "USFM v3 persisted"
+        }
+      ],
+      "invariants": [],
+      "priority": "medium"
+    },
+    {
+      "id": "spec-006-10",
+      "name": "TranslationInfo setting persisted",
+      "scenarioRefs": ["TS-022", "TS-023"],
+      "paratextDataApi": {
+        "class": "ProjectSettings",
+        "method": "TranslationInfo setter",
+        "namespace": "Paratext.Data"
+      },
+      "preconditions": [],
+      "inputs": {
+        "translationInfo": "TranslationInformation object"
+      },
+      "expectedBehavior": [
+        "TranslationInfo serialized to Settings.xml",
+        "Format: 'Type:BaseName:BaseGuid'"
+      ],
+      "assertions": [
+        {
+          "type": "not-null",
+          "target": "scrText.Settings.TranslationInfo",
+          "description": "TranslationInfo persisted"
+        }
+      ],
+      "invariants": [],
+      "priority": "high"
+    },
+    {
+      "id": "spec-006-11",
+      "name": "GUID setting persisted",
+      "scenarioRefs": ["TS-020"],
+      "paratextDataApi": {
+        "class": "ProjectSettings",
+        "method": "Guid setter",
+        "namespace": "Paratext.Data"
+      },
+      "preconditions": [
+        "GUID calculated via EnsureHasGuid"
+      ],
+      "inputs": {},
+      "expectedBehavior": [
+        "GUID persisted to Settings.xml",
+        "40-character hex string"
+      ],
+      "assertions": [
+        {
+          "type": "not-null",
+          "target": "scrText.Settings.Guid",
+          "description": "GUID persisted"
+        },
+        {
+          "type": "matches",
+          "target": "guid",
+          "expected": "^[a-f0-9]{40}$",
+          "description": "Valid GUID format"
+        }
+      ],
+      "invariants": ["INV-002"],
+      "priority": "critical"
+    },
+    {
+      "id": "spec-006-12",
+      "name": "Comment tags saved for note projects",
+      "scenarioRefs": ["TS-030"],
+      "paratextDataApi": {
+        "class": "CommentTags",
+        "method": "Save",
+        "namespace": "Paratext.Data"
+      },
+      "preconditions": [
+        "Note project being created",
+        "Comment tags configured"
+      ],
+      "inputs": {
+        "commentTags": ["Important", "Question", "Review"]
+      },
+      "expectedBehavior": [
+        "CommentTags.xml created in project directory"
+      ],
+      "assertions": [
+        {
+          "type": "file-exists",
+          "target": "{projectDir}/CommentTags.xml",
+          "description": "CommentTags.xml exists"
+        }
+      ],
+      "invariants": [],
+      "priority": "medium"
+    },
+    {
+      "id": "spec-006-13",
+      "name": "Default stylesheet setting",
+      "scenarioRefs": ["TS-002", "TS-025"],
+      "paratextDataApi": {
+        "class": "ProjectSettings",
+        "method": "DefaultStylesheetFileName setter",
+        "namespace": "Paratext.Data"
+      },
+      "preconditions": [],
+      "inputs": {
+        "standard": "usfm.sty",
+        "studyBible": "usfm_sb.sty"
+      },
+      "expectedBehavior": [
+        "DefaultStylesheetFileName persisted",
+        "Standard projects use usfm.sty",
+        "Study Bible projects use usfm_sb.sty"
+      ],
+      "assertions": [
+        {
+          "type": "equals",
+          "target": "standardProject.Settings.DefaultStylesheetFileName",
+          "expected": "usfm.sty",
+          "description": "Standard stylesheet"
+        },
+        {
+          "type": "equals",
+          "target": "studyBibleProject.Settings.DefaultStylesheetFileName",
+          "expected": "usfm_sb.sty",
+          "description": "Study Bible stylesheet"
+        }
+      ],
+      "invariants": [],
+      "priority": "medium"
+    },
+    {
+      "id": "spec-006-14",
+      "name": "Copyright setting persisted",
+      "scenarioRefs": ["TS-003"],
+      "paratextDataApi": {
+        "class": "ProjectSettings",
+        "method": "Copyright setter",
+        "namespace": "Paratext.Data"
+      },
+      "preconditions": [],
+      "inputs": {
+        "copyright": "Public Domain"
+      },
+      "expectedBehavior": [
+        "Copyright string persisted to Settings.xml"
+      ],
+      "assertions": [
+        {
+          "type": "equals",
+          "target": "scrText.Settings.Copyright",
+          "expected": "Public Domain",
+          "description": "Copyright persisted"
+        }
+      ],
+      "invariants": [],
+      "priority": "low"
+    },
+    {
+      "id": "spec-006-15",
+      "name": "Editable setting persisted",
+      "scenarioRefs": ["TS-003"],
+      "paratextDataApi": {
+        "class": "ScrText",
+        "method": "Editable setter",
+        "namespace": "Paratext.Data"
+      },
+      "preconditions": [],
+      "inputs": {
+        "editable": true
+      },
+      "expectedBehavior": [
+        "Editable flag persisted",
+        "Default is true for new projects"
+      ],
+      "assertions": [
+        {
+          "type": "isTrue",
+          "target": "scrText.Editable",
+          "description": "Project is editable"
+        }
+      ],
+      "invariants": [],
+      "priority": "medium"
+    }
+  ],
+  "propertyTests": [
+    {
+      "id": "prop-006-01",
+      "name": "All required settings persisted after save",
+      "invariantRef": "INV-006",
+      "property": "After ScrText.Save(), Settings.xml contains all configured settings",
+      "generator": {
+        "type": "random-project-settings",
+        "constraints": {
+          "requiredSettings": ["Name", "Guid", "Encoding", "Versification"]
+        }
+      },
+      "iterations": 100,
+      "assertions": [
+        "Settings.xml exists after Save()",
+        "All required settings present in XML"
+      ],
+      "priority": "critical"
+    },
+    {
+      "id": "prop-006-02",
+      "name": "Settings round-trip correctly",
+      "property": "Settings written to Settings.xml can be read back with same values",
+      "generator": {
+        "type": "random-project-settings",
+        "constraints": {}
+      },
+      "iterations": 200,
+      "assertions": [
+        "Read settings match written settings"
+      ],
+      "priority": "high"
+    },
+    {
+      "id": "prop-006-03",
+      "name": "CalcFileNamePostPart always includes short name",
+      "property": "Output always contains the input short name",
+      "generator": {
+        "type": "random-valid-short-names",
+        "constraints": {
+          "length": { "min": 3, "max": 8 },
+          "characters": "A-Za-z0-9_"
+        }
+      },
+      "iterations": 500,
+      "assertions": [
+        "CalcFileNamePostPart(name).Contains(name)"
+      ],
+      "priority": "medium"
+    }
+  ]
+}

@@ -1,0 +1,444 @@
+{
+  "id": "spec-007",
+  "name": "Plugin API",
+  "description": "Specifications for programmatic project creation via the plugin API. Tests NewProjectSettings validation, error handling, and cleanup on failure.",
+  "targetApis": ["ParatextPluginHost", "IProjectCreationAccess", "NewProjectSettings"],
+  "relatedBehaviors": ["BHV-019"],
+  "relatedInvariants": ["INV-001", "INV-002"],
+  "specifications": [
+    {
+      "id": "spec-007-01",
+      "name": "Create project via plugin API - success",
+      "scenarioRefs": ["TS-036"],
+      "paratextDataApi": {
+        "class": "ParatextPluginHost",
+        "method": "CreateNewProject",
+        "signature": "IProject CreateNewProject(NewProjectSettings settings)",
+        "namespace": "Paratext.Base.Plugins"
+      },
+      "preconditions": [
+        "Valid NewProjectSettings provided",
+        "No project with same name exists"
+      ],
+      "inputs": {
+        "shortName": "PlugPrj",
+        "longName": "Plugin Project",
+        "languageId": "en",
+        "languageName": "English",
+        "copyright": "Public Domain",
+        "versification": "English",
+        "normalizationType": "NFC",
+        "type": "Standard"
+      },
+      "expectedBehavior": [
+        "Project directory created",
+        "Mercurial initialized",
+        "GUID assigned",
+        "Project added to collection",
+        "IProject interface returned"
+      ],
+      "assertions": [
+        {
+          "type": "not-null",
+          "target": "result",
+          "description": "IProject returned"
+        },
+        {
+          "type": "equals",
+          "target": "result.Name",
+          "expected": "PlugPrj",
+          "description": "Project name matches"
+        },
+        {
+          "type": "not-null",
+          "target": "ScrTextCollection.FindByName('PlugPrj')",
+          "description": "Project in collection"
+        },
+        {
+          "type": "directory-exists",
+          "target": "{SettingsDirectory}/PlugPrj",
+          "description": "Project directory exists"
+        }
+      ],
+      "invariants": ["INV-001", "INV-002"],
+      "priority": "high"
+    },
+    {
+      "id": "spec-007-02",
+      "name": "Create project via plugin API - invalid short name",
+      "scenarioRefs": ["TS-037"],
+      "paratextDataApi": {
+        "class": "ParatextPluginHost",
+        "method": "CreateNewProject",
+        "namespace": "Paratext.Base.Plugins"
+      },
+      "preconditions": [],
+      "inputs": {
+        "shortName": "AB",
+        "longName": "Too Short Name"
+      },
+      "expectedBehavior": [
+        "ParatextPluginException thrown",
+        "No project directory created",
+        "Collection unchanged"
+      ],
+      "assertions": [
+        {
+          "type": "throws",
+          "target": "CreateNewProject(invalidSettings)",
+          "expected": "ParatextPluginException",
+          "description": "Exception thrown for invalid name"
+        },
+        {
+          "type": "directory-not-exists",
+          "target": "{SettingsDirectory}/AB",
+          "description": "No project directory created"
+        }
+      ],
+      "invariants": [],
+      "priority": "high"
+    },
+    {
+      "id": "spec-007-03",
+      "name": "Create project via plugin API - invalid language ID",
+      "scenarioRefs": ["TS-038"],
+      "paratextDataApi": {
+        "class": "ParatextPluginHost",
+        "method": "CreateNewProject",
+        "namespace": "Paratext.Base.Plugins"
+      },
+      "preconditions": [],
+      "inputs": {
+        "shortName": "LangPrj",
+        "longName": "Invalid Language Project",
+        "languageId": "not-a-valid-tag"
+      },
+      "expectedBehavior": [
+        "ParatextPluginException thrown",
+        "Error message contains language ID"
+      ],
+      "assertions": [
+        {
+          "type": "throws",
+          "target": "CreateNewProject(invalidLangSettings)",
+          "expected": "ParatextPluginException",
+          "description": "Exception for invalid language"
+        },
+        {
+          "type": "contains",
+          "target": "exception.Message",
+          "expected": "not-a-valid-tag",
+          "description": "Error mentions invalid ID"
+        },
+        {
+          "type": "contains",
+          "target": "exception.Message",
+          "expected": "not a valid language tag",
+          "description": "Error describes validation failure"
+        }
+      ],
+      "invariants": [],
+      "priority": "high"
+    },
+    {
+      "id": "spec-007-04",
+      "name": "Plugin cleanup on error after directory created",
+      "scenarioRefs": ["TS-048"],
+      "paratextDataApi": {
+        "class": "ParatextPluginHost",
+        "method": "CreateNewProject",
+        "namespace": "Paratext.Base.Plugins"
+      },
+      "preconditions": [
+        "Directory created",
+        "Error occurs during GUID assignment"
+      ],
+      "inputs": {
+        "shortName": "FailPrj",
+        "simulateError": "GUID_FAILURE"
+      },
+      "expectedBehavior": [
+        "VersioningManager.RemoveVersionedText called",
+        "ScrTextCollection.DeleteProject called",
+        "No orphan files remain",
+        "Returns null"
+      ],
+      "assertions": [
+        {
+          "type": "isNull",
+          "target": "result",
+          "description": "Returns null on failure"
+        },
+        {
+          "type": "directory-not-exists",
+          "target": "{SettingsDirectory}/FailPrj",
+          "description": "Project directory cleaned up"
+        },
+        {
+          "type": "isNull",
+          "target": "ScrTextCollection.FindByName('FailPrj')",
+          "description": "Project not in collection"
+        }
+      ],
+      "invariants": [],
+      "priority": "medium"
+    },
+    {
+      "id": "spec-007-05",
+      "name": "Plugin API sets special file naming",
+      "scenarioRefs": ["TS-036"],
+      "paratextDataApi": {
+        "class": "ParatextPluginHost",
+        "method": "CreateNewProject",
+        "namespace": "Paratext.Base.Plugins"
+      },
+      "preconditions": [],
+      "inputs": {
+        "shortName": "PlugPrj"
+      },
+      "expectedBehavior": [
+        "File naming set to prevent book file creation by plugin",
+        "Special characters in file naming pattern"
+      ],
+      "assertions": [
+        {
+          "type": "not-empty",
+          "target": "scrText.Settings.FileNamePostPart",
+          "description": "File naming configured"
+        }
+      ],
+      "invariants": [],
+      "priority": "low"
+    },
+    {
+      "id": "spec-007-06",
+      "name": "Plugin API validates TranslationInfo not null",
+      "scenarioRefs": ["TS-043"],
+      "paratextDataApi": {
+        "class": "ProjectPropertiesUtils",
+        "method": "UpdateScrText",
+        "namespace": "Paratext.ToolsMenu"
+      },
+      "preconditions": [],
+      "inputs": {
+        "translationInfo": null
+      },
+      "expectedBehavior": [
+        "ArgumentNullException thrown"
+      ],
+      "assertions": [
+        {
+          "type": "throws",
+          "target": "UpdateScrText(scrText, shortName, null, ...)",
+          "expected": "ArgumentNullException",
+          "description": "Null TranslationInfo throws"
+        }
+      ],
+      "invariants": [],
+      "priority": "medium"
+    },
+    {
+      "id": "spec-007-07",
+      "name": "Plugin API validates LanguageId not null",
+      "scenarioRefs": ["TS-044"],
+      "paratextDataApi": {
+        "class": "ProjectPropertiesUtils",
+        "method": "UpdateScrText",
+        "namespace": "Paratext.ToolsMenu"
+      },
+      "preconditions": [],
+      "inputs": {
+        "languageId": null
+      },
+      "expectedBehavior": [
+        "ArgumentNullException thrown"
+      ],
+      "assertions": [
+        {
+          "type": "throws",
+          "target": "UpdateScrText(scrText, shortName, translationInfo, null, ...)",
+          "expected": "ArgumentNullException",
+          "description": "Null LanguageId throws"
+        }
+      ],
+      "invariants": [],
+      "priority": "medium"
+    },
+    {
+      "id": "spec-007-08",
+      "name": "Plugin API cannot change existing short name",
+      "scenarioRefs": ["TS-045"],
+      "paratextDataApi": {
+        "class": "ProjectPropertiesUtils",
+        "method": "UpdateScrText",
+        "namespace": "Paratext.ToolsMenu"
+      },
+      "preconditions": [
+        "Project 'ExistPrj' already exists and saved"
+      ],
+      "inputs": {
+        "existingShortName": "ExistPrj",
+        "newShortName": "ChangedPrj"
+      },
+      "expectedBehavior": [
+        "ArgumentException thrown",
+        "Message: 'project short name cannot be changed'"
+      ],
+      "assertions": [
+        {
+          "type": "throws",
+          "target": "UpdateScrText(existingProject, 'ChangedPrj', ...)",
+          "expected": "ArgumentException",
+          "description": "Cannot change short name"
+        },
+        {
+          "type": "contains",
+          "target": "exception.Message",
+          "expected": "cannot be changed",
+          "description": "Error explains immutability"
+        }
+      ],
+      "invariants": [],
+      "priority": "high"
+    },
+    {
+      "id": "spec-007-09",
+      "name": "NewProjectSettings contains all required fields",
+      "scenarioRefs": ["TS-036"],
+      "paratextDataApi": {
+        "class": "NewProjectSettings",
+        "method": "properties",
+        "namespace": "Paratext.Base.Plugins"
+      },
+      "preconditions": [],
+      "inputs": {},
+      "expectedBehavior": [
+        "NewProjectSettings has ShortName property",
+        "NewProjectSettings has LongName property",
+        "NewProjectSettings has LanguageId property",
+        "NewProjectSettings has LanguageName property",
+        "NewProjectSettings has Copyright property",
+        "NewProjectSettings has Versification property",
+        "NewProjectSettings has NormalizationType property",
+        "NewProjectSettings has Type property"
+      ],
+      "assertions": [
+        {
+          "type": "has-property",
+          "target": "NewProjectSettings",
+          "expected": "ShortName",
+          "description": "Has ShortName"
+        },
+        {
+          "type": "has-property",
+          "target": "NewProjectSettings",
+          "expected": "LongName",
+          "description": "Has LongName"
+        },
+        {
+          "type": "has-property",
+          "target": "NewProjectSettings",
+          "expected": "LanguageId",
+          "description": "Has LanguageId"
+        },
+        {
+          "type": "has-property",
+          "target": "NewProjectSettings",
+          "expected": "Type",
+          "description": "Has Type"
+        }
+      ],
+      "invariants": [],
+      "priority": "medium"
+    },
+    {
+      "id": "spec-007-10",
+      "name": "Plugin returns IProject interface",
+      "scenarioRefs": ["TS-036"],
+      "paratextDataApi": {
+        "class": "ParatextPluginHost",
+        "method": "CreateNewProject",
+        "namespace": "Paratext.Base.Plugins"
+      },
+      "preconditions": [
+        "Project creation succeeds"
+      ],
+      "inputs": {
+        "validSettings": "Complete NewProjectSettings"
+      },
+      "expectedBehavior": [
+        "Returns IProject interface",
+        "IProject.Name matches short name",
+        "IProject allows project operations"
+      ],
+      "assertions": [
+        {
+          "type": "not-null",
+          "target": "result",
+          "description": "IProject returned"
+        },
+        {
+          "type": "implements",
+          "target": "result",
+          "expected": "IProject",
+          "description": "Returns IProject interface"
+        }
+      ],
+      "invariants": [],
+      "priority": "high"
+    }
+  ],
+  "propertyTests": [
+    {
+      "id": "prop-007-01",
+      "name": "Valid plugin settings always create project",
+      "property": "CreateNewProject with valid settings always returns non-null IProject",
+      "generator": {
+        "type": "valid-plugin-settings",
+        "constraints": {
+          "uniqueNames": true,
+          "validLanguages": true
+        }
+      },
+      "iterations": 100,
+      "assertions": [
+        "Result is not null",
+        "Project exists in collection"
+      ],
+      "priority": "high"
+    },
+    {
+      "id": "prop-007-02",
+      "name": "Invalid plugin settings never create orphan directories",
+      "property": "CreateNewProject with invalid settings leaves no orphan directories",
+      "generator": {
+        "type": "invalid-plugin-settings",
+        "variants": [
+          { "type": "invalid-name" },
+          { "type": "invalid-language" },
+          { "type": "duplicate-name" }
+        ]
+      },
+      "iterations": 100,
+      "assertions": [
+        "Exception thrown or null returned",
+        "No new directories in projects folder"
+      ],
+      "priority": "high"
+    },
+    {
+      "id": "prop-007-03",
+      "name": "Plugin API enforces all validation rules",
+      "property": "All validation rules from VAL-001 through VAL-011 apply to plugin API",
+      "generator": {
+        "type": "validation-rule-violations",
+        "constraints": {}
+      },
+      "iterations": 200,
+      "assertions": [
+        "Same validation as UI path"
+      ],
+      "priority": "medium"
+    }
+  ]
+}

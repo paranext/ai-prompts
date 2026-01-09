@@ -1,0 +1,377 @@
+{
+  "id": "spec-001",
+  "name": "Project Creation",
+  "description": "Specifications for creating new projects via ParatextData APIs. Tests core ScrText creation, directory setup, repository initialization, and collection registration.",
+  "targetApis": ["ScrText", "ScrTextCollection", "VersioningManager", "VersionedText"],
+  "relatedBehaviors": ["BHV-001", "BHV-002", "BHV-007", "BHV-008", "BHV-009", "BHV-010"],
+  "relatedInvariants": ["INV-002", "INV-003", "INV-006", "INV-007"],
+  "specifications": [
+    {
+      "id": "spec-001-01",
+      "name": "Create standard translation project with valid settings",
+      "scenarioRefs": ["TS-001"],
+      "paratextDataApi": {
+        "class": "ScrText",
+        "method": "constructor",
+        "signature": "ScrText(ParatextUser user)",
+        "namespace": "Paratext.Data"
+      },
+      "preconditions": [
+        "User is authenticated (not guest)",
+        "No project with target short name exists",
+        "Projects directory is writable"
+      ],
+      "inputs": {
+        "user": "ParatextUser - authenticated user creating the project"
+      },
+      "expectedBehavior": [
+        "ScrText instance created with user reference",
+        "No files created yet (object not persisted)",
+        "Default settings not yet applied"
+      ],
+      "assertions": [
+        {
+          "type": "not-null",
+          "target": "scrText",
+          "description": "ScrText instance must be created"
+        }
+      ],
+      "invariants": [],
+      "priority": "critical"
+    },
+    {
+      "id": "spec-001-02",
+      "name": "Initialize default project settings",
+      "scenarioRefs": ["TS-002"],
+      "paratextDataApi": {
+        "class": "ScrText",
+        "method": "Settings property setters",
+        "namespace": "Paratext.Data"
+      },
+      "preconditions": [
+        "ScrText object created"
+      ],
+      "inputs": {},
+      "expectedBehavior": [
+        "Default values applied per BHV-002",
+        "Settings ready for persistence"
+      ],
+      "assertions": [
+        {
+          "type": "equals",
+          "target": "scrText.Settings.FullName",
+          "expected": "",
+          "description": "Default full name is empty string"
+        },
+        {
+          "type": "equals",
+          "target": "scrText.Settings.FileNamePrePart",
+          "expected": "",
+          "description": "Default file name pre-part is empty"
+        },
+        {
+          "type": "equals",
+          "target": "scrText.Settings.FileNameForm",
+          "expected": "41MAT",
+          "description": "Default file naming uses book number format"
+        },
+        {
+          "type": "equals",
+          "target": "scrText.Settings.Versification",
+          "expected": "ScrVers.English",
+          "description": "Default versification is English"
+        },
+        {
+          "type": "equals",
+          "target": "scrText.Settings.DefaultStylesheetFileName",
+          "expected": "usfm.sty",
+          "description": "Default stylesheet is usfm.sty"
+        },
+        {
+          "type": "equals",
+          "target": "scrText.Settings.Encoding",
+          "expected": "65001",
+          "description": "Default encoding is UTF-8 (code page 65001)"
+        },
+        {
+          "type": "equals",
+          "target": "scrText.Settings.NormalizationForm",
+          "expected": "ProjectNormalization.NFC",
+          "description": "Default normalization is NFC"
+        },
+        {
+          "type": "equals",
+          "target": "scrText.Settings.UsfmVersion",
+          "expected": "UsfmVersionOption.Version3",
+          "description": "Default USFM version is 3"
+        }
+      ],
+      "invariants": [],
+      "priority": "critical"
+    },
+    {
+      "id": "spec-001-03",
+      "name": "Create project directory",
+      "scenarioRefs": ["TS-017"],
+      "paratextDataApi": {
+        "class": "FileUtils",
+        "method": "CreateFolder",
+        "namespace": "Paratext.Data"
+      },
+      "preconditions": [
+        "Projects directory exists and is writable",
+        "No folder with target short name exists"
+      ],
+      "inputs": {
+        "shortName": "string (3-8 chars, alphanumeric + underscore)"
+      },
+      "expectedBehavior": [
+        "Directory created at {SettingsDirectory}/{shortName}",
+        "Directory is writable"
+      ],
+      "assertions": [
+        {
+          "type": "directory-exists",
+          "target": "{SettingsDirectory}/{shortName}",
+          "description": "Project directory must exist after creation"
+        },
+        {
+          "type": "property",
+          "target": "Path.GetFileName(scrText.Directory)",
+          "operator": "equals",
+          "expected": "{shortName}",
+          "description": "Directory name must match short name (INV-003)"
+        }
+      ],
+      "invariants": ["INV-003"],
+      "priority": "critical"
+    },
+    {
+      "id": "spec-001-04",
+      "name": "Initialize Mercurial repository",
+      "scenarioRefs": ["TS-018"],
+      "paratextDataApi": {
+        "class": "VersionedText",
+        "method": "constructor",
+        "signature": "VersionedText(ScrText scrText)",
+        "namespace": "Paratext.Data.Repository"
+      },
+      "preconditions": [
+        "Project directory exists",
+        "Project is not a resource project",
+        "Mercurial is available on system"
+      ],
+      "inputs": {
+        "scrText": "ScrText instance with directory set"
+      },
+      "expectedBehavior": [
+        ".hg directory created in project folder",
+        "Repository initialized via Hg.Default.Init",
+        "Initial settings saved"
+      ],
+      "assertions": [
+        {
+          "type": "directory-exists",
+          "target": "{projectDir}/.hg",
+          "description": ".hg directory must exist"
+        },
+        {
+          "type": "property",
+          "target": "Hg.Default.IsValidRepository(projectDir)",
+          "operator": "isTrue",
+          "description": "Directory must be valid Mercurial repository"
+        }
+      ],
+      "invariants": [],
+      "priority": "critical"
+    },
+    {
+      "id": "spec-001-05",
+      "name": "Assign project GUID from commit hash",
+      "scenarioRefs": ["TS-020"],
+      "paratextDataApi": {
+        "class": "VersioningManager",
+        "method": "EnsureHasGuid",
+        "signature": "void EnsureHasGuid(ScrText scrText)",
+        "namespace": "Paratext.Data.Repository"
+      },
+      "preconditions": [
+        "Project has Mercurial repository initialized"
+      ],
+      "inputs": {
+        "scrText": "ScrText with initialized repository"
+      },
+      "expectedBehavior": [
+        "If no revisions exist, initial commit created",
+        "GUID calculated from first commit hash",
+        "GUID stored in scrText.Settings.Guid"
+      ],
+      "assertions": [
+        {
+          "type": "not-null",
+          "target": "scrText.Settings.Guid",
+          "description": "GUID must be assigned"
+        },
+        {
+          "type": "property",
+          "target": "scrText.Settings.Guid.ToString()",
+          "operator": "matches",
+          "expected": "^[a-f0-9]{40}$",
+          "description": "GUID must be valid 40-character hex string"
+        }
+      ],
+      "invariants": ["INV-002"],
+      "priority": "critical"
+    },
+    {
+      "id": "spec-001-06",
+      "name": "Add project to ScrTextCollection",
+      "scenarioRefs": ["TS-021"],
+      "paratextDataApi": {
+        "class": "ScrTextCollection",
+        "method": "Add",
+        "signature": "void Add(ScrText scrText)",
+        "namespace": "Paratext.Data"
+      },
+      "preconditions": [
+        "Project has been saved to disk",
+        "Project has valid GUID",
+        "Project not already in collection"
+      ],
+      "inputs": {
+        "scrText": "Saved ScrText with GUID"
+      },
+      "expectedBehavior": [
+        "Project added to in-memory collection",
+        "Project discoverable by name",
+        "Project discoverable by GUID"
+      ],
+      "assertions": [
+        {
+          "type": "not-null",
+          "target": "ScrTextCollection.FindByName(shortName)",
+          "description": "Project must be findable by name"
+        },
+        {
+          "type": "property",
+          "target": "ScrTextCollection.FindByName(shortName).Guid",
+          "operator": "equals",
+          "expected": "{expectedGuid}",
+          "description": "Found project must have correct GUID"
+        }
+      ],
+      "invariants": ["INV-006", "INV-007"],
+      "priority": "critical"
+    },
+    {
+      "id": "spec-001-07",
+      "name": "Complete project creation flow",
+      "scenarioRefs": ["TS-001", "TS-002", "TS-017", "TS-018", "TS-020", "TS-021"],
+      "paratextDataApi": {
+        "class": "Multiple",
+        "method": "Full creation flow",
+        "namespace": "Paratext.Data"
+      },
+      "preconditions": [
+        "User is authenticated",
+        "Projects directory writable",
+        "No conflicts with target name"
+      ],
+      "inputs": {
+        "shortName": "TestPrj",
+        "fullName": "Test Project",
+        "projectType": "Standard",
+        "versification": "English",
+        "languageId": "en",
+        "encoding": "65001"
+      },
+      "expectedBehavior": [
+        "1. ScrText created",
+        "2. Settings configured",
+        "3. Directory created",
+        "4. Mercurial initialized",
+        "5. GUID assigned",
+        "6. Settings.xml saved",
+        "7. Project added to collection"
+      ],
+      "assertions": [
+        {
+          "type": "directory-exists",
+          "target": "{SettingsDirectory}/TestPrj",
+          "description": "Project directory exists"
+        },
+        {
+          "type": "file-exists",
+          "target": "{SettingsDirectory}/TestPrj/Settings.xml",
+          "description": "Settings.xml exists"
+        },
+        {
+          "type": "directory-exists",
+          "target": "{SettingsDirectory}/TestPrj/.hg",
+          "description": "Mercurial repository exists"
+        },
+        {
+          "type": "not-null",
+          "target": "ScrTextCollection.FindByName('TestPrj')",
+          "description": "Project is in collection"
+        }
+      ],
+      "invariants": ["INV-002", "INV-003", "INV-006", "INV-007"],
+      "priority": "critical"
+    }
+  ],
+  "propertyTests": [
+    {
+      "id": "prop-001-01",
+      "name": "Project directory always matches short name",
+      "invariantRef": "INV-003",
+      "property": "For any valid project creation, Path.GetFileName(scrText.Directory) == scrText.Name",
+      "generator": {
+        "type": "random-valid-short-names",
+        "constraints": {
+          "length": { "min": 3, "max": 8 },
+          "characters": "A-Za-z0-9_"
+        }
+      },
+      "iterations": 500,
+      "assertions": [
+        "Directory name equals short name for all generated names"
+      ],
+      "priority": "critical"
+    },
+    {
+      "id": "prop-001-02",
+      "name": "GUIDs are unique across all projects",
+      "invariantRef": "INV-002",
+      "property": "No two distinct projects have identical GUIDs",
+      "generator": {
+        "type": "sequential-project-creation",
+        "constraints": {
+          "count": 100,
+          "uniqueNames": true
+        }
+      },
+      "iterations": 100,
+      "assertions": [
+        "All GUIDs in collection are unique",
+        "No GUID collisions detected"
+      ],
+      "priority": "critical"
+    },
+    {
+      "id": "prop-001-03",
+      "name": "Projects must be saved before collection add",
+      "invariantRef": "INV-006",
+      "property": "ScrTextCollection.Add only succeeds for projects with existing Settings.xml",
+      "generator": {
+        "type": "project-creation-sequence",
+        "constraints": {}
+      },
+      "iterations": 100,
+      "assertions": [
+        "Settings.xml exists before Add is called"
+      ],
+      "priority": "high"
+    }
+  ]
+}
