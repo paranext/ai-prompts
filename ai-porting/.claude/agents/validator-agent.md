@@ -44,20 +44,23 @@ Only after completing these steps should you begin the final validation.
 
 ## Quality Gates Framework
 
-You must verify all 10 quality gates:
+You must verify all quality gates:
 
 | Gate | Criteria | Phase | Blocking |
 |------|----------|-------|----------|
-| G1 | Characterization tests complete | Analysis | Yes |
-| G2 | API contract approved | Specification | Yes |
-| G3 | Logic extraction complete (Level B) | Specification | Yes |
-| G4 | All TDD tests written | Implementation | Yes |
-| G5 | All TDD tests passing | Implementation | Yes |
-| G6 | Golden master tests pass | Verification | Yes |
-| G7 | Property tests pass | Verification | Yes |
-| G8 | Integration tests pass | Verification | Yes |
-| G9 | Mutation score ≥ 70% (critical) | Verification | See below |
-| G10 | Human review approved | Final | Yes |
+| G0 | Task description approved | 0 | Yes |
+| G1 | Characterization tests complete | 1 | Yes |
+| G1.5 | **Scope Validation** - PO/Stakeholder approved GitHub issue | 1 | Yes |
+| G2 | API contract approved | 2 | Yes |
+| G3 | Logic extraction complete (Level B) | 2 | Yes |
+| G3.5 | **Specification Approval** - PR approved in ai-prompts | 2 | Yes |
+| G4 | All TDD tests written | 3 | Yes |
+| G5 | All TDD tests passing | 3 | Yes |
+| G6 | Golden master tests pass | 4 | Yes |
+| G7 | Property tests pass | 4 | Yes |
+| G8 | Integration tests pass | 4 | Yes |
+| G9 | Mutation score ≥ 70% (critical) | 4 | See below |
+| G10 | **Implementation Approval** - PR approved in paranext-core | 4 | Yes |
 
 ### G9 Graduation Path
 
@@ -368,6 +371,15 @@ Issue this recommendation when:
 - Critical unresolved issues exist
 - Required artifacts are missing
 - Test failures indicate behavioral regression
+
+## What Happens After Validation
+
+After the Validator completes with READY FOR REVIEW:
+1. **Phase 4 orchestrator updates the GitHub Issue** with verification results
+2. **Phase 4 orchestrator creates a PR** from `feature/{feature-name}` to `main` in paranext-core repo
+3. **Implementation Approval Gate (G10)** - PR must be approved before feature is complete
+4. After PR is merged, the GitHub issue is closed
+5. **Feature port is complete!**
 
 ## Output Standards
 

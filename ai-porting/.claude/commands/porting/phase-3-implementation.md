@@ -19,11 +19,37 @@ Before proceeding, read `.context/AI-Porting-Workflow.md` for overall workflow c
 ## Prerequisites
 
 - [ ] Phase 2 complete
+- [ ] **G3.5 Gate Passed**: Specification PR approved and merged in ai-prompts repo
 - [ ] `task-description.md` exists (original scope)
 - [ ] `data-contracts.md` approved (G2)
 - [ ] `golden-masters/` created
 - [ ] Feature classification known (check `README.md`)
 - [ ] Working in PT10 codebase (paranext-core)
+
+## Branch Strategy
+
+This phase uses **two branches** in parallel:
+
+| Repository | Branch | Purpose |
+|------------|--------|---------|
+| **ai-prompts** | `feature/{feature-name}` | Phase 3 artifacts (alignment, plans, proofs) |
+| **paranext-core** | `feature/{feature-name}` | Tests and implementation code |
+
+### Setup Branches
+
+```bash
+# In ai-prompts repo - create/checkout feature branch for Phase 3 artifacts
+cd /path/to/ai-prompts
+git checkout main && git pull
+git checkout -b feature/{feature-name}
+
+# In paranext-core repo - create feature branch for implementation
+cd /path/to/paranext-core
+git checkout main && git pull
+git checkout -b feature/{feature-name}
+```
+
+All commits should be made to the appropriate branch. The paranext-core PR will be created at the end of Phase 4 (G10 gate).
 
 ---
 
@@ -66,6 +92,14 @@ Please review the alignment:
 **Approve alignment and proceed to implementation planning?** (yes / no / revise)
 
 ⚠️ **Do not proceed to implementation planning until alignment is approved.**
+
+### Commit Checkpoint
+
+After approval, commit the alignment artifacts (in ai-prompts repo):
+```bash
+git add .context/features/{feature}/
+git commit -m "Phase 3: Alignment complete for {feature}"
+```
 
 ---
 
@@ -198,6 +232,14 @@ Please review the strategic plan:
 **Approve this strategic plan?** (yes / no / revise)
 
 ⚠️ **Do not proceed to Step 2 until strategic plan is approved.**
+
+### Commit Checkpoint
+
+After approval, commit the strategic plan (in ai-prompts repo):
+```bash
+git add .context/features/{feature}/
+git commit -m "Phase 3: Strategic plan approved for {feature}"
+```
 
 ---
 
@@ -689,6 +731,19 @@ paranext-core/
         ├── services/
         └── tests/
 ```
+
+### Branches Status
+
+**ai-prompts repo** (`feature/{feature-name}`):
+- Alignment artifacts
+- Strategic plan
+- Proof artifacts (test-evidence-*.log, visual-evidence/)
+- Phase 3 decisions
+
+**paranext-core repo** (`feature/{feature-name}`):
+- Test files
+- Implementation code
+- All commits incremental, ready for Phase 4 verification
 
 ### Next Steps
 

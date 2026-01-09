@@ -176,6 +176,14 @@ Conclude your output with a summary including:
 - Any ambiguities requiring human clarification
 - Readiness assessment for Phase 3 (Implementation)
 
+## What Happens After Contract Writing
+
+After the Contract Writer completes:
+1. **Phase 2 orchestrator updates the GitHub Issue** with specification details
+2. **Phase 2 orchestrator creates a PR** from `feature/{feature-name}` to `main` in ai-prompts repo
+3. **Specification Approval Gate (G3.5)** - PR must be approved and merged before Phase 3 begins
+4. Only after G3.5 approval does Phase 3 (Implementation) start in paranext-core
+
 ### Decisions Made
 
 During contract definition, document significant decisions:

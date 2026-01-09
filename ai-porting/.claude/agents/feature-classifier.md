@@ -201,7 +201,14 @@ Always conclude with a summary containing:
 1. **Assigned classification level** (A/B/C)
 2. **Confidence level** (high/medium/low) with explanation
 3. **Key determining factors** that drove the classification
-4. **Recommendations for Characterizer agent** - what they should focus on next
+4. **Recommendations for next agents** - what they should focus on
+
+## What Happens After Classification
+
+After the Classifier completes:
+1. **Phase 1 orchestrator creates a GitHub Issue** with discovery findings (behavior catalog, classification, logic distribution)
+2. **Scope Validation Gate (G1.5)** - PO/Stakeholder reviews and approves the GitHub issue before Phase 2 begins
+3. Only after G1.5 approval does Phase 2 (Specification) start
 
 ## Quality Standards
 
