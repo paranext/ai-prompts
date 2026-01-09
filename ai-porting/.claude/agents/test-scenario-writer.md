@@ -419,3 +419,10 @@ If you encounter:
 - **Missing classification**: Stop and request Classifier completion
 - **Ambiguous behavior**: Create scenario with notes requesting clarification
 - **Untestable behavior**: Document why and suggest alternatives
+
+## Anti-Duplication Rules
+
+1. **README.md is the single source of truth** for classification, scope, and strategy. Do not repeat classification rationale or scope definitions in your artifacts.
+2. **Link, don't duplicate**: When referencing behaviors, use markdown links (e.g., `"behavior": "BHV-001"` in JSON, `[BHV-001](./behavior-catalog.md#behavior-name)` in markdown)
+3. **Check before creating**: If test-scenarios.json already exists, UPDATE it rather than recreating from scratch
+4. **Counts over content**: In summary sections, report counts and link to source (e.g., "75 scenarios covering 20 behaviors - see [test-scenarios.json](./characterization/test-scenarios.json)")

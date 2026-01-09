@@ -182,92 +182,74 @@ Please review the contracts:
 
 ---
 
-## Step 4: Specification Summary & GitHub Issue
+## Step 4: Stakeholder Summary (GitHub Issue)
 
-After all agents complete, generate stakeholder-friendly deliverables.
+After all agents complete, generate a stakeholder-friendly summary.
 
-### Generate Spec Summary
+**Note**: We eliminated the separate `spec-summary.md` file. The GitHub issue IS the stakeholder summary - it's where review and approval happen. Having both creates duplication pressure.
 
-Create `.context/features/{feature}/spec-summary.md`:
-
-**IMPORTANT**: This summary should LINK to detailed artifacts, not duplicate their content. README.md is the single source of truth for classification, scope, and strategy.
-
-```markdown
-# Specification Summary: {Feature Name}
-
-> **Single Source of Truth**: See [README.md](./README.md) for complete feature details.
-
-## Quick Reference
-
-| Attribute | Value | Details |
-|-----------|-------|---------|
-| Classification | Level {A/B/C} | [README.md#classification](./README.md#classification) |
-| Effort | {Low/Medium/High} | [README.md#effort](./README.md#effort) |
-| Strategy | {Full TDD / Hybrid / Component-First} | [README.md#implementation-strategy](./README.md#implementation-strategy) |
-
-## Counts
-
-| Artifact | Count |
-|----------|-------|
-| Behaviors | {N} |
-| Test Scenarios | {N} |
-| Test Specifications | {N} (Level A/B) |
-| Extraction Plans | {N} (Level B) |
-| Golden Masters | {N} (Level B/C) |
-| API Methods | {N} |
-
-## Detailed Artifacts
-
-| Artifact | Description |
-|----------|-------------|
-| [README.md](./README.md) | **Canonical source** - classification, scope, strategy |
-| [Behavior Catalog](./behavior-catalog.md) | All discovered behaviors |
-| [Logic Distribution](./logic-distribution.md) | WHERE logic lives |
-| [Boundary Map](./boundary-map.md) | Architecture boundaries |
-| [Data Contracts](./data-contracts.md) | API specifications |
-| [Test Scenarios](./characterization/test-scenarios.json) | Test coverage |
-| [Test Specifications](./test-specifications/) | Assertions for Level A/B |
-| [Extraction Plan](./implementation/extraction-plan.md) | Function signatures (Level B) |
-| [Golden Masters](./golden-masters/) | Captured outputs for Level B/C |
-
-## Stakeholder Questions
-
-[Any open questions needing input before Phase 3]
-```
-
-### Generate GitHub Issue
+### Generate GitHub Issue (serves as summary)
 
 Create `.context/features/{feature}/github-issue.md`:
 
-**IMPORTANT**: GitHub issue should link to artifacts, not duplicate content.
+**IMPORTANT**: This serves as BOTH the stakeholder summary AND the GitHub issue body. It should LINK to detailed artifacts, not duplicate content. README.md is the single source of truth.
 
 ```markdown
-## Feature Port: {Feature Name}
+# {Feature Name} - Stakeholder Review
 
-**Classification:** Level {A/B/C} | **Effort:** {Low/Medium/High}
+> **Single Source of Truth**: See [README.md](./README.md) for complete specification.
 
-### Summary
-[1-2 sentence description of the feature]
+## Quick Reference
 
-### Quick Links
-- 📄 [Full Specification (README.md)](./README.md)
-- 📋 [Behavior Catalog](./behavior-catalog.md)
-- 🔌 [API Contracts](./data-contracts.md)
-- 🧪 [Test Scenarios](./characterization/test-scenarios.json)
+| Attribute | Value |
+|-----------|-------|
+| Classification | Level {A/B/C} |
+| ParatextData Reuse | {X}% |
+| Effort | {Low/Medium/High} |
+| Strategy | {Full TDD / Hybrid / Component-First} |
 
-### Acceptance Criteria
+## Artifact Links
+
+| Artifact | Purpose |
+|----------|---------|
+| [README.md](./README.md) | Full specification (canonical) |
+| [behavior-catalog.md](./behavior-catalog.md) | {N} discovered behaviors |
+| [data-contracts.md](./data-contracts.md) | API types and signatures |
+| [test-scenarios.json](./characterization/test-scenarios.json) | {N} test scenarios |
+| [test-specifications/](./test-specifications/) | {N} test specs (Level A/B) |
+| [extraction-plan.md](./implementation/extraction-plan.md) | Extraction plan (Level B only) |
+| [golden-masters/](./golden-masters/) | {N} golden masters (Level B/C) |
+
+## Summary
+
+{2-3 sentence summary of what this feature does and the key implementation approach}
+
+## Key Decisions Requiring Approval
+
+1. {Decision 1 - e.g., API design choice}
+2. {Decision 2 - e.g., State management approach}
+
+## Open Questions
+
+{Any questions needing stakeholder input before Phase 3}
+
+## Acceptance Criteria
+
 - [ ] All PT9 behaviors preserved
 - [ ] Golden master / test specification tests pass
-- [ ] Property tests pass
+- [ ] Property tests pass (invariants)
 - [ ] Human review approved
 
-### Implementation Phases
-- [ ] Phase 3: Implementation
-- [ ] Phase 4: Verification
-- [ ] Final Review
+## Next Steps
+
+- [ ] Stakeholder review of this summary
+- [ ] Complete PT9 captures from [CAPTURE-CHECKLIST.md](./golden-masters/CAPTURE-CHECKLIST.md)
+- [ ] Approve to proceed to Phase 3
 
 ---
-🤖 Auto-generated by porting workflow
+> **Full details**: See [README.md](./README.md) for complete specification
+>
+> 🤖 Auto-generated by porting workflow
 ```
 
 ### Create GitHub Issue
@@ -282,11 +264,10 @@ gh issue create \
 ### Review Checkpoint
 
 **Artifacts created:**
-- [ ] `spec-summary.md` - Stakeholder summary
-- [ ] `github-issue.md` - Issue body
-- [ ] GitHub Issue #{number} created
+- [ ] `github-issue.md` - Stakeholder summary (replaces spec-summary.md)
+- [ ] GitHub Issue #{number} created (when ready)
 
-**Ready to create the GitHub issue?** (yes / no / edit summaries first)
+**Ready to create the GitHub issue?** (yes / no / edit summary first)
 
 ---
 
@@ -343,8 +324,7 @@ Create `.context/features/{feature}/decisions/phase-2-decisions.md`:
 | Test Scenario Writer | ✅ | test-scenarios.json, edge-cases.md, requirements.md |
 | Spec Generator | ✅ | test-specifications/ (A/B), extraction-plan.md (B), golden-masters/ (B/C) |
 | Contract Writer | ✅ | data-contracts.md |
-| Spec Summary | ✅ | spec-summary.md |
-| GitHub Issue | ✅ | Issue #{number} |
+| GitHub Issue | ✅ | github-issue.md (serves as stakeholder summary) |
 
 ### Artifacts Created
 
@@ -365,8 +345,7 @@ Create `.context/features/{feature}/decisions/phase-2-decisions.md`:
 │   ├── gm-001-{name}/
 │   └── ...
 ├── data-contracts.md            # API contracts (with {TBD:*} placeholders)
-├── spec-summary.md              # Stakeholder summary (links to README.md)
-└── github-issue.md              # Issue body
+└── github-issue.md              # Stakeholder summary + issue body (links to README.md)
 ```
 
 ### Quality Gates
@@ -402,8 +381,7 @@ Update `.context/features/{feature}/phase-status.md`:
 | Test Scenario Writer | ✅ | {date} | test-scenarios.json, edge-cases.md, requirements.md |
 | Spec Generator | ✅ | {date} | test-specifications/, extraction-plan.md, golden-masters/ |
 | Contract Writer | ✅ | {date} | data-contracts.md |
-| Spec Summary | ✅ | {date} | spec-summary.md |
-| GitHub Issue | ✅ | {date} | Issue #{number} |
+| GitHub Issue | ✅ | {date} | github-issue.md (stakeholder summary) |
 
 ## Stakeholder Review
 - GitHub Issue: #{number}

@@ -226,3 +226,10 @@ Conclude with:
 3. **Be thorough**: Every behavior should have its logic traced
 4. **Note complexity honestly**: Don't underestimate complex UI logic
 5. **Think downstream**: Your output feeds both Classifier and Spec Generator
+
+## Anti-Duplication Rules
+
+1. **README.md is the single source of truth** for classification, scope, and strategy. Your logic-distribution.md provides detailed analysis that the Classifier will use to update README.md.
+2. **Link, don't duplicate**: When referencing behaviors from behavior-catalog.md, use markdown links (e.g., `[BHV-001](./behavior-catalog.md#behavior-name)`)
+3. **Check before creating**: If logic-distribution.md already exists, UPDATE it rather than recreating from scratch
+4. **Counts over content**: In summary sections, report counts and link to source (e.g., "15 logic blocks in ParatextData - see details below")

@@ -531,3 +531,10 @@ Always conclude with a summary including:
 4. **Appropriate Tolerance**: Ignore timestamps and GUIDs, but don't mask real differences
 5. **Documentation**: Future developers will rely on your notes
 6. **Pragmatism**: Not every scenario needs equal treatment—use judgment
+
+## Anti-Duplication Rules
+
+1. **README.md is the single source of truth** for classification, scope, and strategy. Do not repeat classification rationale in your artifacts.
+2. **Link, don't duplicate**: When referencing test scenarios, use IDs (e.g., `"relatedScenarios": ["TS-001", "TS-002"]`) and link to the source file
+3. **Check before creating**: If test-specifications/ or golden-masters/ already have content, UPDATE rather than recreating
+4. **Counts over content**: In summary sections, report counts and link to source (e.g., "6 test specifications created - see [test-specifications/](./test-specifications/)")

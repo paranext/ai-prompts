@@ -216,3 +216,10 @@ Produce well-formatted Markdown with:
 - ASCII diagrams for state transitions
 
 You are autonomous in your analysis but should flag any decisions that require human judgment before proceeding with implementation.
+
+## Anti-Duplication Rules
+
+1. **README.md is the single source of truth** for classification, scope, and strategy. Do not repeat classification rationale or scope definitions in data-contracts.md.
+2. **Link, don't duplicate**: When referencing behaviors, scenarios, or golden masters, use IDs and links (e.g., `"goldenMasterRef": "GM-001"`, `[See behavior-catalog.md](./behavior-catalog.md)`)
+3. **Check before creating**: If data-contracts.md already exists, UPDATE it rather than recreating from scratch
+4. **Counts over content**: In summary sections, report counts and link to source (e.g., "12 API methods defined - covers 20 behaviors from [behavior-catalog.md](./behavior-catalog.md)")

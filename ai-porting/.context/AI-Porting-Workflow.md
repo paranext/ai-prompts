@@ -137,7 +137,7 @@ We use **4 phase commands** that orchestrate **specialized subagents**:
 | Command                                  | Purpose                           | Outputs                                                                                                                               |
 | ---------------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
 | `/porting/phase-1-discovery {name}`      | Discover PT9 behaviors            | behavior-catalog.md, boundary-map.md, business-rules.md, logic-distribution.md, README.md (classification)                            |
-| `/porting/phase-2-specification {name}`  | Define specs + stakeholder review | test-scenarios.json, test-specifications/ (A/B), extraction-plan.md (B), golden-masters/ (B/C), data-contracts.md, spec-summary.md    |
+| `/porting/phase-2-specification {name}`  | Define specs + stakeholder review | test-scenarios.json, test-specifications/ (A/B), extraction-plan.md (B), golden-masters/ (B/C), data-contracts.md, github-issue.md    |
 | `/porting/phase-3-implementation {name}` | Build feature                     | Test files, implementation (strategy varies by level)                                                                                 |
 | `/porting/phase-4-verification {name}`   | Verify correctness                | equivalence-report.md, invariant-report.md, validation-report.md                                                                      |
 
@@ -773,7 +773,7 @@ The purpose of golden masters varies significantly by feature classification lev
 ├── logic-distribution.md        # WHERE logic lives: ParatextData vs UI (Phase 1 - Logic Locator)
 ├── data-contracts.md            # TypeScript/C# types with {TBD:*} placeholders (Phase 2)
 ├── phase-status.md              # Progress tracking (dates/status only, links to README for details)
-├── spec-summary.md              # Stakeholder summary (links to README, not duplicating content)
+├── github-issue.md              # Stakeholder summary + GitHub issue body (links to README, not duplicating)
 │
 ├── decisions/                   # Feature-specific architectural decisions (per phase)
 │   ├── phase-1-decisions.md     # Discovery phase decisions
@@ -917,7 +917,7 @@ Phase 4: Verification
 6. **Mutation testing**: Critical paths only (merge logic, conflict resolution, data persistence)
 7. **PT10 Alignment step**: Phase 1 & 2 artifacts use abstract naming with `{TBD:*}` placeholders. The Alignment Agent (Phase 3 Step 0) maps these to paranext-core-specific patterns by exploring the PT10 codebase. It creates `implementation/pt10-alignment.md` with concrete namespaces, file paths, and test infrastructure. Reference patterns are documented in `.context/standards/paranext-core-patterns.md`.
 8. **Specification strategy by level**: For Level A features, create structured test specifications in `test-specifications/` (ParatextData.dll is the oracle). For Level B/C, create golden masters in `golden-masters/` capturing UI-layer behavior.
-9. **Single source of truth**: README.md is the canonical source for feature classification, scope, and strategy. Other artifacts (spec-summary.md, phase-status.md) link to README sections rather than duplicating content.
+9. **Single source of truth**: README.md is the canonical source for feature classification, scope, and strategy. Other artifacts (github-issue.md, phase-status.md) link to README sections rather than duplicating content. The github-issue.md file serves as both the stakeholder summary AND the GitHub issue body - we eliminated spec-summary.md to reduce duplication pressure.
 10. **Test quality graduation**: G9 (mutation testing) starts advisory to establish baselines, then becomes blocking after 2-3 features.
 11. **Traceability validation**: Every test must trace to a specification ID (BHV-XXX, TS-XXX, INV-XXX).
 12. **Proof of work artifacts**: Agents must capture test output and screenshots as proof their code works (see Section 6). Evidence files use a simple human-readable format stored in `proofs/`. Each agent verifies the previous agent's proof before starting. Visual evidence (screenshots) is required for ALL features, including backend-heavy Level A features. The Validator agent verifies all evidence files exist before approving G10.

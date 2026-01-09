@@ -166,14 +166,26 @@ Factors:
 - [Other features this depends on]
 - [Features that depend on this]
 
-## PT10 Integration Notes (TBD - filled by Alignment Agent in Phase 3)
+## PT10 Integration Notes
 
-- Target extension: _TBD_
-- Related existing code in paranext-core: _TBD_
-- Dependencies on existing PT10 services: _TBD_
+> Values below are `{TBD:*}` placeholders filled by the Alignment Agent in Phase 3 Step 0.
+> Reference links point to standards docs that ARE accessible from PT9 codebase.
+
+| Aspect | Value | Reference |
+|--------|-------|-----------|
+| C# Namespace | `{TBD:namespace}` | [paranext-core-patterns.md#namespaces](/.context/standards/paranext-core-patterns.md#namespaces) |
+| File Location | `{TBD:file-path}` | [paranext-core-patterns.md#file-organization](/.context/standards/paranext-core-patterns.md#file-organization) |
+| Test Base Class | `{TBD:test-base}` | [Testing-Guide.md#test-infrastructure](/.context/standards/Testing-Guide.md#test-infrastructure) |
+| Command Naming | `{TBD:command-prefix}` | [paranext-core-patterns.md#command-naming](/.context/standards/paranext-core-patterns.md#command-naming) |
+| Test Runner | `dotnet test c-sharp-tests/...` | [Testing-Guide.md](/.context/standards/Testing-Guide.md) |
+| Target Extension | `{TBD:extension-name}` | |
+| Related PT10 Code | `{TBD:related-code}` | |
+| PT10 Service Dependencies | `{TBD:service-deps}` | |
 ```
 
-**Note**: The "PT10 Integration Notes" section contains placeholder values. The Alignment Agent will fill in these values at the start of Phase 3 by exploring paranext-core patterns. Do NOT fill in these values yourself - keep them as `_TBD_`.
+**Note**: The "PT10 Integration Notes" section contains placeholder values. The Alignment Agent will fill in these values at the start of Phase 3 by exploring paranext-core patterns. Do NOT fill in these values yourself - keep them as `{TBD:*}`.
+
+The reference links point to standards documentation that is accessible from the PT9 codebase, giving Phase 3 agents immediate pointers to PT10 patterns without Phase 2 agents needing PT10 codebase access.
 
 ## Success Criteria
 

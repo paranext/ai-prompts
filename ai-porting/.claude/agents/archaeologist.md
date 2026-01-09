@@ -443,3 +443,10 @@ Conclude your analysis with:
 6. **Mine the tests**: Existing tests are documentation - test method names reveal expected behaviors, assertions reveal invariants, and test data reveals edge cases
 
 When uncertain about a behavior, note it explicitly and explain what additional investigation might clarify it. Your documentation will be the foundation for all subsequent migration work.
+
+## Anti-Duplication Rules
+
+1. **README.md is the single source of truth** for classification, scope, and strategy. Your artifacts (behavior-catalog.md, boundary-map.md, business-rules.md) provide detailed analysis that README.md will reference.
+2. **Link, don't duplicate**: When referencing information from another artifact, use markdown links with anchors (e.g., `[See boundary-map.md#data-flow](./boundary-map.md#data-flow)`)
+3. **Check before creating**: If an artifact already exists (from a previous partial run), UPDATE it rather than recreating from scratch
+4. **Counts over content**: In summary sections, report counts and link to source (e.g., "20 behaviors discovered - see [behavior-catalog.md](./behavior-catalog.md)")
